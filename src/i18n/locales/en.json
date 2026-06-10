@@ -405,7 +405,11 @@
       "completed_cta": "Replay module",
       "locked_cta": "Locked",
       "simulate_complete": "Simulate completion (demo)",
-      "close": "Close"
+      "close": "Close",
+      "lessons_done": "{{done}} / {{total}} lessons completed",
+      "lessons_list": "Module lessons",
+      "next_lesson": "Next",
+      "completed_badge": "Completed"
     }
   },
   "glossary": {
