@@ -21,13 +21,13 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
           <motion.img
             src={logoCia.url}
             alt="Centre International d'Antibes"
-            className="h-28 md:h-32 w-auto mx-auto mb-4 drop-shadow-sm"
+            className="h-48 md:h-56 w-auto mx-auto mb-4 drop-shadow-sm"
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4, ease: 'backOut' }}
           />
           <p
-            className="text-5xl md:text-6xl lg:text-7xl leading-[1.05] mt-3 px-2"
+            className="text-5xl md:text-6xl lg:text-7xl leading-[1.05] mt-8 md:mt-10 px-2"
             style={{ fontFamily: "'Better Together', cursive", color: '#e64353' }}
           >
             Don't learn French, live it
