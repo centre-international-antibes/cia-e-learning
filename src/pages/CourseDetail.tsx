@@ -12,6 +12,7 @@ import { demoCourses } from '@/data/demo-courses';
 import { getCourseContent } from '@/data/course-content';
 import { getLessonById, curriculum } from '@/data/curriculum';
 import { getEntryLessonForModule, getRegistryModule } from '@/data/contentRegistry';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
 import { CoursePlayer } from '@/components/course-player/CoursePlayer';
 import { useUserProgress, isLevelAccessible } from '@/hooks/useUserProgress';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,6 +39,7 @@ const contentTypeIcons: Record<string, { i18nKey: string; icon: React.ElementTyp
 
 export default function CourseDetail() {
   const { t } = useTranslation();
+  const ci = useCurriculumI18n();
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -75,10 +77,10 @@ export default function CourseDetail() {
   const displayCourse = course || (curriculumData ? {
     id: id!,
     code: `${curriculumData.module.id}-${String(curriculumData.lesson.id).padStart(3, '0')}`,
-    title: curriculumData.lesson.title,
-    description: curriculumData.lesson.description,
+    title: ci.lessonTitle(curriculumData.lesson.id, curriculumData.lesson.title),
+    description: ci.lessonDescription(curriculumData.lesson.id, curriculumData.lesson.description),
     level: curriculumData.level.level,
-    theme: curriculumData.module.theme,
+    theme: ci.moduleTheme(curriculumData.module.id, curriculumData.module.theme),
     duration: 10,
     isNew: false,
     imageUrl: 'https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=800&h=500&fit=crop&q=80',
