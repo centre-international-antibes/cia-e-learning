@@ -27,7 +27,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             transition={{ duration: 0.4, ease: 'backOut' }}
           />
           <p
-            className="text-5xl md:text-6xl lg:text-7xl leading-[1.05] mt-8 md:mt-10 px-2"
+            className="text-3xl md:text-4xl lg:text-5xl leading-[1.05] mt-3 px-2"
             style={{ fontFamily: "'Better Together', cursive", color: '#e64353' }}
           >
             Don't learn French, live it
