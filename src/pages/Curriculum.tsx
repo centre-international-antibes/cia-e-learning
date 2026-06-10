@@ -148,6 +148,12 @@ export default function Curriculum() {
 
   const sections: SectionWithMeta[] = useMemo(() => {
     const userIdx = LEVELS.indexOf(cecrLevel as CECRLevel);
+    const progressMap = readCourseProgressMap();
+    const completedIds = new Set(
+      Object.entries(progressMap)
+        .filter(([, p]) => p?.completed)
+        .map(([id]) => id),
+    );
     return LEVELS.map((level) => {
       const data = curriculum.find((c) => c.level === level);
       const levelIdx = LEVELS.indexOf(level);
@@ -157,7 +163,15 @@ export default function Curriculum() {
       const modules: ModuleWithMeta[] = modulesRaw.map((m, idx) => {
         const lessonsCount = m.lessons?.length ?? 0;
         const isDemoCompleted = demoCompleted.has(m.id);
-        const progress: number = isDemoCompleted ? 100 : 0;
+        const lessonsList: DrawerLesson[] = (m.lessons ?? []).map((l) => ({
+          id: l.id,
+          title: l.title,
+          completed: completedIds.has(`lesson-${l.id}`),
+        }));
+        const completedFromMap = lessonsList.filter((l) => l.completed).length;
+        const completedLessons = isDemoCompleted ? lessonsCount : completedFromMap;
+        const progress: number =
+          lessonsCount > 0 ? Math.round((completedLessons / lessonsCount) * 100) : 0;
 
         let state: ModuleNodeState;
         if (isDemoCompleted) {
@@ -182,10 +196,12 @@ export default function Curriculum() {
           title: m.title ?? `${t('curriculum.module')} ${idx + 1}`,
           theme: m.theme,
           totalLessons: lessonsCount,
+          completedLessons,
           durationMinutes: lessonsCount * 12,
           xpReward: lessonsCount * 50,
           progress,
           state,
+          lessons: lessonsList,
         };
       });
 
