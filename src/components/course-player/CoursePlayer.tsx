@@ -18,7 +18,6 @@ import {
   clearCoursePlayerProgress,
 } from '@/lib/courseProgress';
 import { Spark } from '@/components/spark/Spark';
-import { SparkMini } from '@/components/spark/SparkMini';
 import type { SparkMood } from '@/components/spark/Spark';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { levelUpSequence } from '@/lib/confetti';
