@@ -27,13 +27,16 @@ import { useCompletionSequence } from '@/lib/parcoursSequencer';
 import { useSfx } from '@/hooks/useSfx';
 import type { CECRLevel } from '@/data/demo-courses';
 import { Sparkles } from 'lucide-react';
+import { readCourseProgressMap } from '@/lib/courseProgress';
 
 /**
  * Item du parcours — un module, un coffre (palier bonus tous les 3 modules)
  * ou un trophée (fin d'unité). Tous placés sur la même spline.
  */
+interface DrawerLesson { id: number; title: string; completed: boolean }
+
 type ParcoursItem =
-  | { kind: 'module';  module: { id: string; number: number; title: string; theme?: string; totalLessons: number; durationMinutes: number; xpReward: number; progress: number; state: ModuleNodeState } }
+  | { kind: 'module';  module: { id: string; number: number; title: string; theme?: string; totalLessons: number; completedLessons: number; durationMinutes: number; xpReward: number; progress: number; state: ModuleNodeState; lessons: DrawerLesson[] } }
   | { kind: 'chest';   chestId: string; state: ChestState; xpReward: number; afterModuleId: string }
   | { kind: 'trophy';  trophyId: string; state: TrophyState };
 
