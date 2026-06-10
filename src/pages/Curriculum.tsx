@@ -93,6 +93,7 @@ export default function Curriculum() {
   const { cecrLevel, totalXP } = useUserProgress();
   const { streak } = useDailyChallenge();
   const reduced = useReducedMotion();
+  const translatedCurriculum = useTranslatedCurriculum();
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   /** Modules « complétés à la volée » dans cette session (démo,
@@ -218,7 +219,7 @@ export default function Curriculum() {
         modules,
       };
     });
-  }, [cecrLevel, t, demoCompleted]);
+  }, [cecrLevel, t, demoCompleted, translatedCurriculum]);
 
   const selectedModule = useMemo(() => {
     if (!selectedKey) return null;
