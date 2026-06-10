@@ -1,0 +1,1382 @@
+{
+  "levels": {
+    "A1": {
+      "title": "Découverte",
+      "objective": "Comprendre et utiliser des expressions familières et quotidiennes. Se présenter et poser des questions simples."
+    },
+    "A2": {
+      "title": "Survie",
+      "objective": "Comprendre des expressions fréquemment utilisées. Communiquer lors de tâches simples. Décrire son environnement."
+    },
+    "B1": {
+      "title": "Seuil",
+      "objective": "Se débrouiller dans la plupart des situations de voyage. Raconter, exprimer un souhait, donner des raisons."
+    },
+    "B2": {
+      "title": "Avancé",
+      "objective": "Comprendre le contenu essentiel de sujets concrets ou abstraits. S'exprimer de façon claire et détaillée."
+    },
+    "C1": {
+      "title": "Autonome",
+      "objective": "Comprendre des textes longs et exigeants. S'exprimer spontanément et couramment. Utiliser la langue de façon souple et efficace."
+    },
+    "C2": {
+      "title": "Maîtrise",
+      "objective": "Comprendre sans effort pratiquement tout. S'exprimer spontanément, très couramment et de façon précise."
+    }
+  },
+  "modules": {
+    "A1.1": {
+      "title": "Premiers pas en français",
+      "theme": "Salutations, identité, alphabet et sons",
+      "badge": "Bienvenue à Antibes"
+    },
+    "A1.2": {
+      "title": "Mon monde quotidien",
+      "theme": "Famille, description physique, objets, couleurs",
+      "badge": "Explorateur"
+    },
+    "A1.3": {
+      "title": "Ma journée",
+      "theme": "Routine, heure, verbes du quotidien, goûts",
+      "badge": "Gourmet Débutant"
+    },
+    "A1.4": {
+      "title": "Se déplacer",
+      "theme": "Ville, transports, directions, lieux publics",
+      "badge": "Voyageur"
+    },
+    "A1.5": {
+      "title": "Communiquer au quotidien",
+      "theme": "Téléphone, email, réseaux sociaux",
+      "badge": "Niveau A1 validé"
+    },
+    "A2.1": {
+      "title": "Raconter au passé",
+      "theme": "Passé composé, événements, souvenirs",
+      "badge": "Conteur Débutant"
+    },
+    "A2.2": {
+      "title": "La vie sociale",
+      "theme": "Invitations, sorties, opinions, sentiments",
+      "badge": "Social Butterfly"
+    },
+    "A2.3": {
+      "title": "Le monde du travail",
+      "theme": "Professions, entretien, CV",
+      "badge": "Pro Débutant"
+    },
+    "A2.4": {
+      "title": "Santé et bien-être",
+      "theme": "Corps, santé, sport, alimentation",
+      "badge": "Bien dans sa peau"
+    },
+    "A2.5": {
+      "title": "Découvrir la France",
+      "theme": "Géographie, culture, traditions, fêtes",
+      "badge": "Niveau A2 validé"
+    },
+    "B1.1": {
+      "title": "Exprimer son opinion",
+      "theme": "Opinion, subjonctif, médias",
+      "badge": "Penseur Critique"
+    },
+    "B1.2": {
+      "title": "Voyager et se débrouiller",
+      "theme": "Hôtel, voyage, conditionnel, problèmes",
+      "badge": "Globe-Trotter"
+    },
+    "B1.3": {
+      "title": "Vie quotidienne avancée",
+      "theme": "Logement, budget, administration",
+      "badge": "Autonome"
+    },
+    "B1.4": {
+      "title": "Études et formation",
+      "theme": "Système éducatif, université, exposé",
+      "badge": "Étudiant Modèle"
+    },
+    "B1.5": {
+      "title": "Culture et société",
+      "theme": "Environnement, cinéma, art de vivre",
+      "badge": "Niveau B1 validé"
+    },
+    "B2.1": {
+      "title": "Argumenter et convaincre",
+      "theme": "Argumentation, conditionnel passé, débat",
+      "badge": "Orateur"
+    },
+    "B2.2": {
+      "title": "Le monde professionnel",
+      "theme": "Lettre de motivation, réunion, négociation",
+      "badge": "Manager"
+    },
+    "B2.3": {
+      "title": "Actualités et société",
+      "theme": "Presse, idiomes, politique",
+      "badge": "Citoyen Informé"
+    },
+    "B2.4": {
+      "title": "Arts et littérature",
+      "theme": "Littérature, chanson, cinéma d'auteur",
+      "badge": "Critique Littéraire"
+    },
+    "B2.5": {
+      "title": "Vers la maîtrise",
+      "theme": "Connecteurs, synthèse, francophonie",
+      "badge": "Niveau B2 validé"
+    },
+    "C1.1": {
+      "title": "Maîtriser la nuance",
+      "theme": "Temps littéraires, essai, concession avancée",
+      "badge": "Intellectuel"
+    },
+    "C1.2": {
+      "title": "Le français professionnel expert",
+      "theme": "Rapport, conférence, juridique, affaires",
+      "badge": "Expert Professionnel"
+    },
+    "C1.3": {
+      "title": "Culture et civilisation",
+      "theme": "Philosophie, histoire, francophonie",
+      "badge": "Francophile"
+    },
+    "C1.4": {
+      "title": "Médias et communication",
+      "theme": "Documentaire, rhétorique, podcast",
+      "badge": "Communicant"
+    },
+    "C1.5": {
+      "title": "Vers l'excellence",
+      "theme": "Subtilités, DALF C1, variétés du français",
+      "badge": "Niveau C1 validé"
+    },
+    "C2.1": {
+      "title": "L'excellence linguistique",
+      "theme": "Archaïsmes, stylistique, improvisation",
+      "badge": "Virtuose"
+    },
+    "C2.2": {
+      "title": "Création et expression personnelle",
+      "theme": "Poésie, nouvelle, théâtre, résumé expert",
+      "badge": "Créateur"
+    },
+    "C2.3": {
+      "title": "Le français expert",
+      "theme": "Juridique, scientifique, médical, diplomatique",
+      "badge": "Spécialiste"
+    },
+    "C2.4": {
+      "title": "La France dans le monde",
+      "theme": "Francophonie, géopolitique, IA, influence",
+      "badge": "Diplomate"
+    },
+    "C2.5": {
+      "title": "La maîtrise absolue",
+      "theme": "Pièges ultimes, conversation, éloquence",
+      "badge": "Maître du Français"
+    }
+  },
+  "lessons": {
+    "1": {
+      "title": "Bonjour !",
+      "description": "Salutations (bonjour, bonsoir, salut, au revoir). Dialogue : arrivée à l'école du CIA à Antibes."
+    },
+    "2": {
+      "title": "Je m'appelle…",
+      "description": "Se présenter (je m'appelle, je suis, j'habite). Compléter sa fiche d'identité."
+    },
+    "3": {
+      "title": "Les sons du français",
+      "description": "L'alphabet français, les accents (é, è, ê, ë), les sons spécifiques (u, ou, on, an)."
+    },
+    "4": {
+      "title": "Tu ou vous ?",
+      "description": "Tutoiement vs vouvoiement. Dialogue : au marché provençal d'Antibes."
+    },
+    "5": {
+      "title": "Les chiffres de 0 à 20",
+      "description": "Compter, donner son numéro de téléphone, son âge."
+    },
+    "6": {
+      "title": "Quelle est ta nationalité ?",
+      "description": "Les nationalités, le masculin/féminin des adjectifs de nationalité."
+    },
+    "7": {
+      "title": "Les jours et les mois",
+      "description": "Jours de la semaine, mois, saisons. Planifier une activité à Antibes."
+    },
+    "8": {
+      "title": "Au café d'Antibes",
+      "description": "Commander une boisson simple. Dialogue au café. Jeu de rôle guidé."
+    },
+    "9": {
+      "title": "Révision Module A1.1",
+      "description": "Quiz récapitulatif : 20 questions mixtes (CO, CE, vocabulaire, grammaire)."
+    },
+    "10": {
+      "title": "Examen Module A1.1",
+      "description": "Test noté couvrant toutes les compétences du module."
+    },
+    "11": {
+      "title": "Ma famille",
+      "description": "Membres de la famille. Arbre généalogique interactif."
+    },
+    "12": {
+      "title": "Il est grand, elle est petite",
+      "description": "Adjectifs de description physique. Accord masculin/féminin."
+    },
+    "13": {
+      "title": "Les couleurs de la Provence",
+      "description": "Les couleurs. Contexte : les marchés colorés de Provence."
+    },
+    "14": {
+      "title": "Qu'est-ce que c'est ?",
+      "description": "Objets du quotidien. Articles définis/indéfinis (le, la, un, une)."
+    },
+    "15": {
+      "title": "Les chiffres de 20 à 100",
+      "description": "Compter jusqu'à 100, dire les prix."
+    },
+    "16": {
+      "title": "J'ai / Je n'ai pas",
+      "description": "Le verbe avoir au présent, la négation simple."
+    },
+    "17": {
+      "title": "C'est mon / ma / mes",
+      "description": "Les adjectifs possessifs (mon, ma, mes, ton, ta, tes, son, sa, ses)."
+    },
+    "18": {
+      "title": "Chez moi",
+      "description": "Décrire son logement. Contexte : un appartement à Juan-les-Pins."
+    },
+    "19": {
+      "title": "Révision Module A1.2",
+      "description": "Quiz récapitulatif."
+    },
+    "20": {
+      "title": "Examen Module A1.2",
+      "description": "Test noté. Badge \"Explorateur\" débloqué."
+    },
+    "21": {
+      "title": "Quelle heure est-il ?",
+      "description": "Dire et comprendre l'heure."
+    },
+    "22": {
+      "title": "Ma journée type",
+      "description": "Verbes de la routine (se lever, manger, travailler, dormir)."
+    },
+    "23": {
+      "title": "Les verbes en -ER",
+      "description": "Conjugaison du présent des verbes du 1er groupe."
+    },
+    "24": {
+      "title": "J'aime / Je n'aime pas",
+      "description": "Exprimer ses goûts (j'aime, j'adore, je déteste + nom)."
+    },
+    "25": {
+      "title": "Au restaurant à Antibes",
+      "description": "Commander un repas simple (entrée, plat, dessert)."
+    },
+    "26": {
+      "title": "Les aliments",
+      "description": "Vocabulaire de la nourriture. Gastronomie provençale."
+    },
+    "27": {
+      "title": "Faire les courses",
+      "description": "Acheter au marché, demander le prix, la quantité."
+    },
+    "28": {
+      "title": "Le week-end",
+      "description": "Raconter son week-end au présent."
+    },
+    "29": {
+      "title": "Révision Module A1.3",
+      "description": "Quiz récapitulatif."
+    },
+    "30": {
+      "title": "Examen Module A1.3",
+      "description": "Test noté. Badge \"Gourmet Débutant\" débloqué."
+    },
+    "31": {
+      "title": "La ville d'Antibes",
+      "description": "Les lieux de la ville. Plan interactif d'Antibes."
+    },
+    "32": {
+      "title": "Où est la gare ?",
+      "description": "Demander et indiquer un chemin."
+    },
+    "33": {
+      "title": "Les transports",
+      "description": "Bus, train, vélo, voiture, avion. Acheter un billet."
+    },
+    "34": {
+      "title": "Les prépositions de lieu",
+      "description": "Devant, derrière, à côté de, en face de, entre, sur, sous."
+    },
+    "35": {
+      "title": "Prendre rendez-vous",
+      "description": "Fixer un rendez-vous (date, heure, lieu)."
+    },
+    "36": {
+      "title": "Les verbes aller et venir",
+      "description": "Conjugaison + usage (je vais à, je viens de)."
+    },
+    "37": {
+      "title": "À la pharmacie",
+      "description": "Exprimer un problème de santé simple. Acheter des médicaments."
+    },
+    "38": {
+      "title": "Météo et vêtements",
+      "description": "Il fait chaud, il pleut. Les vêtements selon la saison."
+    },
+    "39": {
+      "title": "Révision Module A1.4",
+      "description": "Quiz récapitulatif."
+    },
+    "40": {
+      "title": "Examen Module A1.4",
+      "description": "Test noté. Badge \"Voyageur\" débloqué."
+    },
+    "41": {
+      "title": "Au téléphone",
+      "description": "Passer un appel simple (allô, c'est X, je voudrais parler à…)."
+    },
+    "42": {
+      "title": "Écrire un email simple",
+      "description": "Formules de politesse, structure d'un email court."
+    },
+    "43": {
+      "title": "Les verbes être et avoir — Bilan",
+      "description": "Récapitulatif complet être/avoir au présent."
+    },
+    "44": {
+      "title": "Parler de ses loisirs",
+      "description": "Sport, musique, cinéma, lecture. Exprimer une préférence."
+    },
+    "45": {
+      "title": "Poster sur les réseaux",
+      "description": "Écrire un court post/commentaire en français."
+    },
+    "46": {
+      "title": "Les nombres de 100 à 1000",
+      "description": "Grands nombres, dates, adresses."
+    },
+    "47": {
+      "title": "C'est quand ton anniversaire ?",
+      "description": "Parler des dates, des fêtes, inviter quelqu'un."
+    },
+    "48": {
+      "title": "Bilan de communication A1",
+      "description": "Mise en situation globale : arriver à Antibes, se présenter, communiquer."
+    },
+    "49": {
+      "title": "Révision finale A1",
+      "description": "Quiz complet couvrant les 5 modules (40 questions)."
+    },
+    "50": {
+      "title": "EXAMEN FINAL A1",
+      "description": "Test certifiant. Badge \"Niveau A1 validé — Découverte\" + certificat."
+    },
+    "51": {
+      "title": "Hier, j'ai visité Cannes",
+      "description": "Introduction au passé composé avec avoir."
+    },
+    "52": {
+      "title": "Je suis allé(e) à la plage",
+      "description": "Passé composé avec être. Accord du participe passé."
+    },
+    "53": {
+      "title": "Mon week-end à Nice",
+      "description": "Lire/écrire un récit au passé composé."
+    },
+    "54": {
+      "title": "Le Festival de Cannes",
+      "description": "Reportage simplifié sur le festival. Vocabulaire du cinéma."
+    },
+    "55": {
+      "title": "Poser des questions au passé",
+      "description": "Est-ce que tu as… ? Où es-tu allé(e) ?"
+    },
+    "56": {
+      "title": "Les vacances",
+      "description": "Vocabulaire des vacances. Écrire une carte postale."
+    },
+    "57": {
+      "title": "C'était comment ?",
+      "description": "Introduction à l'imparfait (description, habitudes passées)."
+    },
+    "58": {
+      "title": "Passé composé vs Imparfait — Intro",
+      "description": "Première distinction PC/Imparfait."
+    },
+    "59": {
+      "title": "Révision A2.1",
+      "description": "Quiz récapitulatif."
+    },
+    "60": {
+      "title": "Examen A2.1",
+      "description": "Badge \"Conteur Débutant\" débloqué."
+    },
+    "61": {
+      "title": "On sort ce soir ?",
+      "description": "Proposer, accepter, refuser une sortie."
+    },
+    "62": {
+      "title": "Qu'est-ce que tu en penses ?",
+      "description": "Donner une opinion simple."
+    },
+    "63": {
+      "title": "Les émotions",
+      "description": "Content, triste, fatigué, surpris, en colère."
+    },
+    "64": {
+      "title": "Comparer",
+      "description": "Le comparatif (plus… que, moins… que, aussi… que)."
+    },
+    "65": {
+      "title": "Le superlatif",
+      "description": "Le plus, le moins, le meilleur."
+    },
+    "66": {
+      "title": "Raconter un film",
+      "description": "Résumer un film au passé."
+    },
+    "67": {
+      "title": "Écrire un avis en ligne",
+      "description": "Rédiger un avis sur un restaurant/hôtel."
+    },
+    "68": {
+      "title": "Les pronoms COD",
+      "description": "Le, la, les, l'. Remplacer le nom par le pronom."
+    },
+    "69": {
+      "title": "Révision A2.2",
+      "description": "Quiz récapitulatif."
+    },
+    "70": {
+      "title": "Examen A2.2",
+      "description": "Badge \"Social Butterfly\" débloqué."
+    },
+    "71": {
+      "title": "Les métiers",
+      "description": "Professions courantes (m/f)."
+    },
+    "72": {
+      "title": "Mon CV en français",
+      "description": "Structure d'un CV simple."
+    },
+    "73": {
+      "title": "L'entretien d'embauche",
+      "description": "Se présenter professionnellement."
+    },
+    "74": {
+      "title": "Au bureau",
+      "description": "Objets et actions du bureau."
+    },
+    "75": {
+      "title": "Le futur proche",
+      "description": "Aller + infinitif (je vais travailler)."
+    },
+    "76": {
+      "title": "Téléphoner au travail",
+      "description": "Laisser un message, prendre un rendez-vous pro."
+    },
+    "77": {
+      "title": "Écrire un email professionnel",
+      "description": "Formules formelles."
+    },
+    "78": {
+      "title": "Les pronoms COI",
+      "description": "Lui, leur, me, te."
+    },
+    "79": {
+      "title": "Révision A2.3",
+      "description": "Quiz récapitulatif."
+    },
+    "80": {
+      "title": "Examen A2.3",
+      "description": "Badge \"Pro Débutant\" débloqué."
+    },
+    "81": {
+      "title": "Le corps humain",
+      "description": "Parties du corps."
+    },
+    "82": {
+      "title": "Chez le médecin",
+      "description": "Décrire ses symptômes."
+    },
+    "83": {
+      "title": "Les verbes pronominaux",
+      "description": "Se lever, se coucher, se laver."
+    },
+    "84": {
+      "title": "Le sport en France",
+      "description": "Les sports populaires en France."
+    },
+    "85": {
+      "title": "L'impératif",
+      "description": "Donner des conseils/ordres."
+    },
+    "86": {
+      "title": "Bien manger",
+      "description": "L'alimentation équilibrée. Les repas français."
+    },
+    "87": {
+      "title": "À la plage",
+      "description": "Vocabulaire balnéaire. Plage de la Gravette à Antibes."
+    },
+    "88": {
+      "title": "Les adverbes de fréquence",
+      "description": "Toujours, souvent, parfois, jamais."
+    },
+    "89": {
+      "title": "Révision A2.4",
+      "description": "Quiz récapitulatif."
+    },
+    "90": {
+      "title": "Examen A2.4",
+      "description": "Badge \"Bien dans sa peau\" débloqué."
+    },
+    "91": {
+      "title": "Les régions de France",
+      "description": "Carte interactive de France."
+    },
+    "92": {
+      "title": "Les fêtes françaises",
+      "description": "Noël, 14 juillet, Toussaint, Pâques."
+    },
+    "93": {
+      "title": "La gastronomie française",
+      "description": "Spécialités régionales."
+    },
+    "94": {
+      "title": "PC vs Imparfait — Approfondissement",
+      "description": "Distinction approfondie dans des contextes narratifs."
+    },
+    "95": {
+      "title": "Raconter un souvenir d'enfance",
+      "description": "Quand j'étais petit(e)…"
+    },
+    "96": {
+      "title": "La musique française",
+      "description": "Écouter des extraits, identifier le genre."
+    },
+    "97": {
+      "title": "Écrire une lettre amicale",
+      "description": "Structure d'une lettre/email amical(e)."
+    },
+    "98": {
+      "title": "Bilan de communication A2",
+      "description": "Mise en situation globale."
+    },
+    "99": {
+      "title": "Révision finale A2",
+      "description": "Quiz complet (40 questions)."
+    },
+    "100": {
+      "title": "EXAMEN FINAL A2",
+      "description": "Test certifiant. Badge \"Niveau A2 validé — Survie\" + certificat."
+    },
+    "101": {
+      "title": "Je pense que…",
+      "description": "Donner son opinion. Indicatif vs subjonctif (intro)."
+    },
+    "102": {
+      "title": "Le subjonctif présent — Introduction",
+      "description": "Formation du subjonctif. Il faut que, je veux que."
+    },
+    "103": {
+      "title": "Débattre poliment",
+      "description": "Exprimer le désaccord poliment."
+    },
+    "104": {
+      "title": "Les médias français",
+      "description": "Lire un article simplifié. Écouter un flash info."
+    },
+    "105": {
+      "title": "Écrire un essai simple",
+      "description": "Structure : introduction, arguments, conclusion. 150 mots."
+    },
+    "106": {
+      "title": "Les pronoms relatifs : qui, que, où",
+      "description": "Combiner deux phrases avec le bon pronom relatif."
+    },
+    "107": {
+      "title": "La presse et les fake news",
+      "description": "Identifier une source fiable. Analyser un article."
+    },
+    "108": {
+      "title": "Exprimer la cause et la conséquence",
+      "description": "Parce que, donc, c'est pourquoi, grâce à, à cause de."
+    },
+    "109": {
+      "title": "Révision B1.1",
+      "description": "Quiz récapitulatif."
+    },
+    "110": {
+      "title": "Examen B1.1",
+      "description": "Badge \"Penseur Critique\" débloqué."
+    },
+    "111": {
+      "title": "Réserver un hôtel",
+      "description": "Téléphoner/écrire pour réserver."
+    },
+    "112": {
+      "title": "Raconter un voyage",
+      "description": "Utiliser les temps du passé de manière fluide."
+    },
+    "113": {
+      "title": "Le conditionnel présent",
+      "description": "Formation et usage (politesse, hypothèse, souhait)."
+    },
+    "114": {
+      "title": "Si j'avais le temps…",
+      "description": "L'hypothèse avec si + imparfait → conditionnel."
+    },
+    "115": {
+      "title": "Résoudre un problème",
+      "description": "Se plaindre poliment."
+    },
+    "116": {
+      "title": "Les transports en France",
+      "description": "TGV, métro, covoiturage, avion."
+    },
+    "117": {
+      "title": "La France d'outre-mer",
+      "description": "Guadeloupe, Martinique, Réunion."
+    },
+    "118": {
+      "title": "Écrire une réclamation",
+      "description": "Rédiger un email de réclamation poli et structuré."
+    },
+    "119": {
+      "title": "Révision B1.2",
+      "description": "Quiz récapitulatif."
+    },
+    "120": {
+      "title": "Examen B1.2",
+      "description": "Badge \"Globe-Trotter\" débloqué."
+    },
+    "121": {
+      "title": "Chercher un logement",
+      "description": "Lire des annonces immobilières."
+    },
+    "122": {
+      "title": "La vie en colocation",
+      "description": "Écouter un témoignage. Règles de vie commune."
+    },
+    "123": {
+      "title": "Les tâches ménagères",
+      "description": "Pronoms EN et Y."
+    },
+    "124": {
+      "title": "Gérer son budget",
+      "description": "Lire un relevé bancaire simplifié."
+    },
+    "125": {
+      "title": "Le discours indirect au présent",
+      "description": "Il dit que, elle demande si."
+    },
+    "126": {
+      "title": "Chez le banquier",
+      "description": "Ouvrir un compte, demander un prêt."
+    },
+    "127": {
+      "title": "Les démarches administratives",
+      "description": "Remplir un formulaire officiel."
+    },
+    "128": {
+      "title": "La technologie au quotidien",
+      "description": "Vocabulaire numérique."
+    },
+    "129": {
+      "title": "Révision B1.3",
+      "description": "Quiz récapitulatif."
+    },
+    "130": {
+      "title": "Examen B1.3",
+      "description": "Badge \"Autonome\" débloqué."
+    },
+    "131": {
+      "title": "Le système éducatif français",
+      "description": "École, collège, lycée, université."
+    },
+    "132": {
+      "title": "S'inscrire à l'université",
+      "description": "Lettre de motivation, Campus France."
+    },
+    "133": {
+      "title": "Le gérondif",
+      "description": "En + participe présent."
+    },
+    "134": {
+      "title": "Prendre des notes",
+      "description": "Écouter un cours → prendre des notes structurées."
+    },
+    "135": {
+      "title": "Présenter un exposé",
+      "description": "Structure (intro, développement, conclusion)."
+    },
+    "136": {
+      "title": "Le passif",
+      "description": "Formation et usage."
+    },
+    "137": {
+      "title": "La vie étudiante en France",
+      "description": "Bourses, restos U, associations."
+    },
+    "138": {
+      "title": "Rédiger un résumé",
+      "description": "Technique du résumé. Résumer en 80 mots."
+    },
+    "139": {
+      "title": "Révision B1.4",
+      "description": "Quiz récapitulatif."
+    },
+    "140": {
+      "title": "Examen B1.4",
+      "description": "Badge \"Étudiant Modèle\" débloqué."
+    },
+    "141": {
+      "title": "L'environnement",
+      "description": "Vocabulaire écologique. Débattre sur l'écologie."
+    },
+    "142": {
+      "title": "Le cinéma français",
+      "description": "Écouter un extrait de film. Lire une critique."
+    },
+    "143": {
+      "title": "L'art de vivre à la française",
+      "description": "La bise, l'apéro, les terrasses."
+    },
+    "144": {
+      "title": "Le subjonctif — Approfondissement",
+      "description": "Après les expressions de sentiment, de doute."
+    },
+    "145": {
+      "title": "Écrire une critique",
+      "description": "Critique de film/livre/restaurant (150-200 mots)."
+    },
+    "146": {
+      "title": "Les stéréotypes culturels",
+      "description": "Discuter des stéréotypes. Nuancer."
+    },
+    "147": {
+      "title": "La littérature française — Premiers pas",
+      "description": "Extraits simplifiés (Le Petit Prince, Les Misérables)."
+    },
+    "148": {
+      "title": "Bilan de communication B1",
+      "description": "Débattre, raconter, argumenter, écrire un essai."
+    },
+    "149": {
+      "title": "Révision finale B1",
+      "description": "Quiz complet (40 questions)."
+    },
+    "150": {
+      "title": "EXAMEN FINAL B1",
+      "description": "Test certifiant. Badge \"Niveau B1 validé — Seuil\" + certificat."
+    },
+    "151": {
+      "title": "Structurer un argument",
+      "description": "Thèse, antithèse, synthèse. Connecteurs avancés."
+    },
+    "152": {
+      "title": "Le conditionnel passé",
+      "description": "J'aurais aimé, il aurait fallu. Exprimer le regret."
+    },
+    "153": {
+      "title": "L'hypothèse irréelle",
+      "description": "Si + plus-que-parfait → conditionnel passé."
+    },
+    "154": {
+      "title": "Analyser un discours",
+      "description": "Écouter un discours. Identifier les techniques de persuasion."
+    },
+    "155": {
+      "title": "Rédiger un essai argumentatif",
+      "description": "250 mots minimum, format DELF B2."
+    },
+    "156": {
+      "title": "Le subjonctif passé",
+      "description": "Bien qu'il ait fait, avant qu'elle soit partie."
+    },
+    "157": {
+      "title": "Débat contradictoire",
+      "description": "Défendre une position, réfuter, concéder."
+    },
+    "158": {
+      "title": "Les registres de langue",
+      "description": "Familier, courant, soutenu."
+    },
+    "159": {
+      "title": "Révision B2.1",
+      "description": "Quiz récapitulatif."
+    },
+    "160": {
+      "title": "Examen B2.1",
+      "description": "Badge \"Orateur\" débloqué."
+    },
+    "161": {
+      "title": "La lettre de motivation avancée",
+      "description": "Rédiger une lettre convaincante et personnalisée."
+    },
+    "162": {
+      "title": "L'entretien d'embauche avancé",
+      "description": "Questions pièges, forces/faiblesses."
+    },
+    "163": {
+      "title": "Animer une réunion",
+      "description": "Ouvrir, distribuer la parole, synthétiser, conclure."
+    },
+    "164": {
+      "title": "Le discours indirect au passé",
+      "description": "Concordance des temps."
+    },
+    "165": {
+      "title": "Rédiger un compte-rendu",
+      "description": "Notes de réunion → compte-rendu structuré."
+    },
+    "166": {
+      "title": "Négocier",
+      "description": "Proposer, contre-proposer, compromis."
+    },
+    "167": {
+      "title": "La culture d'entreprise française",
+      "description": "Hiérarchie, pause déjeuner, congés payés, 35h."
+    },
+    "168": {
+      "title": "Les nominalisations",
+      "description": "Verbes → noms (augmenter → augmentation)."
+    },
+    "169": {
+      "title": "Révision B2.2",
+      "description": "Quiz récapitulatif."
+    },
+    "170": {
+      "title": "Examen B2.2",
+      "description": "Badge \"Manager\" débloqué."
+    },
+    "171": {
+      "title": "L'actualité française",
+      "description": "Journal radio. Article de presse."
+    },
+    "172": {
+      "title": "Les expressions idiomatiques",
+      "description": "20 expressions courantes."
+    },
+    "173": {
+      "title": "La politique française",
+      "description": "Président, Assemblée nationale, Sénat."
+    },
+    "174": {
+      "title": "Les doubles pronoms",
+      "description": "Je le lui donne, il me l'a dit."
+    },
+    "175": {
+      "title": "Écrire un article de blog",
+      "description": "Article de 300 mots sur un sujet de société."
+    },
+    "176": {
+      "title": "L'humour français",
+      "description": "Comprendre des blagues, de l'ironie, du second degré."
+    },
+    "177": {
+      "title": "Les relations sociales complexes",
+      "description": "Reproche, excuses, justification nuancée."
+    },
+    "178": {
+      "title": "Le participe présent et l'adjectif verbal",
+      "description": "Différence entre -ant (participe) et -ant (adjectif)."
+    },
+    "179": {
+      "title": "Révision B2.3",
+      "description": "Quiz récapitulatif."
+    },
+    "180": {
+      "title": "Examen B2.3",
+      "description": "Badge \"Citoyen Informé\" débloqué."
+    },
+    "181": {
+      "title": "La littérature française",
+      "description": "Extraits de Camus, Maupassant, Prévert."
+    },
+    "182": {
+      "title": "Écrire une nouvelle courte",
+      "description": "Techniques narratives (description, dialogue, suspense)."
+    },
+    "183": {
+      "title": "Le passé simple",
+      "description": "Reconnaissance à l'écrit."
+    },
+    "184": {
+      "title": "La chanson française",
+      "description": "Brel, Piaf, Stromae. Analyser des paroles."
+    },
+    "185": {
+      "title": "L'art contemporain",
+      "description": "Décrire une œuvre d'art."
+    },
+    "186": {
+      "title": "Le cinéma d'auteur",
+      "description": "Analyse d'une séquence filmique."
+    },
+    "187": {
+      "title": "Les figures de style",
+      "description": "Métaphore, ironie, hyperbole, litote."
+    },
+    "188": {
+      "title": "Écrire une critique culturelle",
+      "description": "300 mots, ton soutenu, argumentation structurée."
+    },
+    "189": {
+      "title": "Révision B2.4",
+      "description": "Quiz récapitulatif."
+    },
+    "190": {
+      "title": "Examen B2.4",
+      "description": "Badge \"Critique Littéraire\" débloqué."
+    },
+    "191": {
+      "title": "Les connecteurs logiques avancés",
+      "description": "En dépit de, quand bien même, d'autant plus que."
+    },
+    "192": {
+      "title": "La synthèse de documents",
+      "description": "2 documents → synthèse (format DALF)."
+    },
+    "193": {
+      "title": "Présentation orale formelle",
+      "description": "Présenter un sujet complexe pendant 3-5 minutes."
+    },
+    "194": {
+      "title": "L'accord du participe passé — Cas complexes",
+      "description": "Avec les pronoms COD antéposés."
+    },
+    "195": {
+      "title": "La francophonie",
+      "description": "Le français dans le monde."
+    },
+    "196": {
+      "title": "Les nuances de sens",
+      "description": "Synonymes proches mais différents."
+    },
+    "197": {
+      "title": "Simulation DELF B2",
+      "description": "Épreuve blanche complète format DELF B2."
+    },
+    "198": {
+      "title": "Bilan de communication B2",
+      "description": "Négocier, argumenter, rédiger, analyser."
+    },
+    "199": {
+      "title": "Révision finale B2",
+      "description": "Quiz complet (50 questions)."
+    },
+    "200": {
+      "title": "EXAMEN FINAL B2",
+      "description": "Test certifiant. Badge \"Niveau B2 validé — Avancé\" + certificat."
+    },
+    "201": {
+      "title": "Les temps littéraires",
+      "description": "Passé simple, passé antérieur, subjonctif imparfait."
+    },
+    "202": {
+      "title": "L'essai philosophique",
+      "description": "Rédiger un essai sur un sujet abstrait."
+    },
+    "203": {
+      "title": "Comprendre un débat télévisé",
+      "description": "Écouter un débat authentique."
+    },
+    "204": {
+      "title": "La concession et l'opposition avancées",
+      "description": "Quoique, bien que, encore que, pour autant."
+    },
+    "205": {
+      "title": "Le français académique",
+      "description": "Style académique, citations, bibliographie."
+    },
+    "206": {
+      "title": "L'argumentation sophistiquée",
+      "description": "Réfuter, nuancer, concéder avec subtilité."
+    },
+    "207": {
+      "title": "Les registres littéraires",
+      "description": "Tragique, comique, satirique, lyrique."
+    },
+    "208": {
+      "title": "Rédaction avancée : cohésion textuelle",
+      "description": "Anaphores, reprises nominales, thème/rhème."
+    },
+    "209": {
+      "title": "Révision C1.1",
+      "description": "Quiz avancé."
+    },
+    "210": {
+      "title": "Examen C1.1",
+      "description": "Badge \"Intellectuel\" débloqué."
+    },
+    "211": {
+      "title": "Rédiger un rapport professionnel",
+      "description": "Structure, ton, recommandations. 500 mots."
+    },
+    "212": {
+      "title": "Présentation conférence",
+      "description": "Présenter devant un public expert (10 minutes)."
+    },
+    "213": {
+      "title": "Le français juridique — Introduction",
+      "description": "Contrats, clauses, vocabulaire juridique."
+    },
+    "214": {
+      "title": "Le français des affaires",
+      "description": "Négociation commerciale avancée."
+    },
+    "215": {
+      "title": "Le discours rapporté complexe",
+      "description": "Changements de repères temporels et spatiaux."
+    },
+    "216": {
+      "title": "Rédiger un communiqué de presse",
+      "description": "Format, ton journalistique, les 5W."
+    },
+    "217": {
+      "title": "Le français diplomatique",
+      "description": "Euphémismes, formules de politesse extrême."
+    },
+    "218": {
+      "title": "Étude de cas complète",
+      "description": "Analyser → présenter → rédiger un memo."
+    },
+    "219": {
+      "title": "Révision C1.2",
+      "description": "Quiz avancé."
+    },
+    "220": {
+      "title": "Examen C1.2",
+      "description": "Badge \"Expert Professionnel\" débloqué."
+    },
+    "221": {
+      "title": "La philosophie française",
+      "description": "Descartes, Sartre, Beauvoir, Foucault."
+    },
+    "222": {
+      "title": "L'histoire de France — Grands moments",
+      "description": "De la Révolution à la Ve République."
+    },
+    "223": {
+      "title": "La francophonie avancée",
+      "description": "Littérature africaine, québécoise, suisse romande."
+    },
+    "224": {
+      "title": "Les implicites culturels",
+      "description": "Comprendre l'implicite, le non-dit."
+    },
+    "225": {
+      "title": "Le système social français",
+      "description": "Sécurité sociale, retraites, éducation."
+    },
+    "226": {
+      "title": "L'urbanisme et l'architecture",
+      "description": "Haussmann, Le Corbusier, la Promenade des Anglais."
+    },
+    "227": {
+      "title": "La gastronomie comme patrimoine",
+      "description": "Patrimoine UNESCO, grands chefs."
+    },
+    "228": {
+      "title": "Écrire un essai de civilisation",
+      "description": "400 mots sur un aspect de la culture française."
+    },
+    "229": {
+      "title": "Révision C1.3",
+      "description": "Quiz avancé."
+    },
+    "230": {
+      "title": "Examen C1.3",
+      "description": "Badge \"Francophile\" débloqué."
+    },
+    "231": {
+      "title": "Analyser un documentaire",
+      "description": "Regarder un extrait → analyse critique."
+    },
+    "232": {
+      "title": "Le journalisme d'opinion",
+      "description": "Éditorial, chronique, billet d'humeur."
+    },
+    "233": {
+      "title": "La rhétorique",
+      "description": "Ethos, pathos, logos."
+    },
+    "234": {
+      "title": "Les anglicismes et néologismes",
+      "description": "Évolution de la langue française."
+    },
+    "235": {
+      "title": "Rédiger un éditorial",
+      "description": "350 mots, style journalistique."
+    },
+    "236": {
+      "title": "La satire et la caricature",
+      "description": "Comprendre l'humour satirique français."
+    },
+    "237": {
+      "title": "Podcast et radio",
+      "description": "Écouter un podcast long → résumé structuré."
+    },
+    "238": {
+      "title": "La communication de crise",
+      "description": "Rédiger un communiqué, gérer une interview difficile."
+    },
+    "239": {
+      "title": "Révision C1.4",
+      "description": "Quiz avancé."
+    },
+    "240": {
+      "title": "Examen C1.4",
+      "description": "Badge \"Communicant\" débloqué."
+    },
+    "241": {
+      "title": "Les subtilités grammaticales",
+      "description": "Ne explétif, subjonctif après superlatif, inversion."
+    },
+    "242": {
+      "title": "La traduction littéraire",
+      "description": "Traduire un court passage littéraire."
+    },
+    "243": {
+      "title": "Le français oral authentique",
+      "description": "Comprendre des locuteurs rapides, argot, élisions."
+    },
+    "244": {
+      "title": "Rédiger une lettre ouverte",
+      "description": "Genre littéraire engagé. J'accuse (Zola)."
+    },
+    "245": {
+      "title": "Soutenir une thèse complexe",
+      "description": "Présentation argumentée de 10 minutes."
+    },
+    "246": {
+      "title": "Simulation DALF C1",
+      "description": "Épreuve blanche complète format DALF C1."
+    },
+    "247": {
+      "title": "Les variétés du français",
+      "description": "Accents régionaux, français canadien, africain."
+    },
+    "248": {
+      "title": "Bilan de communication C1",
+      "description": "Mise en situation experte."
+    },
+    "249": {
+      "title": "Révision finale C1",
+      "description": "Quiz complet (50 questions)."
+    },
+    "250": {
+      "title": "EXAMEN FINAL C1",
+      "description": "Test certifiant. Badge \"Niveau C1 validé — Autonome\" + certificat."
+    },
+    "251": {
+      "title": "Les archaïsmes et raretés grammaticales",
+      "description": "Subjonctif imparfait actif, concordance littéraire."
+    },
+    "252": {
+      "title": "La stylistique avancée",
+      "description": "Analyser et imiter le style d'un auteur."
+    },
+    "253": {
+      "title": "Comprendre tout type de discours oral",
+      "description": "Conférence, stand-up, plaidoirie."
+    },
+    "254": {
+      "title": "Rédiger un mémoire (introduction)",
+      "description": "Problématique, plan détaillé, bibliographie."
+    },
+    "255": {
+      "title": "Le français soutenu et littéraire",
+      "description": "Maîtriser le style soutenu sans être artificiel."
+    },
+    "256": {
+      "title": "Improviser un discours",
+      "description": "5 minutes d'improvisation structurée."
+    },
+    "257": {
+      "title": "Analyse critique d'un texte philosophique",
+      "description": "Lire un extrait → rédiger un commentaire."
+    },
+    "258": {
+      "title": "Les registres du français oral",
+      "description": "Du verlan à la langue de Molière."
+    },
+    "259": {
+      "title": "Révision C2.1",
+      "description": "Quiz expert."
+    },
+    "260": {
+      "title": "Examen C2.1",
+      "description": "Badge \"Virtuose\" débloqué."
+    },
+    "261": {
+      "title": "Écrire de la poésie",
+      "description": "Versification, rimes, figures de style."
+    },
+    "262": {
+      "title": "La nouvelle littéraire",
+      "description": "Écrire une nouvelle de 500 mots."
+    },
+    "263": {
+      "title": "Le théâtre français",
+      "description": "Molière/Ionesco. Mise en voix."
+    },
+    "264": {
+      "title": "L'art du résumé expert",
+      "description": "1000 mots → 100 mots."
+    },
+    "265": {
+      "title": "Convaincre un jury",
+      "description": "Simulation de grand oral."
+    },
+    "266": {
+      "title": "L'humour et le jeu de mots",
+      "description": "Calembours, mots d'esprit."
+    },
+    "267": {
+      "title": "La traduction avancée",
+      "description": "Traduire texte technique et littéraire."
+    },
+    "268": {
+      "title": "Rédiger un discours",
+      "description": "Écrire et prononcer un discours de 5 minutes."
+    },
+    "269": {
+      "title": "Révision C2.2",
+      "description": "Quiz expert."
+    },
+    "270": {
+      "title": "Examen C2.2",
+      "description": "Badge \"Créateur\" débloqué."
+    },
+    "271": {
+      "title": "Le français juridique avancé",
+      "description": "Analyse de contrat, de jurisprudence."
+    },
+    "272": {
+      "title": "Le français scientifique",
+      "description": "Abstract scientifique → note de synthèse."
+    },
+    "273": {
+      "title": "Le français médical",
+      "description": "Terminologie médicale courante."
+    },
+    "274": {
+      "title": "Le français diplomatique avancé",
+      "description": "Note diplomatique. Négociation multilatérale."
+    },
+    "275": {
+      "title": "La sociolinguistique",
+      "description": "Variations sociales, langue et pouvoir."
+    },
+    "276": {
+      "title": "Le français des médias spécialisés",
+      "description": "Podcast économique, scientifique ou juridique."
+    },
+    "277": {
+      "title": "Rédiger un article de recherche",
+      "description": "Introduction + méthodologie (format académique)."
+    },
+    "278": {
+      "title": "Interpréter et reformuler",
+      "description": "Écouter un discours complexe → reformuler."
+    },
+    "279": {
+      "title": "Révision C2.3",
+      "description": "Quiz expert."
+    },
+    "280": {
+      "title": "Examen C2.3",
+      "description": "Badge \"Spécialiste\" débloqué."
+    },
+    "281": {
+      "title": "La francophonie politique",
+      "description": "L'OIF, la politique linguistique française."
+    },
+    "282": {
+      "title": "Littérature francophone contemporaine",
+      "description": "Auteurs africains, caribéens, maghrébins."
+    },
+    "283": {
+      "title": "Les enjeux géopolitiques",
+      "description": "La France et l'Europe, les relations internationales."
+    },
+    "284": {
+      "title": "L'économie française",
+      "description": "CAC 40, start-up, French Tech."
+    },
+    "285": {
+      "title": "Le français et l'intelligence artificielle",
+      "description": "L'avenir de la langue française à l'ère numérique."
+    },
+    "286": {
+      "title": "Écrire pour influencer",
+      "description": "Écriture persuasive, storytelling."
+    },
+    "287": {
+      "title": "La diplomatie culturelle",
+      "description": "Alliance Française, Institut Français."
+    },
+    "288": {
+      "title": "Simulation DALF C2",
+      "description": "Épreuve blanche complète format DALF C2."
+    },
+    "289": {
+      "title": "Révision C2.4",
+      "description": "Quiz expert."
+    },
+    "290": {
+      "title": "Examen C2.4",
+      "description": "Badge \"Diplomate\" débloqué."
+    },
+    "291": {
+      "title": "Les pièges ultimes de la langue",
+      "description": "Barbarismes, solécismes, pléonasmes."
+    },
+    "292": {
+      "title": "L'art de la conversation française",
+      "description": "Small talk, art de la table, joute verbale."
+    },
+    "293": {
+      "title": "Écrire comme un natif",
+      "description": "Rédiger un texte indiscernable d'un natif cultivé."
+    },
+    "294": {
+      "title": "Comprendre l'implicite absolu",
+      "description": "Ironie, sous-entendus, références culturelles."
+    },
+    "295": {
+      "title": "La langue française : histoire et évolution",
+      "description": "Du latin au français moderne."
+    },
+    "296": {
+      "title": "Masterclass de rédaction",
+      "description": "500 mots de qualité publiable."
+    },
+    "297": {
+      "title": "Masterclass d'éloquence",
+      "description": "Discours de 10 minutes filmé et auto-évalué."
+    },
+    "298": {
+      "title": "Bilan final C2",
+      "description": "Épreuve globale ultime."
+    },
+    "299": {
+      "title": "Révision finale C2",
+      "description": "Quiz complet (60 questions)."
+    },
+    "300": {
+      "title": "EXAMEN FINAL C2",
+      "description": "Test certifiant. Badge \"Maître du Français\" + certificat."
+    }
+  }
+}
