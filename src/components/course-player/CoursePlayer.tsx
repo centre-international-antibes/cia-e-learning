@@ -195,53 +195,29 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
      footer bleed through). Combined with body scroll lock above. */
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-background flex flex-col lg:flex-row"
-      style={{ isolation: 'isolate' }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col lg:flex-row overflow-hidden"
+      style={{ isolation: 'isolate', height: '100dvh' }}
     >
       {/* ===== MOBILE top bar (sticky) ===== */}
       <header
-        className="lg:hidden sticky top-0 z-20 bg-card/95 backdrop-blur-md border-b border-ink-100 px-4 py-3 flex items-center gap-3"
+        className="lg:hidden shrink-0 z-20 bg-card/95 backdrop-blur-md border-b border-ink-100 px-4 pt-safe pb-3 flex items-center gap-3"
       >
         <Button
           variant="ghost"
           size="icon"
           onClick={onExit}
           aria-label={t('player.exit')}
-          className="shrink-0"
+          className="shrink-0 mt-3"
         >
           <X className="h-5 w-5" />
         </Button>
-        <motion.div
-          animate={mascotMood === 'idle' ? { scale: 1 } : { scale: [1, 1.1, 1] }}
-          transition={{ duration: 0.5 }}
-          className="shrink-0"
-        >
-          <SparkMini size={40} />
-        </motion.div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[.15em] text-muted-foreground mb-1">
-            <span className="tabular-nums">
-              {Math.min(currentStep + 1, totalSteps)} / {totalSteps}
-            </span>
-            {xpPreview > 0 && (
-              <span className="font-display font-bold text-cia-blue-700 tabular-nums">
-                +{xpPreview} XP
-              </span>
-            )}
-          </div>
-          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
-            <motion.div
-              className="absolute inset-y-0 left-0 rounded-full bg-cia-blue-500"
-              initial={false}
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
-        </div>
+        <p className="flex-1 min-w-0 mt-3 truncate font-mono text-[10px] uppercase tracking-[.2em] text-muted-foreground">
+          {courseTitle}
+        </p>
       </header>
 
       {/* ===== DESKTOP sidebar + main ===== */}
-      <div className="flex-1 lg:grid lg:grid-cols-12 lg:overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12 lg:overflow-hidden">
         {/* Sidebar desktop (col-span-3) */}
         <aside
           className="hidden lg:flex lg:col-span-3 bg-cia-blue-500 text-white flex-col items-center justify-between p-6 sticky top-0 h-screen"
@@ -330,8 +306,8 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
         </aside>
 
         {/* Main zone step */}
-        <main className="lg:col-span-9 flex-1 overflow-y-auto">
-          <div className="px-4 py-8 lg:px-8 lg:py-12 max-w-3xl mx-auto w-full">
+        <main className="lg:col-span-9 flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+          <div className="px-4 py-6 lg:px-8 lg:py-12 max-w-3xl mx-auto w-full pb-[180px] lg:pb-12">
             <AnimatePresence mode="wait" initial={false}>
               {!completed && step && (
                 <motion.div
@@ -367,6 +343,68 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
           </div>
         </main>
       </div>
+
+      {/* ===== MOBILE bottom dock ===== */}
+      {!completed && (
+        <div
+          className="lg:hidden shrink-0 relative z-30 bg-cia-blue-500 text-white rounded-t-2xl shadow-elev-lg px-4 pt-3 pb-safe"
+          aria-label="Tableau de bord de leçon"
+        >
+          {/* Bulle de feedback ancrée au-dessus du Spark */}
+          <AnimatePresence>
+            {bubble && (
+              <motion.div
+                key={bubble.text}
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                className="absolute -top-12 left-4 max-w-[70%] bg-white text-foreground border-2 border-cia-spark-mid/30 rounded-2xl px-3 py-2 shadow-elev-lg"
+              >
+                <p className="text-xs font-semibold leading-snug">{bubble.text}</p>
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-[7px] left-6 h-3 w-3 rotate-45 bg-white border-r-2 border-b-2 border-cia-spark-mid/30"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={mascotMood === 'idle' ? { scale: 1 } : { scale: [1, 1.15, 1] }}
+              transition={{ duration: 0.5 }}
+              className="shrink-0"
+            >
+              <Spark mood={mascotMood} size={52} halo />
+            </motion.div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[.2em] text-white/70 mb-1.5">
+                <span className="tabular-nums">
+                  {t('player.step')} {Math.min(currentStep + 1, totalSteps)} / {totalSteps}
+                </span>
+                <motion.span
+                  key={`m-score-${scoreBump}`}
+                  initial={reduced ? false : { scale: 0.9, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 18 }}
+                  className="font-display font-extrabold text-sm text-white tabular-nums"
+                >
+                  +{xpPreview} XP
+                </motion.span>
+              </div>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded-full bg-g-shine"
+                  initial={false}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body,
   );
