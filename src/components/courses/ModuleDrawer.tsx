@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Clock, Sparkles, Lock, Check, Play, Circle } from 'lucide-react';
+import { ArrowRight, Clock, Sparkles, Lock, Check, Play, Circle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +15,7 @@ export interface DrawerLessonItem {
   id: number;
   title: string;
   completed: boolean;
+  href?: string;
 }
 
 interface ModuleDrawerProps {
@@ -77,8 +78,8 @@ export function ModuleDrawer(props: ModuleDrawerProps) {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="text-center pb-2">
+      <DrawerContent className="max-h-[90vh] flex flex-col">
+        <DrawerHeader className="text-center pb-2 shrink-0">
           {/* Hero icon : fond bleu pur charte v2 (gradient or → bleu interdit) */}
           <div className="mx-auto h-20 w-20 rounded-2xl bg-cia-blue-50 dark:bg-cia-blue-900/40 flex items-center justify-center mb-3 shadow-md">
             {renderHeroIcon()}
@@ -98,13 +99,22 @@ export function ModuleDrawer(props: ModuleDrawerProps) {
               {theme}
             </DrawerDescription>
           )}
+
+          {/* Meta inline discrète : remplace la grille 3 stats */}
+          <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="tabular-nums">{durationMinutes} min</span>
+            </span>
+            <span aria-hidden>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Sparkles className="h-3.5 w-3.5 text-cia-blue-500" />
+              <span className="tabular-nums">+{xpReward} XP</span>
+            </span>
+          </div>
         </DrawerHeader>
 
-        <div className="px-6 py-4 space-y-4">
-          {description && (
-            <p className="text-sm text-foreground/85 leading-relaxed">{description}</p>
-          )}
-
+        <div className="px-6 py-4 space-y-4 flex-1 overflow-y-auto overscroll-contain">
           {/* Suivi d'avancement — toujours visible, même à 0 % */}
           <div
             className={`rounded-2xl p-4 border ${
@@ -142,51 +152,26 @@ export function ModuleDrawer(props: ModuleDrawerProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-muted/40 rounded-xl p-3 text-center">
-              <BookOpen className="h-4 w-4 mx-auto mb-1 text-cia-blue-500" />
-              <div className="font-display font-bold tabular-nums">
-                {completedLessons}<span className="text-muted-foreground">/{totalLessons}</span>
-              </div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t('curriculum.drawer.lessons')}</div>
-            </div>
-            <div className="bg-muted/40 rounded-xl p-3 text-center">
-              <Clock className="h-4 w-4 mx-auto mb-1 text-cia-blue-500" />
-              <div className="font-display font-bold tabular-nums">{durationMinutes}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t('curriculum.drawer.minutes')}</div>
-            </div>
-            {/* Carte XP : fond bleu charte + dot micro-gradient `g-sun` charte v2 §3
-                (or autorisé uniquement via micro-gradient, pas en aplat). */}
-            <div className="bg-cia-blue-50 dark:bg-cia-blue-900/40 rounded-xl p-3 text-center relative">
-              <div className="h-4 w-4 mx-auto mb-1 rounded-full bg-g-sun flex items-center justify-center shadow-sm">
-                <Sparkles className="h-2.5 w-2.5 text-white" />
-              </div>
-              <div className="font-display font-bold text-cia-blue-700 dark:text-cia-blue-300 tabular-nums">+{xpReward}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">XP</div>
-            </div>
-          </div>
-
           {lessons.length > 0 && (
             <div>
               <h3 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground mb-2">
                 {t('curriculum.drawer.lessons_list', { defaultValue: 'Leçons du module' })}
               </h3>
-              <ul className="max-h-[260px] overflow-y-auto pr-1 -mr-1 space-y-1.5">
+              <ul className="space-y-1.5">
                 {lessons.map((l, i) => {
                   const isNext = !isLockedState && i === nextLessonIdx;
-                  return (
-                    <li
-                      key={l.id}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-sm ${
-                        l.completed
-                          ? 'bg-success-50/60 dark:bg-success-900/20 border-success-200/50 dark:border-success-800/40'
-                          : isNext
-                            ? 'bg-cia-blue-50 dark:bg-cia-blue-900/30 border-cia-blue-200 dark:border-cia-blue-700 ring-1 ring-cia-blue-500/30'
-                            : isLockedState
-                              ? 'bg-muted/40 border-transparent opacity-60'
-                              : 'bg-card border-border/50'
-                      }`}
-                    >
+                  const clickable = !isLockedState && !!l.href;
+                  const baseClass = `flex items-center gap-3 px-3 py-2 rounded-lg border text-sm w-full text-left transition-colors ${
+                    l.completed
+                      ? 'bg-card hover:bg-success-50/60 dark:hover:bg-success-900/20 border-border/50'
+                      : isNext
+                        ? 'bg-card hover:bg-cia-blue-50 dark:hover:bg-cia-blue-900/30 border-cia-blue-200 dark:border-cia-blue-700 ring-1 ring-cia-blue-500/30'
+                        : isLockedState
+                          ? 'bg-muted/40 border-transparent opacity-60 cursor-not-allowed'
+                          : 'bg-card hover:bg-muted/40 border-border/50'
+                  }`;
+                  const inner = (
+                    <>
                       <span className="font-mono text-[11px] tabular-nums text-muted-foreground w-5 shrink-0">
                         {String(i + 1).padStart(2, '0')}
                       </span>
@@ -200,8 +185,23 @@ export function ModuleDrawer(props: ModuleDrawerProps) {
                           <Play className="h-3.5 w-3.5 fill-current" />
                           {t('curriculum.drawer.next_lesson', { defaultValue: 'Prochaine' })}
                         </span>
+                      ) : isLockedState ? (
+                        <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
                       ) : (
                         <Circle className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                      )}
+                    </>
+                  );
+                  return (
+                    <li key={l.id}>
+                      {clickable ? (
+                        <Link to={l.href!} onClick={() => onOpenChange(false)} className={baseClass}>
+                          {inner}
+                        </Link>
+                      ) : (
+                        <div className={baseClass} aria-disabled>
+                          {inner}
+                        </div>
                       )}
                     </li>
                   );
@@ -211,7 +211,7 @@ export function ModuleDrawer(props: ModuleDrawerProps) {
           )}
         </div>
 
-        <DrawerFooter className="pt-2">
+        <DrawerFooter className="pt-2 shrink-0">
           {state === 'locked' ? (
             <Button variant="outline" disabled className="w-full">
               <Lock className="h-4 w-4 mr-2" /> {ctaLabel}
