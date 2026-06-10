@@ -8,6 +8,8 @@ import type { Module } from '@/data/curriculum';
 import { getCourseContent } from '@/data/course-content';
 import { isModuleUnlocked, isModuleComplete } from '@/hooks/useModuleUnlock';
 import { readCourseProgressMap, type CourseProgressMap } from '@/lib/courseProgress';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
+import { useTranslation } from 'react-i18next';
 
 interface LearningPathProps {
   modules: Module[];
@@ -72,20 +74,22 @@ function ModulePopup({ mod, state, progress, onClose, index }: {
 function PopupContent({ mod, state, progress, saved, onClose }: {
   mod: Module; state: NodeState; progress: number; saved: CourseProgressMap; onClose: () => void;
 }) {
+  const ci = useCurriculumI18n();
+  const { t } = useTranslation();
   return (
     <>
       <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">{mod.badgeEmoji}</span>
         <div className="flex-1 min-w-0">
-          <p className="font-display text-sm leading-tight">{mod.title}</p>
-          <p className="text-[11px] text-muted-foreground truncate">{mod.theme}</p>
+          <p className="font-display text-sm leading-tight">{ci.moduleTitle(mod.id, mod.title)}</p>
+          <p className="text-[11px] text-muted-foreground truncate">{ci.moduleTheme(mod.id, mod.theme)}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
         <Badge variant="outline" className="text-[10px] font-bold">{mod.id}</Badge>
-        <span className="font-bold">{mod.lessons.length} leçons</span>
+        <span className="font-bold">{t('curriculum.drawer.lessons_done', { done: mod.lessons.length, total: mod.lessons.length })}</span>
         <span>·</span>
-        <span className="font-bold">🏅 {mod.badge}</span>
+        <span className="font-bold">🏅 {ci.moduleBadge(mod.id, mod.badge)}</span>
       </div>
       {progress > 0 && (
         <div className="mb-3">
@@ -111,14 +115,18 @@ function PopupContent({ mod, state, progress, saved, onClose }: {
               }`}>
                 {done ? <Check className="h-3 w-3" /> : lesson.id}
               </span>
-              <span className="truncate font-semibold">{lesson.title}</span>
+              <span className="truncate font-semibold">{ci.lessonTitle(lesson.id, lesson.title)}</span>
             </Link>
           );
         })}
       </div>
       <Link to={`/programme?module=${mod.id}`} onClick={onClose}>
         <button className="w-full btn-duo bg-accent text-accent-foreground border-accent px-4 py-2.5 text-sm font-bold rounded-xl">
-          {state === 'complete' ? 'Revoir' : state === 'active' ? 'Continuer' : 'Commencer'}
+          {state === 'complete'
+            ? t('curriculum.drawer.completed_cta')
+            : state === 'active'
+              ? t('curriculum.drawer.continue_cta')
+              : t('curriculum.drawer.start_cta')}
         </button>
       </Link>
     </>
