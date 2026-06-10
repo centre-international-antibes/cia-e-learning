@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { RecommendedLesson } from '@/hooks/useRecommendedLessons';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
 
 interface Props {
   lessons: RecommendedLesson[];
@@ -13,6 +14,7 @@ interface Props {
 
 export function RecommendedCarousel({ lessons }: Props) {
   const { t } = useTranslation();
+  const ci = useCurriculumI18n();
   if (lessons.length === 0) return null;
 
   return (
@@ -45,10 +47,10 @@ export function RecommendedCarousel({ lessons }: Props) {
               </div>
               <div className="flex-1">
                 <h3 className="font-display font-bold text-base md:text-lg leading-tight">
-                  {lesson.title}
+                  {ci.lessonTitle(lesson.lessonId, lesson.title)}
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                  {lesson.description}
+                  {ci.lessonDescription(lesson.lessonId, lesson.description)}
                 </p>
                 <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider text-cia-blue-500">
                   <BookOpen className="h-3 w-3" />

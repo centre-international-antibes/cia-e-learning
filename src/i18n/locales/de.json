@@ -1783,6 +1783,32 @@
         "title": "ABSCHLUSSPRÜFUNG C2",
         "description": "Zertifizierungstest. Abzeichen \"Meister der französischen Sprache\" + Zertifikat."
       }
+    },
+    "title": "Mein Lernpfad",
+    "unit_label": "Einheit",
+    "module": "Modul",
+    "coming_soon": "Demnächst verfügbar",
+    "bubble_start_unit": "Starte diese Einheit, los geht's!",
+    "bubble_continue": "Nur noch ein Modul, um die Einheit abzuschließen!",
+    "bubble_keep_going": "Noch ein Modul zu abschließen!",
+    "bubble_keep_going_plural": "Noch {{count}} Module zu abschließen!",
+    "unit_complete_toast": "Bravo! Einheit {{level}} abgeschlossen 🎉",
+    "state": {
+      "locked": "gesperrt",
+      "available": "verfügbar",
+      "current": "laufend",
+      "completed": "abgeschlossen"
+    },
+    "drawer": {
+      "close": "Schließen",
+      "completed_badge": "Abgeschlossen",
+      "completed_cta": "Modul ansehen",
+      "continue_cta": "Fortfahren",
+      "lessons_done": "{{done}} / {{total}} Lektionen",
+      "lessons_list": "Lektionen des Moduls",
+      "locked_cta": "Gesperrt",
+      "next_lesson": "Nächste",
+      "start_cta": "Starten"
     }
   },
   "glossary": {

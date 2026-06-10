@@ -1787,6 +1787,32 @@
         "title": "EXAMEN FINAL C2",
         "description": "Test certifiant. Badge \"Maître du Français\" + certificat."
       }
+    },
+    "title": "Mon parcours",
+    "unit_label": "Unité",
+    "module": "Module",
+    "coming_soon": "Bientôt disponible",
+    "bubble_start_unit": "Commence cette unité, c'est parti !",
+    "bubble_continue": "Plus qu'un module pour finir l'unité !",
+    "bubble_keep_going": "Encore un module à compléter !",
+    "bubble_keep_going_plural": "Encore {{count}} modules à compléter !",
+    "unit_complete_toast": "Bravo ! Unité {{level}} terminée 🎉",
+    "state": {
+      "locked": "verrouillé",
+      "available": "disponible",
+      "current": "en cours",
+      "completed": "terminé"
+    },
+    "drawer": {
+      "close": "Fermer",
+      "completed_badge": "Terminé",
+      "completed_cta": "Revoir le module",
+      "continue_cta": "Continuer",
+      "lessons_done": "{{done}} / {{total}} leçons",
+      "lessons_list": "Leçons du module",
+      "locked_cta": "Verrouillé",
+      "next_lesson": "Prochaine",
+      "start_cta": "Commencer"
     }
   },
   "glossary": {

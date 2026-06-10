@@ -1783,6 +1783,32 @@
         "title": "ИТОГОВЫЙ ЭКЗАМЕН C2",
         "description": "Сертификационный тест. Бейдж \"Мастер французского\" + сертификат."
       }
+    },
+    "title": "Мой путь",
+    "unit_label": "Раздел",
+    "module": "Модуль",
+    "coming_soon": "Скоро доступно",
+    "bubble_start_unit": "Начни этот раздел, поехали!",
+    "bubble_continue": "Остался всего один модуль до завершения раздела!",
+    "bubble_keep_going": "Остался ещё один модуль!",
+    "bubble_keep_going_plural": "Осталось ещё {{count}} модулей!",
+    "unit_complete_toast": "Браво! Раздел {{level}} завершён 🎉",
+    "state": {
+      "locked": "заблокировано",
+      "available": "доступно",
+      "current": "в процессе",
+      "completed": "завершено"
+    },
+    "drawer": {
+      "close": "Закрыть",
+      "completed_badge": "Завершено",
+      "completed_cta": "Просмотреть модуль",
+      "continue_cta": "Продолжить",
+      "lessons_done": "{{done}} / {{total}} уроков",
+      "lessons_list": "Уроки модуля",
+      "locked_cta": "Заблокировано",
+      "next_lesson": "Следующий",
+      "start_cta": "Начать"
     }
   },
   "glossary": {
