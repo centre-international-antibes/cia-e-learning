@@ -689,9 +689,11 @@ export default function Curriculum() {
           state={selectedModule.module.state}
           level={selectedModule.section.level}
           totalLessons={selectedModule.module.totalLessons}
+          completedLessons={selectedModule.module.completedLessons}
           durationMinutes={selectedModule.module.durationMinutes}
           xpReward={selectedModule.module.xpReward}
           progress={selectedModule.module.progress}
+          lessons={selectedModule.module.lessons}
         />
       )}
 
