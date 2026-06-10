@@ -292,7 +292,7 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
             </div>
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
               <motion.div
-                className="absolute inset-y-0 left-0 rounded-full bg-g-shine"
+                className="absolute inset-y-0 left-0 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)" }}
                 initial={false}
                 animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -394,7 +394,7 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
               </div>
               <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
                 <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full bg-g-shine"
+                  className="absolute inset-y-0 left-0 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)" }}
                   initial={false}
                   animate={{ width: `${progressPct}%` }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
