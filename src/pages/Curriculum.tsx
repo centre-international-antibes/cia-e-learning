@@ -62,10 +62,12 @@ interface ModuleWithMeta {
   title: string;
   theme?: string;
   totalLessons: number;
+  completedLessons: number;
   durationMinutes: number;
   xpReward: number;
   progress: number;
   state: ModuleNodeState;
+  lessons: DrawerLesson[];
 }
 
 interface SectionWithMeta {
