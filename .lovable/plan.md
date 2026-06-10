@@ -1,75 +1,91 @@
+## Problème
+
+Dans le parcours, la carte qui s'ouvre au tap d'un module (`ModuleDrawer`) :
+- n'indique pas combien de leçons sur 10 sont déjà terminées,
+- n'affiche la barre de progression qu'entre 1 % et 99 % (donc invisible quand `progress = 0`, et le compteur n'augmente jamais leçon par leçon car `progress` vaut aujourd'hui uniquement 0 ou 100 dans `Curriculum.tsx`),
+- ne liste pas les leçons, donc impossible de voir « j'en suis à la 3/10 » et de savoir quelle leçon est la prochaine.
+
 ## Objectif
 
-Rendre le `CoursePlayer` confortable sur mobile : scroll fluide, contenu jamais coupé, et remplacer la barre latérale bleue (Spark + XP + progression + bulle de feedback) par un panneau bas compact et fixe, sans rien perdre des fonctionnalités côté desktop.
+Donner une vision claire et instantanée de l'avancement par module : nombre exact de leçons terminées, prochaine leçon à faire, et thèmes couverts.
 
 ## Périmètre
 
-Uniquement la couche présentation du lecteur de cours et de ses étapes. Pas de changement de logique XP, de scoring, ni de modèle de données.
+- `src/pages/Curriculum.tsx` : calculer `completedLessons` par module à partir de `readCourseProgressMap()` (clé `lesson-${id}`), et propager au drawer.
+- `src/components/courses/ModuleDrawer.tsx` : refonte de la carte stat + ajout d'une liste compacte des leçons + progress bar toujours visible.
+- `src/i18n/locales/*.json` : 2 ou 3 nouvelles clés (`curriculum.drawer.lessons_done`, `curriculum.drawer.next_lesson`, `curriculum.drawer.lessons_list`).
 
-Fichiers principaux concernés :
-- `src/components/course-player/CoursePlayer.tsx` (refonte layout mobile)
-- `src/components/course-player/SparkBubble.tsx` et `StepCharacterBubble.tsx` (taille mobile)
-- `src/components/course-player/{LessonStep,QCMStep,FillBlankStep,DragDropStep,FlashcardStep,ListeningStep,FinalQuizStep}.tsx` (paddings/typo/CTA mobile, plus de débordements)
-- `src/components/layout/AppLayout.tsx` (vérifier que `pageTransition` ne bloque pas le scroll vertical interne)
+Aucun changement de logique XP/déblocage. Pas de migration DB (le suivi par leçon est déjà persisté localement via `readCourseProgressMap`).
 
-## Diagnostic actuel
+## Diagnostic technique
 
-1. Sur mobile, le `CoursePlayer` est monté via Portal avec `fixed inset-0` + `document.body.style.overflow = 'hidden'`. La zone `main` a bien `overflow-y-auto`, mais :
-   - Le header sticky n'a pas de `safe-area` (notch) et mange de la hauteur.
-   - Aucune zone n'a `min-h-0` dans la chaîne flex, donc sur certains navigateurs mobiles le `main` ne devient jamais scrollable et le contenu déborde sous l'écran (pas de scroll possible, observé par l'utilisateur).
-   - Pas de padding-bottom pour compenser le futur dock + la barre d'URL iOS.
-2. La barre latérale `cia-blue-500` est en `hidden lg:flex` → invisible sur mobile, donc le feedback Spark (mood, bulle « Bien joué ! »), le compteur XP en temps réel et la progression « ÉTAPE x / y » sont absents sur mobile (l'utilisateur ne voit qu'un fin liseré dans le header).
-3. Les étapes (`LessonStep`, `QCMStep`, etc.) utilisent `max-w-2xl` + paddings desktop ; sur 390 px, les cartes/options débordent ou collent aux bords.
+- `Curriculum.tsx` calcule actuellement `progress: isDemoCompleted ? 100 : 0`. On va remplacer par :
+  - `completedLessons = m.lessons.filter(l => completedIds.has(\`lesson-${l.id}\`)).length`
+  - `progress = totalLessons > 0 ? Math.round(completedLessons / totalLessons * 100) : 0`
+  - `state` reste calé sur `isDemoCompleted` (= module 100 % fini) pour préserver le déblocage du module suivant.
+- Le drawer reçoit déjà `totalLessons` ; on lui ajoute `completedLessons` et la liste `lessons: { id, title, completed }[]`.
 
 ## Plan d'implémentation
 
-### 1. Layout mobile-first du `CoursePlayer`
+### 1. `Curriculum.tsx`
 
-- Restructurer le conteneur racine en `flex flex-col` avec `h-[100dvh]` (au lieu de `inset-0` seul) pour gérer correctement la barre d'URL mobile.
-- Ajouter `min-h-0` sur les niveaux flex intermédiaires pour que `main` devienne réellement scrollable sur iOS/Android.
-- Ajouter `pt-safe` au header mobile et `pb-safe` au dock mobile (en réutilisant les utilitaires `pl-safe/pr-safe` déjà présents dans `AppLayout`).
-- Donner au `main` mobile un `padding-bottom` ≈ 140 px pour ne jamais passer sous le nouveau dock.
+- Importer `readCourseProgressMap` et construire `completedIds: Set<string>` une seule fois dans le `useMemo` des sections (mêmes deps + clé qui change quand `demoCompleted` change déjà).
+- Pour chaque module :
+  - calculer `completedLessons` et `progress` réels,
+  - construire `lessons = m.lessons.map(l => ({ id: l.id, title: l.title, completed: completedIds.has(\`lesson-${l.id}\`) }))`.
+- Étendre le type `ModuleWithMeta` avec `completedLessons: number` et `lessons: { id: number; title: string; completed: boolean }[]`.
+- Passer ces deux nouvelles props à `<ModuleDrawer />`.
 
-### 2. Nouveau « dock Spark » bas sur mobile
+### 2. `ModuleDrawer.tsx`
 
-Remplacer la sidebar bleue par un panneau fixe en bas d'écran, visible uniquement < `lg` :
+Ajouter aux props : `completedLessons: number`, `lessons: { id: number; title: string; completed: boolean }[]`.
+
+Refonte du contenu du drawer :
+
+1. **Hero header** : inchangé (icône + badge niveau + « Module 01 » + titre + thème).
+
+2. **Compteur d'avancement bien visible** (juste sous le titre) :
 
 ```
-┌──────────────────────────────────────────────┐
-│  [Spark 56px]   ÉTAPE 3 / 8        +15 XP    │
-│                 ▓▓▓▓▓░░░░░░░░░░░░░░░         │
-│  ← bulle feedback « Bien joué ! » au-dessus  │
-└──────────────────────────────────────────────┘
+   ┌────────────────────────────────────────┐
+   │  3 / 10 leçons terminées        30 %   │
+   │  ▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+   └────────────────────────────────────────┘
 ```
 
-- Fond `bg-cia-blue-500 text-white`, coins arrondis en haut, ombre `shadow-elev-lg`, `pb-safe`.
-- Spark à gauche (`Spark size={56}` avec `mood`/`halo` réutilisés tels quels), bloc droit avec libellé `ÉTAPE n/N` + compteur `+XP` animé (`scoreBump`).
-- Progress bar pleine largeur sous le bloc texte (réutilise le même calcul `progressPct`, mêmes tokens `bg-g-shine`).
-- Bulle de feedback (`bubble.text`, mood encouraging/sad) : `AnimatePresence` au-dessus du dock, ancrée sur Spark, flèche pointant vers le bas. Même durée `BUBBLE_LIFETIME`.
+   - Barre `bg-cia-blue-500` toujours rendue (même à 0 %), avec libellé « X / Y leçons terminées » à gauche et pourcentage à droite, tabular-nums.
+   - Si `state === 'completed'` : pastille « Terminé ✓ » verte à la place du pourcentage.
 
-Sur `lg+`, le dock est masqué et la sidebar desktop existante est conservée à l'identique (zéro régression desktop).
+3. **Stats compactes** (grille 3 colonnes existante) : remplacer la carte « Leçons » par une carte **« X / Y leçons »** (au lieu de juste `10`), pour rappeler l'avancement même au coup d'œil. Durée et XP inchangés.
 
-### 3. Nettoyage du header mobile
+4. **Liste des leçons** (nouvelle section, scroll interne max-h ≈ 280 px) :
+   - Une ligne par leçon avec :
+     - Index `01`, `02`, … (mono, tabular)
+     - Titre de la leçon (`truncate`)
+     - Pastille à droite : `Check` vert si terminée, `Play` bleu sur la prochaine leçon à faire (= 1re non-completed du module si état non-locked), gris sinon.
+   - La 1re leçon non terminée est visuellement mise en avant (`bg-cia-blue-50` + ring `cia-blue-500/30`) → c'est la « prochaine leçon » et on saura instantanément où on en est.
+   - Sur module `locked`, liste rendue grisée non interactive.
 
-- Le header mobile actuel devient minimal : seulement le bouton fermer `X` + titre tronqué du cours. Toute la partie progression/XP migre dans le dock bas pour libérer de la hauteur utile.
+5. **CTA** : inchangé, mais le libellé `continue_cta` reste pertinent puisque `entryLesson` pointe déjà sur la 1re leçon non terminée.
 
-### 4. Adaptation mobile-first des étapes
+### 3. i18n
 
-Pour chaque composant `*Step` :
-- Réduire les paddings (`p-4` mobile, `p-6` desktop) et la taille des titres (`text-lg` mobile → `text-xl` desktop).
-- Forcer `w-full` + `min-w-0` sur les cartes/options, et `break-words` sur les textes longs (évite les débordements horizontaux signalés).
-- CTA `Continuer` : `w-full` mobile, sticky-friendly (pas de position fixe, juste un `mt-auto` dans le flux pour rester atteignable sans recouvrir le dock).
-- Vérifier qu'`AppLayout` n'applique pas de `overflow-hidden` parasite quand le portal est monté (lecture de `pageTransition.style` pour confirmer).
+Ajouter dans les 6 fichiers `src/i18n/locales/*.json` :
+- `curriculum.drawer.lessons_done` → ex. « {{done}} / {{total}} leçons terminées »
+- `curriculum.drawer.lessons_list` → ex. « Leçons du module »
+- `curriculum.drawer.next_lesson` → ex. « Prochaine » (badge)
+- `curriculum.drawer.completed_badge` → ex. « Terminé »
 
-### 5. Vérifications
+### 4. Vérification
 
-- Tester à 320 / 375 / 390 / 414 px via `preview_ui--set_preview_device_viewport mobile` + capture sur `/cours/lesson-2` :
-  - Scroll vertical OK sur toutes les étapes.
-  - Aucun débordement horizontal (`overflow-x: hidden` sur la racine du player en garde-fou).
-  - Dock toujours visible, jamais recouvert par le clavier (le clavier le pousse, comportement natural d'un élément en flux + `safe-area`).
-- Vérifier desktop ≥ `lg` : sidebar inchangée, bulle Spark inchangée.
+- Ouvrir `/parcours`, taper sur le module A1.1 :
+  - vérifier que le compteur affiche le bon `X / 10`,
+  - vérifier que la barre de progression est visible même à 0 %,
+  - vérifier que la liste met en évidence la prochaine leçon,
+  - vérifier qu'après avoir terminé une leçon (en revenant sur le parcours), le compteur incrémente bien.
+- Vérifier mobile (390 px) : drawer reste scrollable et la liste n'écrase pas le CTA.
 
-## Hors périmètre (suite possible)
+## Hors périmètre
 
-- Refonte mobile-first globale de l'app (Header, Catalogue, Programme, Profil…) : à traiter dans un second plan dédié, écran par écran, pour ne pas mélanger avec la refonte du lecteur.
-- Migration du contenu pédagogique vers Supabase (déjà planifiée Sprint 4).
+- Suivi serveur-side du `course_progress` (déjà tracé dans Sprint 4 — migration des leçons vers Supabase).
+- Refonte des nœuds de module sur le parcours (afficher un mini-arc de progression autour du `ModuleNode`) → à proposer ensuite si le drawer ne suffit pas.

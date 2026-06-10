@@ -432,7 +432,11 @@
       "completed_cta": "Refaire le module",
       "locked_cta": "Verrouillé",
       "simulate_complete": "Abschluss simulieren (Demo)",
-      "close": "Fermer"
+      "close": "Fermer",
+      "lessons_done": "{{done}} / {{total}} Lektionen abgeschlossen",
+      "lessons_list": "Lektionen des Moduls",
+      "next_lesson": "Nächste",
+      "completed_badge": "Abgeschlossen"
     }
   },
   "glossary": {
