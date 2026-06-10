@@ -28,19 +28,31 @@ Deno.serve(async (req) => {
 
     const stripe = createStripeClient(environment);
 
-    // Find Stripe customer for this user via metadata
-    const customers = await stripe.customers.search({
-      query: `metadata['userId']:'${user.id}'`,
-      limit: 1,
-    });
+    // Find Stripe customer for this user via metadata.
+    // customers.search can be unavailable on brand-new accounts (index not ready)
+    // — fall back to list-by-email so the function never throws on undefined.
+    let customerId: string | null = null;
+    try {
+      const customers = await stripe.customers.search({
+        query: `metadata['userId']:'${user.id}'`,
+        limit: 1,
+      });
+      if (customers?.data?.length) customerId = customers.data[0].id;
+    } catch (searchErr) {
+      console.warn("customers.search failed, falling back to list:", searchErr);
+    }
 
-    if (!customers.data.length) {
+    if (!customerId && user.email) {
+      const byEmail = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (byEmail?.data?.length) customerId = byEmail.data[0].id;
+    }
+
+    if (!customerId) {
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
-    const customerId = customers.data[0].id;
 
     const subs = await stripe.subscriptions.list({
       customer: customerId,
@@ -49,10 +61,11 @@ Deno.serve(async (req) => {
     });
 
     // Pick the most recent active-like subscription
-    const active = subs.data
+    const subsData = subs?.data ?? [];
+    const active = subsData
       .filter((s) => ["active", "trialing", "past_due"].includes(s.status))
       .sort((a, b) => b.created - a.created)[0]
-      ?? subs.data.sort((a, b) => b.created - a.created)[0];
+      ?? subsData.sort((a, b) => b.created - a.created)[0];
 
     if (!active) {
       return new Response(JSON.stringify({ subscribed: false }), {
