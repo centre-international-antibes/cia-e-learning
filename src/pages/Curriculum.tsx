@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { LevelBadge } from '@/components/courses/LevelBadge';
 import { curriculum } from '@/data/curriculum';
+import { useTranslatedCurriculum } from '@/lib/curriculumI18n';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { ModuleNode, type ModuleNodeState } from '@/components/courses/ModuleNode';
@@ -156,7 +157,7 @@ export default function Curriculum() {
         .map(([id]) => id),
     );
     return LEVELS.map((level) => {
-      const data = curriculum.find((c) => c.level === level);
+      const data = translatedCurriculum.find((c) => c.level === level);
       const levelIdx = LEVELS.indexOf(level);
       const modulesRaw = data?.modules ?? [];
 
