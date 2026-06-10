@@ -1783,6 +1783,32 @@
         "title": "EXAMEN FINAL C2",
         "description": "Prueba certificativa. Insignia \"Maestro de Francés\" + certificado."
       }
+    },
+    "title": "Mi trayecto",
+    "unit_label": "Unidad",
+    "module": "Módulo",
+    "coming_soon": "Próximamente",
+    "bubble_start_unit": "¡Empieza esta unidad, vamos!",
+    "bubble_continue": "¡Solo queda un módulo para terminar la unidad!",
+    "bubble_keep_going": "¡Un módulo más por completar!",
+    "bubble_keep_going_plural": "¡Quedan {{count}} módulos por completar!",
+    "unit_complete_toast": "¡Bravo! Unidad {{level}} completada 🎉",
+    "state": {
+      "locked": "bloqueado",
+      "available": "disponible",
+      "current": "en curso",
+      "completed": "completado"
+    },
+    "drawer": {
+      "close": "Cerrar",
+      "completed_badge": "Completado",
+      "completed_cta": "Revisar el módulo",
+      "continue_cta": "Continuar",
+      "lessons_done": "{{done}} / {{total}} lecciones",
+      "lessons_list": "Lecciones del módulo",
+      "locked_cta": "Bloqueado",
+      "next_lesson": "Próxima",
+      "start_cta": "Empezar"
     }
   },
   "glossary": {

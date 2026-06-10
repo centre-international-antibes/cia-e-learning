@@ -1756,6 +1756,32 @@
         "title": "FINAL C2 EXAM",
         "description": "Certifying test. \"Master of French\" badge + certificate."
       }
+    },
+    "title": "My path",
+    "unit_label": "Unit",
+    "module": "Module",
+    "coming_soon": "Coming soon",
+    "bubble_start_unit": "Start this unit, let's go!",
+    "bubble_continue": "Just one module left to finish the unit!",
+    "bubble_keep_going": "One more module to complete!",
+    "bubble_keep_going_plural": "{{count}} more modules to complete!",
+    "unit_complete_toast": "Well done! Unit {{level}} completed 🎉",
+    "state": {
+      "locked": "locked",
+      "available": "available",
+      "current": "in progress",
+      "completed": "completed"
+    },
+    "drawer": {
+      "close": "Close",
+      "completed_badge": "Completed",
+      "completed_cta": "Review module",
+      "continue_cta": "Continue",
+      "lessons_done": "{{done}} / {{total}} lessons",
+      "lessons_list": "Module lessons",
+      "locked_cta": "Locked",
+      "next_lesson": "Next",
+      "start_cta": "Start"
     }
   },
   "glossary": {

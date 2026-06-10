@@ -1783,6 +1783,32 @@
         "title": "ESAME FINALE C2",
         "description": "Test di certificazione. Badge \"Maestro di Francese\" + certificato."
       }
+    },
+    "title": "Il mio percorso",
+    "unit_label": "Unità",
+    "module": "Modulo",
+    "coming_soon": "Presto disponibile",
+    "bubble_start_unit": "Inizia questa unità, andiamo!",
+    "bubble_continue": "Manca solo un modulo per finire l'unità!",
+    "bubble_keep_going": "Ancora un modulo da completare!",
+    "bubble_keep_going_plural": "Ancora {{count}} moduli da completare!",
+    "unit_complete_toast": "Bravo! Unità {{level}} completata 🎉",
+    "state": {
+      "locked": "bloccato",
+      "available": "disponibile",
+      "current": "in corso",
+      "completed": "completato"
+    },
+    "drawer": {
+      "close": "Chiudi",
+      "completed_badge": "Completato",
+      "completed_cta": "Rivedi il modulo",
+      "continue_cta": "Continua",
+      "lessons_done": "{{done}} / {{total}} lezioni",
+      "lessons_list": "Lezioni del modulo",
+      "locked_cta": "Bloccato",
+      "next_lesson": "Prossima",
+      "start_cta": "Inizia"
     }
   },
   "glossary": {
