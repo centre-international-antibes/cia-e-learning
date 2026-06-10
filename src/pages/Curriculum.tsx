@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { LevelBadge } from '@/components/courses/LevelBadge';
 import { curriculum } from '@/data/curriculum';
+import { useTranslatedCurriculum } from '@/lib/curriculumI18n';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { ModuleNode, type ModuleNodeState } from '@/components/courses/ModuleNode';
@@ -92,6 +93,7 @@ export default function Curriculum() {
   const { cecrLevel, totalXP } = useUserProgress();
   const { streak } = useDailyChallenge();
   const reduced = useReducedMotion();
+  const translatedCurriculum = useTranslatedCurriculum();
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   /** Modules « complétés à la volée » dans cette session (démo,
@@ -156,7 +158,7 @@ export default function Curriculum() {
         .map(([id]) => id),
     );
     return LEVELS.map((level) => {
-      const data = curriculum.find((c) => c.level === level);
+      const data = translatedCurriculum.find((c) => c.level === level);
       const levelIdx = LEVELS.indexOf(level);
       const modulesRaw = data?.modules ?? [];
 
@@ -217,7 +219,7 @@ export default function Curriculum() {
         modules,
       };
     });
-  }, [cecrLevel, t, demoCompleted]);
+  }, [cecrLevel, t, demoCompleted, translatedCurriculum]);
 
   const selectedModule = useMemo(() => {
     if (!selectedKey) return null;
