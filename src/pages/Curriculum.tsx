@@ -33,7 +33,7 @@ import { readCourseProgressMap } from '@/lib/courseProgress';
  * Item du parcours — un module, un coffre (palier bonus tous les 3 modules)
  * ou un trophée (fin d'unité). Tous placés sur la même spline.
  */
-interface DrawerLesson { id: number; title: string; completed: boolean }
+interface DrawerLesson { id: number; title: string; completed: boolean; href?: string }
 
 type ParcoursItem =
   | { kind: 'module';  module: { id: string; number: number; title: string; theme?: string; totalLessons: number; completedLessons: number; durationMinutes: number; xpReward: number; progress: number; state: ModuleNodeState; lessons: DrawerLesson[] } }
@@ -163,11 +163,15 @@ export default function Curriculum() {
       const modules: ModuleWithMeta[] = modulesRaw.map((m, idx) => {
         const lessonsCount = m.lessons?.length ?? 0;
         const isDemoCompleted = demoCompleted.has(m.id);
-        const lessonsList: DrawerLesson[] = (m.lessons ?? []).map((l) => ({
-          id: l.id,
-          title: l.title,
-          completed: completedIds.has(`lesson-${l.id}`),
-        }));
+        const lessonsList: DrawerLesson[] = (m.lessons ?? []).map((l) => {
+          const lessonKey = `lesson-${l.id}`;
+          return {
+            id: l.id,
+            title: l.title,
+            completed: completedIds.has(lessonKey),
+            href: hasLessonContent(lessonKey) ? `/cours/${lessonKey}` : undefined,
+          };
+        });
         const completedFromMap = lessonsList.filter((l) => l.completed).length;
         const completedLessons = isDemoCompleted ? lessonsCount : completedFromMap;
         const progress: number =
