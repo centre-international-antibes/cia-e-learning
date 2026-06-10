@@ -28,6 +28,7 @@ import { useSfx } from '@/hooks/useSfx';
 import type { CECRLevel } from '@/data/demo-courses';
 import { Sparkles } from 'lucide-react';
 import { readCourseProgressMap } from '@/lib/courseProgress';
+import { hasLessonContent } from '@/data/contentRegistry';
 
 /**
  * Item du parcours — un module, un coffre (palier bonus tous les 3 modules)
