@@ -59,7 +59,7 @@ export function Header() {
             : 'bg-card/95 backdrop-blur-xl border-b border-border/40'
         }`}
       >
-        <div className="container flex h-20 sm:h-24 items-center justify-between gap-2 sm:gap-3 pt-safe">
+        <div className="container flex h-24 sm:h-28 items-center justify-between gap-2 sm:gap-3 pt-safe">
           {/* Burger mobile + Logo */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <Button
@@ -79,7 +79,7 @@ export function Header() {
               <img
                 src="/picto.png"
                 alt="Centre International d'Antibes — E-Learning"
-                className="h-12 sm:h-14 w-auto select-none shrink-0"
+                className="h-16 sm:h-20 w-auto select-none shrink-0"
                 draggable={false}
               />
             </Link>
