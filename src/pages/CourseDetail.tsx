@@ -19,7 +19,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { getNewlyUnlockedModules, isModuleComplete, computeLevelFromProgress } from '@/hooks/useModuleUnlock';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { getDailyLesson } from '@/lib/dailyChallenge';
-import { readCourseProgressMap, writeCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { readCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { upsertLessonProgress } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 import { notify } from '@/lib/notify';
 
@@ -110,10 +111,17 @@ export default function CourseDetail() {
           setFinalScore(score);
           setPlaying(false);
 
-          // Save progress
-          const progress = readCourseProgressMap();
-          progress[displayCourse.id] = { score, completed: true, date: new Date().toISOString() };
-          writeCourseProgressMap(progress);
+          // Persist progress to Lovable Cloud (lesson_progress) and refresh the
+          // local cache so every consumer (parcours, drawer, resume card, etc.)
+          // sees the completion immediately.
+          await upsertLessonProgress({
+            userId: user?.id ?? '',
+            lessonId: displayCourse.id,
+            score,
+            courseId: displayCourse.id,
+            level: displayCourse.level,
+            completed: true,
+          });
 
           // Award XP based on score
           const xpEarned = Math.max(5, Math.round(score * 5));
