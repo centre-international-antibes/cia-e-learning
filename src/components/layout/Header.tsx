@@ -75,7 +75,11 @@ export function Header() {
                 déposé dans les files du projet par Jules (hotfix test & learn).
                 La goutte SparkMini + le texte « CIA / e-learning » qui
                 doublonnaient ont été retirés du header. */}
-            <Link to="/" className="flex items-center min-w-0" aria-label="CIA E-Learning, retour à l'accueil">
+            <Link
+              to={user ? '/dashboard' : '/'}
+              className="flex items-center min-w-0"
+              aria-label="CIA E-Learning, retour à l'accueil"
+            >
               <img
                 src="/picto.png"
                 alt="Centre International d'Antibes — E-Learning"

@@ -1,6 +1,6 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -55,8 +55,13 @@ function RouteFallback() {
  *  users to their dashboard so `/` becomes an "open the app" URL. */
 function LandingOrRedirect() {
   const { user, isLoading } = useAuth();
-  if (isLoading) return <RouteFallback />;
-  if (user) return <Navigate to="/dashboard" replace />;
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoading, user, navigate]);
+  if (isLoading || user) return <RouteFallback />;
   return <Index />;
 }
 
@@ -64,11 +69,14 @@ function LandingOrRedirect() {
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
-  if (isLoading) return <RouteFallback />;
-  if (!user) {
-    const next = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/connexion?redirect=${next}`} replace />;
-  }
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLoading && !user) {
+      const next = encodeURIComponent(location.pathname + location.search);
+      navigate(`/connexion?redirect=${next}`, { replace: true });
+    }
+  }, [isLoading, user, navigate, location.pathname, location.search]);
+  if (isLoading || !user) return <RouteFallback />;
   return <>{children}</>;
 }
 
