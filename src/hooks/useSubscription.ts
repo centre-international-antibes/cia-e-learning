@@ -51,6 +51,20 @@ export function useSubscription() {
 
   useEffect(() => { void refetch(); }, [refetch]);
 
+  // Realtime: refetch as soon as Stripe webhook upserts the subscription row.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`subscription-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
+        () => { void refetch(); },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [user, refetch]);
+
   // Try to sync with Stripe on first load so a freshly completed checkout
   // gets reflected even if the webhook is still in flight.
   const syncWithStripe = useCallback(async () => {

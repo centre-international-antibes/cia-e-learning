@@ -175,7 +175,18 @@ export default function Abonnement() {
             </CardHeader>
             <CardContent>
               {isPaymentsConfigured() ? (
-                <StripeEmbeddedCheckout priceId={PRICE_ID} returnUrl={returnUrl} />
+                <StripeEmbeddedCheckout
+                  priceId={PRICE_ID}
+                  returnUrl={returnUrl}
+                  onComplete={() => {
+                    toast.success("Paiement validé ! Bienvenue dans Premium 🎉");
+                    setShowCheckout(false);
+                    void syncWithStripe();
+                    setTimeout(() => { void syncWithStripe(); }, 2500);
+                    setTimeout(() => { void syncWithStripe(); }, 6000);
+                    setTimeout(() => { void syncWithStripe(); }, 12000);
+                  }}
+                />
               ) : (
                 <div className="text-sm text-muted-foreground">
                   Les paiements ne sont pas encore configurés.

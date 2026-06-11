@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
   const env: StripeEnv = rawEnv;
   try {
     const event = await verifyWebhook(req, env);
+    console.log("[payments-webhook] env=", env, "type=", event.type, "id=", (event.data?.object as any)?.id);
     switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
