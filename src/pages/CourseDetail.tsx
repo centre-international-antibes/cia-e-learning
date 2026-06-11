@@ -44,7 +44,6 @@ export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
   // Le défi du jour autorise tous les niveaux, sans restriction d'accès.
   const isDailyChallenge = searchParams.get('daily') === '1';
   
