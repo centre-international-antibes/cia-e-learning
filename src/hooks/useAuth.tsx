@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, useCallback, useRef } f
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { setActiveProgressUser } from '@/lib/courseProgress';
+import { syncLessonProgressFromCloud } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 
 interface AuthContextType {
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const applySession = useCallback((nextSession: Session | null) => {
     setSession(nextSession);
     setActiveProgressUser(nextSession?.user?.id);
+    void syncLessonProgressFromCloud(nextSession?.user?.id);
   }, []);
 
   useEffect(() => {
