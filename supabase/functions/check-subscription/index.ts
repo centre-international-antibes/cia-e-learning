@@ -84,23 +84,49 @@ Deno.serve(async (req) => {
 
     // Upsert into subscriptions table
     const plan = ["active", "trialing", "past_due"].includes(active.status) ? "premium" : "free";
-    await supabaseAdmin.from("subscriptions").upsert(
-      {
-        user_id: user.id,
-        plan,
-        stripe_subscription_id: active.id,
-        stripe_customer_id: customerId,
-        product_id: productId,
-        price_id: priceId,
-        status: active.status,
-        current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-        cancel_at_period_end: (active as any).cancel_at_period_end ?? false,
-        environment,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "stripe_subscription_id" },
-    );
+    const row = {
+      user_id: user.id,
+      plan,
+      stripe_subscription_id: active.id,
+      stripe_customer_id: customerId,
+      product_id: productId,
+      price_id: priceId,
+      status: active.status,
+      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      cancel_at_period_end: (active as any).cancel_at_period_end ?? false,
+      environment,
+      updated_at: new Date().toISOString(),
+    };
+    // Manual upsert — see note in payments-webhook (partial unique index
+    // can't be used as ON CONFLICT target).
+    const { data: existing, error: selErr } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("stripe_subscription_id", active.id)
+      .maybeSingle();
+    if (selErr) console.error("[check-subscription] select failed", selErr);
+    if (existing?.id) {
+      const { error } = await supabaseAdmin.from("subscriptions").update(row).eq("id", existing.id);
+      if (error) console.error("[check-subscription] update failed", error);
+    } else {
+      const { data: freeRow } = await supabaseAdmin
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("environment", environment)
+        .is("stripe_subscription_id", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (freeRow?.id) {
+        const { error } = await supabaseAdmin.from("subscriptions").update(row).eq("id", freeRow.id);
+        if (error) console.error("[check-subscription] upgrade free row failed", error);
+      } else {
+        const { error } = await supabaseAdmin.from("subscriptions").insert(row);
+        if (error) console.error("[check-subscription] insert failed", error);
+      }
+    }
 
     return new Response(JSON.stringify({
       subscribed: ["active", "trialing", "past_due"].includes(active.status),
