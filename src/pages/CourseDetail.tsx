@@ -20,6 +20,7 @@ import { getNewlyUnlockedModules, isModuleComplete, computeLevelFromProgress } f
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { getDailyLesson } from '@/lib/dailyChallenge';
 import { readCourseProgressMap, writeCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { upsertLessonProgress } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 import { notify } from '@/lib/notify';
 
@@ -43,6 +44,7 @@ export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   // Le défi du jour autorise tous les niveaux, sans restriction d'accès.
   const isDailyChallenge = searchParams.get('daily') === '1';
   
