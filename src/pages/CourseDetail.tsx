@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getNewlyUnlockedModules, isModuleComplete, computeLevelFromProgress } from '@/hooks/useModuleUnlock';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { getDailyLesson } from '@/lib/dailyChallenge';
-import { readCourseProgressMap, writeCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { readCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
 import { upsertLessonProgress } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 import { notify } from '@/lib/notify';
