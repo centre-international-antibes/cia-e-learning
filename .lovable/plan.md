@@ -1,91 +1,115 @@
 ## Problème
 
-Le changement de langue dans le profil bascule bien l'i18n côté UI (header, footer, boutons, labels). Mais l'écran reste majoritairement en français parce que **toutes les métadonnées pédagogiques** (titres de niveaux, modules, thèmes, badges, titres et descriptions de leçons) sont en dur dans `src/data/curriculum.ts` — 6 niveaux × 5 modules × 10 leçons = ~330 chaînes FR jamais traduites. Ces chaînes alimentent Catalogue, Parcours, ModuleDrawer, cartes de leçons, recommandations, etc., d'où l'impression que « presque rien ne change ».
+Quand un client termine une leçon (ex: A1 module 1, leçons 1 & 2) :
+- ✅ L'XP est bien envoyée au backend via `award_xp` → persistée dans `profiles.total_xp`.
+- ❌ La **complétion de la leçon** (score, statut "fait") est sauvegardée uniquement dans `localStorage` (clé `course-progress:<userId>`).
 
-## Objectif
+Conséquences :
+- Sur un autre appareil / navigateur / après vidage du cache → le parcours apparaît vierge.
+- Les composants `LearningPath`, `Curriculum`, `ModuleDrawer`, `ResumeCard`, `useModuleUnlock`, `useRecommendedLessons`, `useLastLessonOpened` lisent tous ce localStorage et affichent "0 leçon faite".
+- La table `user_progress` existante n'est pas utilisée car elle attend un `course_id` UUID (référence à `public.courses`), alors que nos leçons sont identifiées par des chaînes (`"lesson-1"`, `"a1-m1-l2"`, etc.) issues du fichier statique `src/data/curriculum.ts`.
 
-Traduire automatiquement les **titres, thèmes, badges, objectifs et descriptions** des niveaux/modules/leçons en EN/ES/DE/IT/RU via Lovable AI Gateway, et brancher le rendu sur i18n. Le contenu pédagogique des exercices (dialogues, QCM, énoncés FR) reste inchangé conformément à la règle projet.
+## Solution
 
-## Plan d'implémentation
+Persister la complétion de chaque leçon côté serveur (Lovable Cloud) sans aucune limite de temps, et garder le localStorage uniquement comme cache de lecture rapide.
 
-### 1. Générer les traductions (script one-shot)
+### 1. Nouvelle table `public.lesson_progress`
 
-- Créer `scripts/translate-curriculum.mjs` qui :
-  - Importe la constante `curriculum` depuis `src/data/curriculum.ts`
-  - Construit un payload JSON aplati `{ levels: {...}, modules: {...}, lessons: {...} }` en français
-  - Pour chaque langue cible (EN, ES, DE, IT, RU), appelle Lovable AI Gateway (`google/gemini-3-flash-preview`) avec un prompt strict : « Traduis ces chaînes FR en {LANG}, garde le ton pédagogique, conserve les noms propres (Antibes, Juan-les-Pins, Provence), réponds en JSON identique à la structure d'entrée »
-  - Batch par niveau (6 appels par langue, 30 au total) pour rester sous les limites de tokens
-  - Valide la forme du JSON retourné et fusionne dans un fichier intermédiaire `scripts/output/curriculum.{lang}.json`
+Une ligne par couple (utilisateur, leçon) :
 
-- Lance le script localement via `node scripts/translate-curriculum.mjs` (clé `LOVABLE_API_KEY` lue depuis l'env). Coût : ~30 requêtes.
+| colonne | type | rôle |
+|---|---|---|
+| `user_id` | uuid → `auth.users` | propriétaire |
+| `lesson_id` | text | identifiant de leçon (ex `"lesson-1"`) |
+| `course_id` | text (nullable) | identifiant du cours/module parent pour filtrage |
+| `level` | text (nullable) | `A0…C2` |
+| `score` | integer | dernier score (0-100) |
+| `best_score` | integer | meilleur score atteint |
+| `completed` | boolean | true dès qu'une fois terminée |
+| `completed_at` | timestamptz | première complétion |
+| `last_played_at` | timestamptz | dernière session |
+| `created_at` / `updated_at` | timestamptz | standards |
 
-### 2. Intégrer les traductions dans i18n
+- Clé primaire composite `(user_id, lesson_id)` → un upsert par leçon.
+- RLS : chaque utilisateur ne voit/écrit que ses propres lignes ; admins lisent tout via `has_role`.
+- GRANTs pour `authenticated` + `service_role`.
+- Trigger `updated_at`.
 
-- Ajouter un namespace `curriculum` dans chaque locale (`fr.json`, `en.json`, etc.) avec la structure :
-  ```
-  curriculum: {
-    levels: { A1: { title, objective }, A2: {...}, ... },
-    modules: { "A1.1": { title, theme, badge }, "A1.2": {...}, ... },
-    lessons: { "1": { title, description }, "2": {...}, ... 300 }
-  }
-  ```
-- Le `fr.json` est rempli à partir du contenu original de `curriculum.ts` (source de vérité, fallback).
-- Les 5 autres locales reçoivent la sortie du script.
+### 2. Hook `useLessonProgress`
 
-### 3. Helper de lecture i18n côté composants
+Nouveau hook React qui :
+- Au login, charge en une requête toutes les lignes de l'utilisateur dans un `Map<lessonId, entry>`.
+- Hydrate le `localStorage` (`course-progress:<userId>`) avec ces données → tous les composants existants continuent de fonctionner sans modification.
+- Expose `markLessonCompleted(lessonId, { score, courseId, level })` qui :
+  1. Upsert la ligne dans `lesson_progress` (Lovable Cloud).
+  2. Met à jour le localStorage (cache).
+  3. Émet un évènement `lesson-progress-update` pour rafraîchir `LearningPath`/`Curriculum`/`ResumeCard`.
+- Écoute `auth state change` → re-sync au login, vide le cache au logout.
 
-Créer `src/lib/curriculumI18n.ts` :
-```ts
-export function useCurriculumI18n() {
-  const { t } = useTranslation();
-  return {
-    levelTitle: (lvl) => t(`curriculum.levels.${lvl}.title`),
-    levelObjective: (lvl) => t(`curriculum.levels.${lvl}.objective`),
-    moduleTitle: (id) => t(`curriculum.modules.${id}.title`),
-    moduleTheme: (id) => t(`curriculum.modules.${id}.theme`),
-    moduleBadge: (id) => t(`curriculum.modules.${id}.badge`),
-    lessonTitle: (n) => t(`curriculum.lessons.${n}.title`),
-    lessonDescription: (n) => t(`curriculum.lessons.${n}.description`),
-  };
-}
+### 3. Intégration dans le flux de complétion
+
+Un seul point d'entrée : la callback `onComplete` du `CoursePlayer` (déclenchée dans `CourseDetail.tsx` ligne ~114).
+- Avant : écrit dans `localStorage` puis `addXP`.
+- Après : appelle `markLessonCompleted(...)` (qui fait DB + cache) puis `addXP` (déjà serveur).
+
+### 4. Synchronisation initiale
+
+Dans `useAuth.tsx`, après `setActiveProgressUser(user.id)`, déclencher la synchro `lesson_progress → localStorage` afin que la page Parcours affichée immédiatement après login soit à jour.
+
+### 5. Hors périmètre
+
+- Pas de modification de la table `user_progress` existante (gardée pour un futur lien avec `courses` UUID si besoin).
+- Pas de changement visuel : seul le pipeline de stockage change.
+- Pas de migration des données localStorage existantes vers la DB (la prochaine complétion repeuplera).
+
+### Détails techniques
+
+```sql
+CREATE TABLE public.lesson_progress (
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  lesson_id text NOT NULL,
+  course_id text,
+  level text,
+  score integer NOT NULL DEFAULT 0,
+  best_score integer NOT NULL DEFAULT 0,
+  completed boolean NOT NULL DEFAULT false,
+  completed_at timestamptz,
+  last_played_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, lesson_id)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.lesson_progress TO authenticated;
+GRANT ALL ON public.lesson_progress TO service_role;
+
+ALTER TABLE public.lesson_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "own rows" ON public.lesson_progress
+  FOR ALL TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "admins read all" ON public.lesson_progress
+  FOR SELECT TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE TRIGGER trg_lesson_progress_updated_at
+  BEFORE UPDATE ON public.lesson_progress
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE INDEX idx_lesson_progress_user ON public.lesson_progress(user_id);
+CREATE INDEX idx_lesson_progress_user_course ON public.lesson_progress(user_id, course_id);
 ```
-i18next renvoie automatiquement la valeur FR si la clé manque dans la langue active.
 
-### 4. Brancher les consommateurs
+### Fichiers touchés
 
-Remplacer les accès directs `module.title`, `module.theme`, `lesson.title`, `lesson.description`, `level.objective` par les helpers dans :
+- **Nouveau** : migration SQL, `src/hooks/useLessonProgress.ts`
+- **Modifié** : `src/lib/courseProgress.ts` (helper de sync DB ↔ cache), `src/pages/CourseDetail.tsx` (appel `markLessonCompleted`), `src/hooks/useAuth.tsx` (sync au login).
+- **Inchangés** : tous les consommateurs (`LearningPath`, `Curriculum`, `ModuleDrawer`, `ResumeCard`, `useModuleUnlock`, etc.) car ils continuent de lire le localStorage hydraté.
 
-- `src/pages/Catalogue.tsx`
-- `src/pages/Curriculum.tsx`
-- `src/pages/CourseDetail.tsx`
-- `src/components/courses/ModuleDrawer.tsx`
-- `src/components/courses/ModuleNode.tsx`
-- `src/components/courses/LearningPath.tsx`
-- `src/components/courses/CourseCard.tsx`
-- `src/components/dashboard/RecommendedCarousel.tsx`
-- `src/components/dashboard/ResumeCard.tsx`
-- `src/components/dashboard/MiniZigzag.tsx`
+### Vérification
 
-La structure `curriculum.ts` n'est pas modifiée — elle reste la source FR + l'ordre/structure du parcours.
-
-### 5. Vérification
-
-- Charger le preview, aller sur `/profil`, changer la langue → vérifier que Catalogue, Parcours, ModuleDrawer affichent les titres traduits.
-- Repasser en FR → tout revient à l'original.
-- Lancer une leçon : le contenu d'exercices reste en FR (attendu).
-- Si une clé manque (ex. une langue qui a échoué partiellement) → fallback FR transparent, pas de `[curriculum.modules.X.title]` cassé visible.
-
-## Détails techniques
-
-- Pas de modification de la table `profiles` ni des hooks d'auth existants (`useInterfaceLanguage` fonctionne déjà bien).
-- Pas de migration BDD nécessaire.
-- Les badges emoji (`badgeEmoji: '🏖️'`) restent dans `curriculum.ts`, ils sont universels.
-- Les codes compétence (`CO + PO`, `PE`, etc.) sont des sigles techniques — on les garde inchangés.
-- Le script est versionné mais ne tourne pas en CI ; il se relance manuellement quand `curriculum.ts` change.
-- Volume final : ~330 entrées × 5 langues = ~1650 chaînes, ajoute ~150 KB total aux bundles i18n (chargés au démarrage — acceptable, déjà tout-in-one).
-
-## Hors scope
-
-- Traduction du contenu des exercices (QCM, dialogues, flashcards dans `src/data/a1-module*-content.ts`, etc.) — règle projet explicite.
-- Traduction des achievements, glossaire, démo-courses (peut être ajouté plus tard si besoin).
-- Refonte du système i18n (pas de namespaces séparés, on reste sur le `translation` global existant).
+1. Se connecter, terminer une leçon → ligne créée dans `lesson_progress`.
+2. Se déconnecter / se reconnecter dans un autre navigateur → la leçon apparaît bien comme faite dans `/parcours/A1` et le module 1 progresse.
+3. Vider le localStorage → après reload, le parcours reste correct (hydraté depuis la DB).

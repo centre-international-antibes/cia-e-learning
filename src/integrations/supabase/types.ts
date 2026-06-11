@@ -172,6 +172,48 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_progress: {
+        Row: {
+          best_score: number
+          completed: boolean
+          completed_at: string | null
+          course_id: string | null
+          created_at: string
+          last_played_at: string
+          lesson_id: string
+          level: string | null
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_score?: number
+          completed?: boolean
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          last_played_at?: string
+          lesson_id: string
+          level?: string | null
+          score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_score?: number
+          completed?: boolean
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          last_played_at?: string
+          lesson_id?: string
+          level?: string | null
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
