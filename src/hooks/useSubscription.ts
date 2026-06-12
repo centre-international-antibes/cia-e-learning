@@ -51,18 +51,19 @@ export function useSubscription() {
 
   useEffect(() => { void refetch(); }, [refetch]);
 
-  // Realtime: refetch as soon as Stripe webhook upserts the subscription row.
+  // Refetch on tab focus and at a low-frequency interval. We previously used
+  // Realtime on the `subscriptions` table, but it was removed from the
+  // realtime publication to prevent cross-tenant channel subscription to
+  // billing data (RLS protects row delivery, but channel topics were open).
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
-      .channel(`subscription-${user.id}-${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
-        () => { void refetch(); },
-      )
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    const onFocus = () => { void refetch(); };
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(onFocus, 60_000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+    };
   }, [user, refetch]);
 
   // Try to sync with Stripe on first load so a freshly completed checkout
