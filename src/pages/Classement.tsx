@@ -315,8 +315,7 @@ export default function Classement() {
           )}
         </>
       )}
-        </motion.div>
-      </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
