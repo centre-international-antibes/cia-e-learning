@@ -7,6 +7,7 @@ import { useLeague, type League, type LeagueMember } from '@/hooks/useLeague';
 import { LeagueBadge, leagueLabel } from './LeagueBadge';
 import { CountdownDigit } from './CountdownDigit';
 import { PromoZoneIndicator } from './PromoZoneIndicator';
+import { LeaderboardSkeleton } from '@/components/states/skeletons/LeaderboardSkeleton';
 
 const LEAGUES: League[] = ['bronze', 'argent', 'or'];
 
