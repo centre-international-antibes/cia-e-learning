@@ -5,7 +5,7 @@ import "./index.css";
 
 const PREVIEW_RECOVERY_KEY = "__cia_preview_recovery__";
 const PREVIEW_RECOVERY_WINDOW_MS = 10_000;
-const PREVIEW_RECOVERY_MAX = 1;
+const PREVIEW_RECOVERY_MAX = 3;
 const chunkLoadErrorPatterns = [
   /Failed to fetch dynamically imported module/i,
   /Importing a module script failed/i,
