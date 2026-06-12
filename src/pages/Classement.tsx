@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Crown, Medal, Flame, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProgress } from '@/hooks/useUserProgress';
@@ -153,6 +153,7 @@ export default function Classement() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Mode>('league');
   const [myRank, setMyRank] = useState<number | null>(null);
+  const fetchCount = useRef(0);
 
   const fetchLeaderboard = useCallback(async () => {
     if (tab === 'league') {
@@ -160,6 +161,9 @@ export default function Classement() {
       setEntries([]);
       return;
     }
+    
+    const currentFetchId = ++fetchCount.current;
+    
     const orderField = tab === 'streak' ? 'daily_streak' : 'total_xp';
     let q = supabase
       .from('leaderboard')
@@ -168,30 +172,39 @@ export default function Classement() {
       .limit(50);
     if (tab === 'level') q = q.eq('cecr_level', cecrLevel);
     if (tab === 'streak') q = q.gt('daily_streak', 0);
-    const { data, error } = await q;
-    if (error) {
-      console.error('[Classement] fetch error', error);
-    }
-    setEntries((data as LeaderboardEntry[]) || []);
+    
+    try {
+      const { data, error } = await q;
+      if (currentFetchId !== fetchCount.current) return;
+      
+      if (error) {
+        console.error('[Classement] fetch error', error);
+      }
+      setEntries((data as LeaderboardEntry[]) || []);
 
-    if (user) {
-      if (tab === 'streak') {
-        // We don't compute "my rank" for streak (kept simple); leaderboard shows all top users with streak > 0
-        setMyRank(null);
-      } else {
-        let countQ = supabase
-          .from('leaderboard')
-          .select('user_id', { count: 'exact', head: true })
-          .gt('total_xp', totalXP);
-        if (tab === 'level') countQ = countQ.eq('cecr_level', cecrLevel);
-        const { count } = await countQ;
-        setMyRank((count ?? 0) + 1);
+      if (user) {
+        if (tab === 'streak') {
+          setMyRank(null);
+        } else {
+          let countQ = supabase
+            .from('leaderboard')
+            .select('user_id', { count: 'exact', head: true })
+            .gt('total_xp', totalXP);
+          if (tab === 'level') countQ = countQ.eq('cecr_level', cecrLevel);
+          const { count } = await countQ;
+          if (currentFetchId !== fetchCount.current) return;
+          setMyRank((count ?? 0) + 1);
+        }
+      }
+    } catch (err) {
+      console.error('[Classement] unexpected error', err);
+    } finally {
+      if (currentFetchId === fetchCount.current) {
+        setLoading(false);
       }
     }
-    setLoading(false);
   }, [tab, cecrLevel, totalXP, user]);
 
-  // Show skeleton only on tab switch / initial mount, not on every refresh.
   useEffect(() => {
     setLoading(true);
   }, [tab]);
@@ -229,14 +242,19 @@ export default function Classement() {
 
       <AnimatedTabs value={tab} onChange={setTab} levelLabel={cecrLevel} />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.25 }}
-        >
+      {/*
+       * Pas d'`AnimatePresence` ici : combiné à un fetch lent ou à une
+       * navigation rapide, `mode="wait"`/`popLayout` peuvent attendre la fin
+       * de l'exit avant de monter le nouvel onglet, ce qui laisse une zone
+       * vide. Une simple `motion.div` rekeyée par `tab` se remonte avec
+       * une animation d'entrée et garde un fallback visible.
+       */}
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
       {tab === 'league' ? (
         <LeagueView />
       ) : loading ? (
@@ -255,7 +273,6 @@ export default function Classement() {
         />
       ) : (
         <>
-          {/* Podium */}
           {top3.length >= 3 && (
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 md:mb-8 items-end">
               <div className="order-1">
@@ -270,7 +287,6 @@ export default function Classement() {
             </div>
           )}
 
-          {/* Rest */}
           <motion.div layout className="space-y-2">
             {rest.map((e, i) => (
               <Row key={e.user_id} entry={e} rank={i + 4} isMe={user?.id === e.user_id} mode={tab} />
@@ -280,7 +296,6 @@ export default function Classement() {
             ))}
           </motion.div>
 
-          {/* My position if outside top 50 */}
           {user && !meInTop && myRank && (
             <motion.div
               initial={{ y: 60, opacity: 0 }}
@@ -300,8 +315,7 @@ export default function Classement() {
           )}
         </>
       )}
-        </motion.div>
-      </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

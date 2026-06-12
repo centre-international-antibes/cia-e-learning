@@ -7,6 +7,7 @@ import { useLeague, type League, type LeagueMember } from '@/hooks/useLeague';
 import { LeagueBadge, leagueLabel } from './LeagueBadge';
 import { CountdownDigit } from './CountdownDigit';
 import { PromoZoneIndicator } from './PromoZoneIndicator';
+import { LeaderboardSkeleton } from '@/components/states/skeletons/LeaderboardSkeleton';
 
 const LEAGUES: League[] = ['bronze', 'argent', 'or'];
 
@@ -192,7 +193,7 @@ export function LeagueView() {
 
       {/* Members list */}
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-8">Chargement…</p>
+        <LeaderboardSkeleton />
       ) : members.length === 0 ? (
         <Card className="p-10 text-center rounded-3xl">
           <p className="text-muted-foreground font-bold">Aucun apprenant dans cette ligue.</p>
