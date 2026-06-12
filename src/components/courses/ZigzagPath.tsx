@@ -52,8 +52,7 @@ export function ZigzagPath({ coords, stroke, fillRatio = 0 }: ZigzagPathProps) {
         fill="none"
         opacity="0.35"
         initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-        whileInView={reduced ? {} : { pathLength: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
+        animate={reduced ? { pathLength: 1 } : { pathLength: 1 }}
         transition={{ duration: 2.4, ease: [0.16, 1, 0.3, 1] }}
       />
       {/* Tracé « parcouru » — opaque, plus épais, animé sur progression */}
