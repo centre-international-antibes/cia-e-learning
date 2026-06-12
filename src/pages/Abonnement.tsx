@@ -59,6 +59,10 @@ export default function Abonnement() {
 
   useEffect(() => { void syncWithStripe(); }, [syncWithStripe]);
 
+  useEffect(() => {
+    if (!user) navigate("/connexion?redirect=/abonnement", { replace: true });
+  }, [user, navigate]);
+
   const openPortal = async () => {
     if (!isPaymentsConfigured()) {
       toast.error("Les paiements ne sont pas encore configurés.");
@@ -82,8 +86,11 @@ export default function Abonnement() {
   };
 
   if (!user) {
-    navigate("/connexion?redirect=/abonnement", { replace: true });
-    return null;
+    return (
+      <div className="flex min-h-[60vh] w-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   const returnUrl = `${window.location.origin}/abonnement?success=1&session_id={CHECKOUT_SESSION_ID}`;

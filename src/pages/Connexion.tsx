@@ -63,8 +63,6 @@ export default function Connexion() {
     if (user) navigate(redirectTo, { replace: true });
   }, [user, navigate, redirectTo]);
 
-  if (user) return null;
-
   const isLogin = tab === 'login';
 
   const validate = () => {
