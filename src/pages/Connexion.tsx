@@ -94,7 +94,11 @@ export default function Connexion() {
         if (error) toast.error(error.message);
         else {
           toast.success(t('auth.loginSuccess'));
-          navigate(redirectTo);
+          // Do NOT navigate here. The `useEffect` watching `user` triggers a
+          // single `navigate(redirectTo, { replace: true })` once the auth
+          // session is applied. Navigating twice in the same tick wedges
+          // `AnimatePresence mode="wait"` and leaves <main> blank until a
+          // hard refresh.
         }
       } else {
         const interestedPlan = (() => {
@@ -112,7 +116,9 @@ export default function Connexion() {
         if (error) toast.error(error.message);
         else {
           toast.success(t('auth.signupSuccess'));
-          navigate('/dashboard?welcome=1');
+          // Same as login: defer to the user effect to avoid the double-nav
+          // that wedges AnimatePresence. Welcome flag is passed via the
+          // redirectTo override below.
         }
       }
     } finally {
