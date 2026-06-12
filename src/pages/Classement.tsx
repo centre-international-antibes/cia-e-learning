@@ -242,14 +242,19 @@ export default function Classement() {
 
       <AnimatedTabs value={tab} onChange={setTab} levelLabel={cecrLevel} />
 
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        >
+      {/*
+       * Pas d'`AnimatePresence` ici : combiné à un fetch lent ou à une
+       * navigation rapide, `mode="wait"`/`popLayout` peuvent attendre la fin
+       * de l'exit avant de monter le nouvel onglet, ce qui laisse une zone
+       * vide. Une simple `motion.div` rekeyée par `tab` se remonte avec
+       * une animation d'entrée et garde un fallback visible.
+       */}
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
       {tab === 'league' ? (
         <LeagueView />
       ) : loading ? (
