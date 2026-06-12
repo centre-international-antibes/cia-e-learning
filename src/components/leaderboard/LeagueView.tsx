@@ -192,7 +192,8 @@ export function LeagueView() {
 
       {/* Members list */}
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-8">Chargement…</p>
+        <LeaderboardSkeleton />
+        /* Loading skeleton */ 
       ) : members.length === 0 ? (
         <Card className="p-10 text-center rounded-3xl">
           <p className="text-muted-foreground font-bold">Aucun apprenant dans cette ligue.</p>
