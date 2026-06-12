@@ -33,9 +33,7 @@ export default function Profil() {
     if (!isLoading && !user) navigate('/connexion', { replace: true });
   }, [user, isLoading, navigate]);
 
-  if (!user) return null;
-
-  if (isLoading || profileLoading) {
+  if (isLoading || !user || profileLoading) {
     return (
       <div className="container max-w-4xl py-6 sm:py-10 px-4 space-y-5">
         <h1 className="font-display text-2xl sm:text-3xl text-primary">{t('profile.title')}</h1>

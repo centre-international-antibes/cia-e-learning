@@ -1,42 +1,37 @@
-# Pages blanches intermittentes — diagnostic & correctif
+# Plan de correction
 
-## Symptôme
-Toutes les 5–10 navigations, le contenu central disparaît (header + footer restent), un hard refresh résout. Pas d'erreur visible côté ErrorBoundary.
+## Objectif
+Supprimer l’écran blanc après connexion sans hard refresh, en fiabilisant la phase de restauration de session et les redirections des pages protégées.
 
-## Causes identifiées
+## Ce que je vais faire
 
-### 1. `AnimatePresence mode="wait"` + `React.lazy` + `Suspense` (cause principale)
-Dans `src/components/layout/AppLayout.tsx`, chaque route est enveloppée dans un `motion.div` à l'intérieur d'`AnimatePresence mode="wait"`. À l'extérieur, `App.tsx` enveloppe le tout dans `<Suspense>` avec des routes lazy.
+1. Renforcer l’état “auth prête”
+- Ajuster le hook d’auth pour ne pas déclarer l’application prête trop tôt pendant la restauration de session.
+- Éviter la fenêtre où l’utilisateur existe partiellement mais où les requêtes protégées partent encore dans un état instable.
+- Garder un état de chargement explicite tant que la session initiale n’est pas vraiment appliquée.
 
-Problème connu de framer-motion : quand on navigue vers une route dont le chunk JS n'est pas encore chargé, `Suspense` suspend le rendu du nouvel enfant pendant que `AnimatePresence` attend la fin de l'exit animation de l'ancien. Si la suspension se résout avant/après l'exit, le nouveau `motion.div` peut être monté sans contenu, ou l'ancien reste accroché sans children. Résultat : `<main>` vide jusqu'au prochain re-render forcé (hard refresh).
+2. Supprimer les écrans protégés qui peuvent se vider
+- Remplacer les `return null` liés à l’auth dans les pages concernées par un fallback visuel stable.
+- Centraliser le comportement: soit spinner/skeleton, soit redirection fiable, mais jamais page vide.
+- Vérifier en priorité `Connexion`, `Profil`, `Abonnement` et les routes protégées globales.
 
-### 2. `recoverPreview` ne s'arme qu'une fois (cause secondaire/aggravante)
-Dans `src/main.tsx`, `PREVIEW_RECOVERY_MAX = 1` dans une fenêtre de 10s. Si un chunk preload échoue (réseau lent, déploiement en cours), un reload auto se déclenche. Mais si un deuxième échec arrive dans les 10s, le reload est **supprimé** et la page reste blanche silencieusement.
+3. Bloquer les requêtes dépendantes de l’utilisateur tant que l’auth n’est pas prête
+- Faire en sorte que les hooks/pages qui chargent les données du dashboard ne tirent pas trop tôt.
+- Ajouter un guard simple pour les lectures profil/progression/abonnement quand l’état auth n’est pas encore stabilisé.
+- Préserver les skeletons existants au lieu de laisser `<main>` sans contenu.
 
-## Plan de correction
+4. Vérifier le flux exact après login
+- Contrôler la transition `/connexion -> dashboard` pour qu’elle passe toujours par un état visible.
+- Vérifier aussi le chargement depuis un refresh normal, pas seulement après soumission du formulaire.
+- Confirmer que le header/footer restent, mais que le contenu principal se remplit sans intervention manuelle.
 
-### Fix 1 — Déplacer `Suspense` à l'intérieur d'`AnimatePresence`
-Dans `AppLayout.tsx`, mettre la `Suspense` boundary **dans** le `motion.div` (par route), avec un fallback minimal. Cela garantit que :
-- l'exit animation de l'ancien `motion.div` se termine proprement avant le mount du nouveau,
-- le nouveau `motion.div` est toujours monté avec un fallback visible (jamais vide),
-- le `key={location.pathname}` reste cohérent.
+## Fichiers probablement touchés
+- `src/hooks/useAuth.tsx`
+- `src/App.tsx`
+- `src/pages/Connexion.tsx`
+- `src/pages/Profil.tsx`
+- `src/pages/Abonnement.tsx`
+- éventuellement les hooks de données utilisés immédiatement après connexion
 
-Retirer la `Suspense` globale dans `App.tsx` (ou la garder uniquement pour AdminLayout qui n'utilise pas AnimatePresence) et l'inclure dans AppLayout autour de `<Outlet />`.
-
-### Fix 2 — Assouplir la garde de recovery
-Dans `src/main.tsx` :
-- passer `PREVIEW_RECOVERY_MAX` à `2` ou `3` (un seul retry est trop strict pour des erreurs réseau qui s'enchaînent),
-- en cas de suppression, au lieu de ne rien faire, afficher un overlay minimal "Rechargement nécessaire — cliquer ici" pour que l'utilisateur ne reste pas devant un écran blanc.
-
-### Fix 3 — Garde-fou visuel
-Ajouter dans `AppLayout` un `min-height` sur `<main>` égal à la hauteur de viewport restante, et un fallback de dernier recours (skeleton) si `<Outlet />` ne rend rien après X ms — purement défensif, ne devrait pas se déclencher après Fix 1.
-
-## Fichiers modifiés
-- `src/components/layout/AppLayout.tsx` — Suspense interne à AnimatePresence
-- `src/App.tsx` — retirer/restreindre la Suspense globale
-- `src/main.tsx` — relever `PREVIEW_RECOVERY_MAX`, fallback UI si reload supprimé
-
-## Vérification
-- Naviguer rapidement entre 10–15 routes différentes (catalogue → programme → profil → dashboard → cours → …) sans hard refresh.
-- Throttle réseau "Slow 3G" dans DevTools puis naviguer : le contenu doit toujours afficher un spinner, jamais un blanc.
-- Vérifier qu'aucune regression d'animation de transition n'apparaît.
+## Détail technique
+Le symptôme actuel ressemble à une course d’initialisation auth: certaines vues protégées peuvent rendre `null` ou lancer leurs requêtes alors que la session restaurée n’est pas encore totalement exploitable. Résultat: la route est montée, le header/footer restent, mais le contenu principal n’affiche rien jusqu’au hard refresh. La correction consiste à synchroniser plus strictement la disponibilité auth avec les redirections et les fetchs, et à interdire tout “empty render” sur ces chemins.
