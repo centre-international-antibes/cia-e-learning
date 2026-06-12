@@ -1,37 +1,58 @@
-# Plan de correction
-
 ## Objectif
-Supprimer l’écran blanc après connexion sans hard refresh, en fiabilisant la phase de restauration de session et les redirections des pages protégées.
+Stabiliser le passage `/connexion` → `/dashboard` pour qu’il n’existe plus d’état où le header et le footer restent visibles pendant que le contenu central disparaît jusqu’au hard refresh.
 
-## Ce que je vais faire
+## Ce que je vais corriger
+1. Refaire le garde-fou d’authentification pour que l’app n’entre jamais dans un état “connecté mais pas encore prêt à rendre la route”.
+2. Simplifier la logique de redirection login/dashboard pour éviter les navigations concurrentes et les transitions qui laissent `<main>` vide.
+3. Sécuriser le rendu animé des pages pour que le contenu central affiche toujours soit la page, soit un loader visible, jamais du blanc.
+4. Vérifier que les hooks du dashboard et les lectures base de données ne partent qu’une fois l’auth réellement prête.
+5. Tester spécifiquement le scénario utilisateur: connexion, arrivée sur `/dashboard`, navigation répétée, refresh normal.
 
-1. Renforcer l’état “auth prête”
-- Ajuster le hook d’auth pour ne pas déclarer l’application prête trop tôt pendant la restauration de session.
-- Éviter la fenêtre où l’utilisateur existe partiellement mais où les requêtes protégées partent encore dans un état instable.
-- Garder un état de chargement explicite tant que la session initiale n’est pas vraiment appliquée.
+## Hypothèse de cause racine
+Le problème n’est pas seulement le formulaire de connexion. Il reste un enchaînement fragile entre:
+- l’initialisation de session dans `useAuth.tsx`
+- la protection de route dans `App.tsx`
+- la transition `AnimatePresence mode="wait"` dans `AppLayout.tsx`
+- le lazy loading/suspense des pages
 
-2. Supprimer les écrans protégés qui peuvent se vider
-- Remplacer les `return null` liés à l’auth dans les pages concernées par un fallback visuel stable.
-- Centraliser le comportement: soit spinner/skeleton, soit redirection fiable, mais jamais page vide.
-- Vérifier en priorité `Connexion`, `Profil`, `Abonnement` et les routes protégées globales.
+Résultat probable: la route passe bien à `/dashboard`, mais le conteneur animé a déjà démonté l’ancien contenu avant que le nouvel arbre soit considéré comme “prêt”, ce qui laisse le centre vide sans récupération automatique.
 
-3. Bloquer les requêtes dépendantes de l’utilisateur tant que l’auth n’est pas prête
-- Faire en sorte que les hooks/pages qui chargent les données du dashboard ne tirent pas trop tôt.
-- Ajouter un guard simple pour les lectures profil/progression/abonnement quand l’état auth n’est pas encore stabilisé.
-- Préserver les skeletons existants au lieu de laisser `<main>` sans contenu.
+## Plan d’implémentation
+### 1) Durcir l’état d’auth prêt
+- Introduire un état explicite de “session hydratée / auth prête”.
+- Faire en sorte que l’état auth ne dépende pas d’une course entre `getSession()` et `onAuthStateChange()`.
+- Éviter tout déblocage prématuré de l’UI tant que la première session utile n’est pas réconciliée.
 
-4. Vérifier le flux exact après login
-- Contrôler la transition `/connexion -> dashboard` pour qu’elle passe toujours par un état visible.
-- Vérifier aussi le chargement depuis un refresh normal, pas seulement après soumission du formulaire.
-- Confirmer que le header/footer restent, mais que le contenu principal se remplit sans intervention manuelle.
+### 2) Unifier les redirections auth
+- Supprimer les redirections impératives dispersées quand elles se chevauchent.
+- Centraliser la décision “utilisateur connecté/non connecté” au niveau des gardes de route.
+- Remplacer autant que possible les `navigate()` dans les effets par un chemin de rendu plus déterministe.
 
-## Fichiers probablement touchés
+### 3) Sécuriser le shell de route animé
+- Ajuster `AppLayout.tsx` pour que la transition de page ne puisse plus afficher un `<main>` vide.
+- Si nécessaire, déplacer ou simplifier `AnimatePresence mode="wait"` autour des routes authentifiées/lazy.
+- Garantir qu’un fallback visuel reste affiché pendant toute transition ou suspension.
+
+### 4) Gater les hooks du dashboard
+- Empêcher les requêtes et effets dépendants de l’utilisateur de partir avant que l’auth soit prête.
+- Conserver un squelette stable tant que les données minimales du dashboard ne sont pas décidées.
+- Éviter les branches silencieuses qui finissent sans contenu visible.
+
+### 5) Validation
+- Tester le flux connexion → dashboard plusieurs fois.
+- Vérifier qu’en cas de délai de session ou de chargement lazy, un loader/skeleton reste visible.
+- Vérifier qu’un refresh standard ne soit plus nécessaire.
+
+## Détails techniques
+Fichiers visés:
 - `src/hooks/useAuth.tsx`
 - `src/App.tsx`
+- `src/components/layout/AppLayout.tsx`
 - `src/pages/Connexion.tsx`
-- `src/pages/Profil.tsx`
-- `src/pages/Abonnement.tsx`
-- éventuellement les hooks de données utilisés immédiatement après connexion
+- `src/pages/Dashboard.tsx`
+- éventuellement les hooks dashboard si le gating doit être ajouté côté requêtes
 
-## Détail technique
-Le symptôme actuel ressemble à une course d’initialisation auth: certaines vues protégées peuvent rendre `null` ou lancer leurs requêtes alors que la session restaurée n’est pas encore totalement exploitable. Résultat: la route est montée, le header/footer restent, mais le contenu principal n’affiche rien jusqu’au hard refresh. La correction consiste à synchroniser plus strictement la disponibilité auth avec les redirections et les fetchs, et à interdire tout “empty render” sur ces chemins.
+Résultat attendu:
+- après connexion, `/dashboard` s’affiche toujours normalement
+- aucune page protégée ne peut rendre un centre vide
+- les transitions animées restent fluides sans casser le rendu
