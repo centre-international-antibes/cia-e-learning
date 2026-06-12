@@ -1,39 +1,42 @@
-# Plan de correction du flux d’abonnement
+# Pages blanches intermittentes — diagnostic & correctif
 
-## Objectif
-Faire en sorte qu’après un paiement CB ou wallet validé, le compte passe immédiatement en Premium dans l’app, avec accès débloqué aux cours, badge Premium visible, et bouton de gestion d’abonnement disponible.
+## Symptôme
+Toutes les 5–10 navigations, le contenu central disparaît (header + footer restent), un hard refresh résout. Pas d'erreur visible côté ErrorBoundary.
 
-## Ce que je vais corriger
+## Causes identifiées
 
-1. Fiabiliser l’écriture de l’abonnement côté backend
-- Renforcer le traitement webhook pour journaliser précisément les erreurs d’écriture.
-- Vérifier et corriger le mapping des données Stripe vers la table `subscriptions`.
-- Ajouter un fallback robuste si l’événement principal n’écrit pas la ligne attendue.
+### 1. `AnimatePresence mode="wait"` + `React.lazy` + `Suspense` (cause principale)
+Dans `src/components/layout/AppLayout.tsx`, chaque route est enveloppée dans un `motion.div` à l'intérieur d'`AnimatePresence mode="wait"`. À l'extérieur, `App.tsx` enveloppe le tout dans `<Suspense>` avec des routes lazy.
 
-2. Corriger la récupération de l’abonnement côté client
-- Empêcher la page abonnement de rester bloquée sur l’état “non abonné” quand un paiement vient d’être validé.
-- Mieux gérer le retour de paiement avec `session_id` pour forcer une resynchronisation fiable.
-- Éviter qu’une ancienne ligne “free” masque une ligne payante plus récente ou qu’un état vide soit interprété comme non abonné trop tôt.
+Problème connu de framer-motion : quand on navigue vers une route dont le chunk JS n'est pas encore chargé, `Suspense` suspend le rendu du nouvel enfant pendant que `AnimatePresence` attend la fin de l'exit animation de l'ancien. Si la suspension se résout avant/après l'exit, le nouveau `motion.div` peut être monté sans contenu, ou l'ancien reste accroché sans children. Résultat : `<main>` vide jusqu'au prochain re-render forcé (hard refresh).
 
-3. Corriger l’accès Premium dans l’interface
-- Faire en sorte que la page “Mon abonnement” bascule bien vers l’état Premium dès que l’abonnement est confirmé.
-- Réactiver le bouton “Gérer mon abonnement” dès qu’un `stripe_customer_id` existe.
-- Vérifier que le badge Premium et les déblocages de contenu utilisent bien la même source de vérité.
+### 2. `recoverPreview` ne s'arme qu'une fois (cause secondaire/aggravante)
+Dans `src/main.tsx`, `PREVIEW_RECOVERY_MAX = 1` dans une fenêtre de 10s. Si un chunk preload échoue (réseau lent, déploiement en cours), un reload auto se déclenche. Mais si un deuxième échec arrive dans les 10s, le reload est **supprimé** et la page reste blanche silencieusement.
 
-4. Ajouter un diagnostic de sécurité fonctionnel
-- Ajouter des logs ciblés pour voir si le souci vient du webhook, du fallback de synchronisation, ou de la lecture client.
-- Vérifier le comportement sur le flux live/test pour éviter les faux négatifs dus à l’environnement.
+## Plan de correction
 
-## Détails techniques
-- Vérifier `payments-webhook` et `check-subscription` pour confirmer pourquoi aucune ligne Stripe active n’est actuellement visible en base malgré des événements reçus.
-- Corriger la stratégie de lecture dans `useSubscription` si nécessaire pour prendre la bonne ligne d’abonnement.
-- Mettre à jour la page `Abonnement` pour traiter explicitement le retour Stripe et relancer la synchronisation tant que l’abonnement n’est pas encore visible.
-- Si nécessaire, ajuster la requête de portail pour qu’elle s’appuie sur la ligne d’abonnement réellement active.
+### Fix 1 — Déplacer `Suspense` à l'intérieur d'`AnimatePresence`
+Dans `AppLayout.tsx`, mettre la `Suspense` boundary **dans** le `motion.div` (par route), avec un fallback minimal. Cela garantit que :
+- l'exit animation de l'ancien `motion.div` se termine proprement avant le mount du nouveau,
+- le nouveau `motion.div` est toujours monté avec un fallback visible (jamais vide),
+- le `key={location.pathname}` reste cohérent.
 
-## Résultat attendu
-Après paiement validé:
-- la carte de paiement disparaît,
-- la page passe en “Premium actif”,
-- les cours Premium se débloquent,
-- le badge Premium apparaît,
-- la gestion d’abonnement fonctionne.
+Retirer la `Suspense` globale dans `App.tsx` (ou la garder uniquement pour AdminLayout qui n'utilise pas AnimatePresence) et l'inclure dans AppLayout autour de `<Outlet />`.
+
+### Fix 2 — Assouplir la garde de recovery
+Dans `src/main.tsx` :
+- passer `PREVIEW_RECOVERY_MAX` à `2` ou `3` (un seul retry est trop strict pour des erreurs réseau qui s'enchaînent),
+- en cas de suppression, au lieu de ne rien faire, afficher un overlay minimal "Rechargement nécessaire — cliquer ici" pour que l'utilisateur ne reste pas devant un écran blanc.
+
+### Fix 3 — Garde-fou visuel
+Ajouter dans `AppLayout` un `min-height` sur `<main>` égal à la hauteur de viewport restante, et un fallback de dernier recours (skeleton) si `<Outlet />` ne rend rien après X ms — purement défensif, ne devrait pas se déclencher après Fix 1.
+
+## Fichiers modifiés
+- `src/components/layout/AppLayout.tsx` — Suspense interne à AnimatePresence
+- `src/App.tsx` — retirer/restreindre la Suspense globale
+- `src/main.tsx` — relever `PREVIEW_RECOVERY_MAX`, fallback UI si reload supprimé
+
+## Vérification
+- Naviguer rapidement entre 10–15 routes différentes (catalogue → programme → profil → dashboard → cours → …) sans hard refresh.
+- Throttle réseau "Slow 3G" dans DevTools puis naviguer : le contenu doit toujours afficher un spinner, jamais un blanc.
+- Vérifier qu'aucune regression d'animation de transition n'apparaît.
