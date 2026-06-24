@@ -30,7 +30,7 @@ const displayName = (e: LeaderboardEntry) => {
 };
 
 const Avatar = ({ entry, size = 'md' }: { entry: LeaderboardEntry; size?: 'sm' | 'md' | 'lg' }) => {
-  const sz = size === 'lg' ? 'h-20 w-20 text-2xl' : size === 'md' ? 'h-12 w-12 text-base' : 'h-10 w-10 text-sm';
+  const sz = size === 'lg' ? 'h-16 w-16 md:h-20 md:w-20 text-xl md:text-2xl' : size === 'md' ? 'h-12 w-12 text-base' : 'h-10 w-10 text-sm';
   const initial = (entry.first_name?.[0] || entry.last_name?.[0] || '?').toUpperCase();
   if (entry.avatar_url) {
     return <img src={entry.avatar_url} alt={displayName(entry)} className={`${sz} rounded-full object-cover border-2 border-primary/30`} loading="lazy" decoding="async" />;
@@ -70,14 +70,14 @@ const PodiumCard = ({ entry, rank, isMe, mode }: { entry: LeaderboardEntry; rank
         <Icon className={`${config.color} h-8 w-8 mb-2`} />
       </motion.div>
       <Avatar entry={entry} size="lg" />
-      <p className="font-bold text-sm mt-2 text-center truncate max-w-full">{displayName(entry)}</p>
-      <p className="text-xs text-muted-foreground">{entry.cecr_level || 'A1'}</p>
-      <div className="mt-2 px-3 py-1 rounded-full bg-cia-xp/15 text-cia-xp text-xs font-bold">
+      <p className="font-bold text-xs md:text-sm mt-2 text-center truncate max-w-full">{displayName(entry)}</p>
+      <p className="text-[10px] md:text-xs text-muted-foreground">{entry.cecr_level || 'A1'}</p>
+      <div className="mt-2 px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-cia-xp/15 text-cia-xp text-[10px] md:text-xs font-bold whitespace-nowrap">
         {mode === 'streak'
           ? <span className="inline-flex items-center gap-1 text-cia-streak">🔥 {entry.daily_streak ?? 0} j</span>
           : <>⚡ {entry.total_xp.toLocaleString()} XP</>}
       </div>
-      <p className={`mt-1 text-[10px] font-extrabold tracking-wider ${config.color}`}>#{rank} • {config.label}</p>
+      <p className={`mt-1 text-[9px] md:text-[10px] font-extrabold tracking-wider whitespace-nowrap ${config.color}`}>#{rank} • {config.label}</p>
     </Card>
     </motion.div>
   );
