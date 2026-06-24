@@ -75,7 +75,7 @@ export function OnboardingFlow() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.96 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-          className="relative w-full max-w-md bg-card border border-border rounded-3xl shadow-2xl p-6 md:p-8"
+          className="relative w-[calc(100vw-1.5rem)] max-w-md bg-card border border-border rounded-3xl shadow-2xl p-5 md:p-8"
         >
           <button
             onClick={handleSkip}
@@ -101,7 +101,7 @@ export function OnboardingFlow() {
 
           {phase === 'profile' && (
             <div className="space-y-5">
-              <h2 className="font-display text-xl md:text-2xl text-center">{t('onboarding.profile.title')}</h2>
+              <h2 className="font-display text-xl md:text-2xl text-center pr-6">{t('onboarding.profile.title')}</h2>
               <div className="space-y-3">
                 {(['beginner', 'falseBeginner', 'confirmed'] as Profile[]).map((p) => {
                   const Icon = p === 'beginner' ? Sparkles : p === 'falseBeginner' ? Users : GraduationCap;
@@ -110,17 +110,17 @@ export function OnboardingFlow() {
                     <button
                       key={p}
                       onClick={() => setProfile(p)}
-                      className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+                      className={`w-full text-left p-3 md:p-4 rounded-2xl border-2 transition-all ${
                         selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-xl ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <div className={`shrink-0 p-2 rounded-xl ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="flex-1">
-                          <p className="font-bold">{t(`onboarding.profile.${p}.label`)}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{t(`onboarding.profile.${p}.desc`)}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm md:text-base break-words">{t(`onboarding.profile.${p}.label`)}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 break-words">{t(`onboarding.profile.${p}.desc`)}</p>
                         </div>
                       </div>
                     </button>
@@ -140,7 +140,7 @@ export function OnboardingFlow() {
 
           {phase === 'level' && (
             <div className="space-y-5">
-              <h2 className="font-display text-xl md:text-2xl text-center">{t('onboarding.level.title')}</h2>
+              <h2 className="font-display text-xl md:text-2xl text-center pr-6">{t('onboarding.level.title')}</h2>
               <p className="text-sm text-muted-foreground text-center">{t('onboarding.level.subtitle')}</p>
 
               <Button
@@ -164,7 +164,7 @@ export function OnboardingFlow() {
                     <Button
                       key={lvl}
                       variant="outline"
-                      className="h-12 font-display text-lg"
+                      className="h-11 md:h-12 font-display text-base md:text-lg"
                       onClick={async () => {
                         await setLevel(lvl);
                         setPhase('tour');
