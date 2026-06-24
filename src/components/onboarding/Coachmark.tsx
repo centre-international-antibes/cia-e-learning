@@ -57,12 +57,13 @@ export function Coachmark({
   const bubblePos: React.CSSProperties = (() => {
     if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     const padding = 16;
-    const bubbleW = 320;
+    const margin = 12;
+    const bubbleW = Math.min(320, window.innerWidth - margin * 2);
     const below = rect.bottom + padding + 220 < window.innerHeight;
-    const top = below ? rect.bottom + padding : rect.top - padding - 220;
+    const top = Math.max(margin, below ? rect.bottom + padding : rect.top - padding - 220);
     let left = rect.left + rect.width / 2 - bubbleW / 2;
-    left = Math.max(12, Math.min(window.innerWidth - bubbleW - 12, left));
-    return { top, left };
+    left = Math.max(margin, Math.min(window.innerWidth - bubbleW - margin, left));
+    return { top, left, width: bubbleW };
   })();
 
   // Spotlight cutout via clipPath
@@ -99,7 +100,7 @@ export function Coachmark({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute w-[320px] max-w-[calc(100vw-24px)] rounded-2xl bg-card border border-border shadow-2xl p-5"
+          className="absolute max-w-[calc(100vw-24px)] rounded-2xl bg-card border border-border shadow-2xl p-5"
           style={bubblePos}
         >
           <button
