@@ -1,21 +1,31 @@
-## Problème
-"Refaire le tour d'introduction" se lance puis disparaît instantanément.
+## Problèmes mobile dans la section Ligue/Classement
 
-**Cause** : `useOnboarding.restart()` redirige vers `/?welcome=1`. Pour un utilisateur connecté, `LandingOrRedirect` (`src/App.tsx`) le réoriente vers `/dashboard` avec `{ replace: true }`, supprimant la query `welcome=1`. `OnboardingFlow` ne détecte plus `forceWelcome`, et comme `needsOnboarding=false` (onboarding déjà marqué fait en BDD), le modal ne s'ouvre pas.
+**1. Header `LeagueView` déborde sur mobile (~390 px)**
+La rangée `[badge] [titre + compte à rebours] [Cette semaine + Rang]` est trop dense : le compte à rebours `04j 12h 49m 21s` force le bloc titre à être large, et le bloc droit ("Cette semaine / Rang") est tronqué.
 
-## Correctif
+**2. Pastille XP du podium qui passe sur 2 lignes**
+Sur les onglets Global/Niveau/Streak, la grille `grid-cols-3 gap-2` à 390 px laisse ~120 px par carte. La pastille `⚡ 29,620 XP` passe en 2 lignes ("29,620 / XP") et casse le rythme visuel.
 
-**1. `src/hooks/useOnboarding.ts` — `restart()`**
-- Pour un utilisateur connecté : rediriger directement vers `/dashboard?welcome=1` au lieu de `/?welcome=1`, pour éviter la perte de query lors du redirect `LandingOrRedirect`.
-- Utiliser `window.location.assign('/dashboard?welcome=1')` (full reload garde la logique actuelle simple et garantit un état propre).
+## Correctifs
 
-**2. `src/App.tsx` — `LandingOrRedirect` (filet de sécurité)**
-- Préserver `location.search` lors du redirect vers `/dashboard` : `navigate('/dashboard' + location.search, { replace: true })`. Ainsi, si un autre code arrive un jour sur `/?welcome=1` connecté, le flag est conservé.
+**`src/components/leaderboard/LeagueView.tsx`**
+- Sur mobile, passer la rangée du header en deux niveaux :
+  - Ligne 1 : badge + titre + (XP/Rang à droite, format compact "⚡12,3k • #5").
+  - Ligne 2 : le compte à rebours sur sa propre ligne pleine largeur.
+- Desktop : conserver la disposition actuelle sur une seule ligne via `md:` overrides.
+- Réduire le titre `text-2xl` → `text-xl md:text-2xl`.
+- Ajouter `whitespace-nowrap` sur le compte à rebours pour éviter un wrap au milieu.
+
+**`src/pages/Classement.tsx` — `PodiumCard`**
+- Pastille XP : `whitespace-nowrap`, padding réduit (`px-2 py-0.5 md:px-3 md:py-1`), taille `text-[10px] md:text-xs` sur mobile pour rester sur une ligne dans la cellule ~120 px.
+- Réduire le nom (`text-xs md:text-sm`) et le label rank (`text-[9px] md:text-[10px]`).
+- Réduire l'avatar `lg` à `h-16 w-16 md:h-20 md:w-20` pour libérer de la place verticale.
 
 ## Validation
-- Profil → cliquer "Refaire le tour d'introduction" → vérifier que le modal Welcome s'ouvre et reste visible sur `/dashboard?welcome=1`.
-- Parcourir Welcome → Profil → Niveau → Tour → vérifier que la query `welcome` est nettoyée à la fin via le `navigate(location.pathname, { replace: true })` déjà présent dans `close()`/`handleSkip()`.
+- Playwright en viewport mobile (390×844) sur `/classement` :
+  - Onglet Ligue : header tient sans tronquer, compte à rebours sur sa propre ligne.
+  - Onglet Global : pastilles XP sur une seule ligne dans le podium.
 
 ## Fichiers modifiés
-- `src/hooks/useOnboarding.ts`
-- `src/App.tsx`
+- `src/components/leaderboard/LeagueView.tsx`
+- `src/pages/Classement.tsx`
