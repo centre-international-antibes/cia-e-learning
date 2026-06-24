@@ -86,7 +86,7 @@ export function useOnboarding() {
       setCompletedAt(null);
     } else {
       // For logged users, can't undo DB flag; rely on URL flag
-      window.location.assign('/?welcome=1');
+      window.location.assign('/dashboard?welcome=1');
     }
   }, [user]);
 
