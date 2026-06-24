@@ -99,6 +99,12 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     };
   }, []);
 
+  /* Scroll to top on step change so the user doesn't stay scrolled at the bottom */
+  useEffect(() => {
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, left: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+  }, [currentStep, completed]);
+
   /* Mood auto-reset : 1.5 s après un mood non-idle (charte §2) */
   useEffect(() => {
     if (mascotMood === 'idle' || completed) return;
