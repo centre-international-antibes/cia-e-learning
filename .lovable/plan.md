@@ -1,31 +1,21 @@
 ## Problème
-Sur mobile, le modal d'onboarding (`OnboardingFlow.tsx`) et le tour guidé (`Coachmark.tsx`) débordent de l'écran :
-- Le modal utilise `max-w-md` + `p-6 md:p-8` sans contrainte de largeur réelle sur très petits écrans.
-- Les cartes de choix de profil (Débutant / Faux-débutant / Confirmé) ont un padding interne `p-4` + icône + texte qui peut déborder sur largeurs < 360px.
-- La grille des niveaux (`grid-cols-3` avec boutons `h-12 font-display text-lg`) reste à 3 colonnes même sur très petit écran.
-- Le `Coachmark` calcule une largeur fixe `bubbleW = 320` et un positionnement qui peut sortir du viewport sur mobile.
+"Refaire le tour d'introduction" se lance puis disparaît instantanément.
 
-## Correctifs proposés
+**Cause** : `useOnboarding.restart()` redirige vers `/?welcome=1`. Pour un utilisateur connecté, `LandingOrRedirect` (`src/App.tsx`) le réoriente vers `/dashboard` avec `{ replace: true }`, supprimant la query `welcome=1`. `OnboardingFlow` ne détecte plus `forceWelcome`, et comme `needsOnboarding=false` (onboarding déjà marqué fait en BDD), le modal ne s'ouvre pas.
 
-**1. `src/components/onboarding/OnboardingFlow.tsx`**
-- Réduire le padding mobile du conteneur modal : `p-5 md:p-8` au lieu de `p-6 md:p-8`.
-- Ajouter une contrainte largeur : `w-[calc(100vw-1.5rem)] max-w-md` pour garantir une marge à gauche/droite.
-- Sur la phase `profile` : réduire le padding interne des cartes (`p-3 md:p-4`), permettre au texte de wrap (`min-w-0` + `break-words` sur le bloc texte), réduire la taille de l'icône sur mobile.
-- Sur la phase `level` : la grille `grid-cols-3` reste OK mais réduire la hauteur/texte des boutons sur mobile (`h-11 text-base md:h-12 md:text-lg`).
-- Vérifier que le bouton de fermeture (X) ne chevauche pas le titre sur petit écran.
+## Correctif
 
-**2. `src/components/onboarding/Coachmark.tsx`**
-- Rendre la bulle responsive : largeur `min(320px, calc(100vw - 24px))` au lieu de fixe `w-[320px]`.
-- Recalculer `bubbleW` dynamiquement selon la largeur viewport pour le positionnement.
-- S'assurer que la bulle ne déborde jamais sous le header/footer mobile.
+**1. `src/hooks/useOnboarding.ts` — `restart()`**
+- Pour un utilisateur connecté : rediriger directement vers `/dashboard?welcome=1` au lieu de `/?welcome=1`, pour éviter la perte de query lors du redirect `LandingOrRedirect`.
+- Utiliser `window.location.assign('/dashboard?welcome=1')` (full reload garde la logique actuelle simple et garantit un état propre).
 
-**3. Validation**
-- Tester via Playwright en viewport mobile (375×812 et 320×640) :
-  - Phase welcome → profile → level : aucune carte ne sort de l'écran.
-  - Tour guidé : la bulle reste dans le viewport.
+**2. `src/App.tsx` — `LandingOrRedirect` (filet de sécurité)**
+- Préserver `location.search` lors du redirect vers `/dashboard` : `navigate('/dashboard' + location.search, { replace: true })`. Ainsi, si un autre code arrive un jour sur `/?welcome=1` connecté, le flag est conservé.
+
+## Validation
+- Profil → cliquer "Refaire le tour d'introduction" → vérifier que le modal Welcome s'ouvre et reste visible sur `/dashboard?welcome=1`.
+- Parcourir Welcome → Profil → Niveau → Tour → vérifier que la query `welcome` est nettoyée à la fin via le `navigate(location.pathname, { replace: true })` déjà présent dans `close()`/`handleSkip()`.
 
 ## Fichiers modifiés
-- `src/components/onboarding/OnboardingFlow.tsx`
-- `src/components/onboarding/Coachmark.tsx`
-
-Aucun changement de logique métier — pur correctif responsive CSS/Tailwind.
+- `src/hooks/useOnboarding.ts`
+- `src/App.tsx`
