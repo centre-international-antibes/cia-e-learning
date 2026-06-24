@@ -56,11 +56,12 @@ function RouteFallback() {
 function LandingOrRedirect() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard' + location.search, { replace: true });
     }
-  }, [isLoading, user, navigate]);
+  }, [isLoading, user, navigate, location.search]);
   if (isLoading || user) return <RouteFallback />;
   return <Index />;
 }
