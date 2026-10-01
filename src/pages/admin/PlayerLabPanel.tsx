@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import { CoursePlayer, type LessonResult } from '@/components/course-player/CoursePlayer';
+import { CoursePlayer } from '@/components/course-player/CoursePlayer';
+import type { LessonResult } from '@/components/course-player/lesson-result';
+import { computeLessonXp } from '@/lib/xp/lessonXp';
 import type { CourseContent } from '@/data/course-content';
 
 /**
@@ -135,10 +137,29 @@ export function PlayerLabPanel() {
           content={DEMO_LESSON}
           courseTitle="Motion Lab — mini-leçon"
           onExit={() => setPlaying(false)}
-          onComplete={(result) => {
+          onSubmit={async (result) => {
             setLastResult(result);
-            setPlaying(false);
+            // Le lab joue le rôle du serveur : barème local, latence courte.
+            const xp = computeLessonXp({
+              correct: result.correct,
+              questionCount: result.questionCount,
+              bestCombo: result.bestCombo,
+            });
+            await new Promise((r) => setTimeout(r, 600));
+            return {
+              status: 'rewarded',
+              xpAwarded: xp.total,
+              breakdown: {
+                base: xp.base,
+                correct: xp.correct,
+                combo: xp.combo,
+                perfect: xp.perfect,
+              },
+              xpBefore: 1200,
+              xpAfter: 1200 + xp.total,
+            };
           }}
+          onFinish={() => setPlaying(false)}
         />
       )}
     </div>

@@ -152,7 +152,7 @@ export function XPBurst({ x, y, amount, onComplete }: XPBurstProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] pointer-events-none"
+      className="fixed inset-0 z-[201] pointer-events-none"
       style={{ contain: 'layout' }}
       aria-hidden="true"
     >

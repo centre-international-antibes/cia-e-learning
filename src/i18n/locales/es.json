@@ -260,7 +260,24 @@
       "correct": "Correctas",
       "next_course": "Siguiente curso",
       "back_catalogue": "Volver al catálogo",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "titleDone": "¡Lección terminada!",
+      "titlePerfect": "¡Lección perfecta!",
+      "xpLabel": "XP ganada",
+      "accuracy": "Precisión",
+      "bestCombo": "Mejor racha",
+      "durationLine": "Terminada en {{time}}",
+      "totalXp": "XP total",
+      "xpPending": "Calculando la XP…",
+      "xpTooFast": "Lección demasiado rápida para ganar XP.",
+      "xpReplayCap": "XP ya ganada 3 veces hoy en esta lección.",
+      "xpOffline": "XP sincronizándose.",
+      "breakdown": {
+        "lesson": "+{{xp}} lección",
+        "correct": "+{{xp}} respuestas",
+        "combo": "+{{xp}} racha",
+        "perfect": "+{{xp}} perfecta"
+      }
     },
     "step": "Paso",
     "sparkLabel": "Spark",

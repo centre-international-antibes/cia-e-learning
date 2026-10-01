@@ -68,7 +68,9 @@ export function LevelUpCelebration({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden border-0 bg-gradient-to-br from-cia-blue-900 via-cia-blue-700 to-cia-blue-900 text-white p-0 [&>button]:hidden">
+      <DialogContent
+        overlayClassName="z-[200]"
+        className="z-[201] max-w-lg overflow-hidden border-0 bg-gradient-to-br from-cia-blue-900 via-cia-blue-700 to-cia-blue-900 text-white p-0 [&>button]:hidden">
         <motion.div
           className="absolute inset-0 -z-10 pointer-events-none"
           initial={{ opacity: 0 }}

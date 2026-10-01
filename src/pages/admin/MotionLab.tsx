@@ -13,6 +13,7 @@ import { spring } from '@/lib/motion';
 import { feedback, MAX_COMBO_STEP, playSound, type SoundName } from '@/lib/feedback';
 import { useOptionalRewards } from '@/features/rewards';
 import { PlayerLabPanel } from './PlayerLabPanel';
+import { CompletionLabPanel } from './CompletionLabPanel';
 
 /**
  * Motion Lab — banc d'essai des primitives M1.
@@ -217,6 +218,13 @@ export default function MotionLab() {
           description="Mini-leçon jouable : CheckBar, sélection avant validation, combo, rejeu des erreurs."
         >
           <PlayerLabPanel />
+        </AdminSectionCard>
+
+        <AdminSectionCard
+          title="Fin de leçon"
+          description="Chorégraphie, XP serveur réelle, éclats qui volent — et les célébrations qui attendent leur tour."
+        >
+          <CompletionLabPanel />
         </AdminSectionCard>
 
         <AdminSectionCard

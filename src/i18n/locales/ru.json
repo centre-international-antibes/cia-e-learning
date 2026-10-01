@@ -260,7 +260,24 @@
       "correct": "Верных",
       "next_course": "Следующий курс",
       "back_catalogue": "Назад к каталогу",
-      "retry": "Повторить"
+      "retry": "Повторить",
+      "titleDone": "Урок завершён!",
+      "titlePerfect": "Идеальный урок!",
+      "xpLabel": "Получено XP",
+      "accuracy": "Точность",
+      "bestCombo": "Лучшая серия",
+      "durationLine": "Завершён за {{time}}",
+      "totalXp": "Всего XP",
+      "xpPending": "Расчёт XP…",
+      "xpTooFast": "Урок пройден слишком быстро — XP не начислены.",
+      "xpReplayCap": "XP за этот урок уже получены 3 раза сегодня.",
+      "xpOffline": "XP синхронизируются.",
+      "breakdown": {
+        "lesson": "+{{xp}} урок",
+        "correct": "+{{xp}} ответы",
+        "combo": "+{{xp}} серия",
+        "perfect": "+{{xp}} идеально"
+      }
     },
     "step": "Шаг",
     "sparkLabel": "Спарк",

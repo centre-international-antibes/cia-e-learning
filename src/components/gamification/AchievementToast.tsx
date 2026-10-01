@@ -40,7 +40,7 @@ export function AchievementToast({ achievement, onDismiss }: AchievementToastPro
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: 80 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-6 right-6 z-[60] max-w-sm cursor-pointer"
+          className="fixed bottom-6 right-6 z-[201] max-w-sm cursor-pointer"
           onClick={onDismiss}
         >
           <div className={cn(

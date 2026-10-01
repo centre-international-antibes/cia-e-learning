@@ -40,24 +40,24 @@ import { computeLessonXp } from '@/lib/xp/lessonXp';
 import { countQuestions } from '@/lib/lessonSpec';
 import { feedback, MAX_COMBO_STEP } from '@/lib/feedback';
 import { useOptionalRewards } from '@/features/rewards';
-import { levelUpSequence } from '@/lib/confetti';
 import { spring, fade } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import { CompletionScreen } from './CompletionScreen';
+import type { LessonResult, LessonSubmitResult } from './lesson-result';
 
-/** Résultats remontés en fin de leçon. Aucun montant d'XP : le barème est
- *  appliqué par le serveur à partir de ces chiffres (cf. M2). */
-export interface LessonResult {
-  score: number;
-  correct: number;
-  questionCount: number;
-  bestCombo: number;
-}
+export type { LessonResult, LessonSubmitResult } from './lesson-result';
 
 interface Props {
   content: CourseContent;
   courseTitle: string;
   onExit: () => void;
-  onComplete: (result: LessonResult) => void;
+  /**
+   * Soumet les résultats et renvoie ce qui a été réellement accordé. Lancé par
+   * l'écran de fin, dès son montage : le montant affiché est celui du serveur.
+   */
+  onSubmit: (result: LessonResult) => Promise<LessonSubmitResult>;
+  /** L'apprenant quitte l'écran de fin par « Continuer ». */
+  onFinish: () => void;
 }
 
 /** Étapes qui remontent juste/faux — même règle que `lib/lessonSpec`. */
@@ -83,7 +83,7 @@ function loadProgress(courseId: string): Partial<PlayerState> {
   return saved;
 }
 
-export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props) {
+export function CoursePlayer({ content, courseTitle, onExit, onSubmit, onFinish }: Props) {
   const { t } = useTranslation();
   const reduced = useReducedMotionConfig() ?? false;
   const totalSteps = content.steps.length;
@@ -127,29 +127,25 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     [state.correctCount, questionCount, state.bestCombo],
   );
 
-  /* ── Le Director retient ses célébrations tant que la leçon tourne ── */
+  /* ── Le Director retient ses célébrations du début à la fin ──
+   *
+   * Le hold ne se lève plus au montage de l'écran de fin : c'est l'écran de fin
+   * lui-même qui le lève, une fois sa chorégraphie jouée et l'XP serveur reçue.
+   * Les récompenses enfilées pendant la soumission se superposent alors à lui,
+   * au lieu d'être coupées par la navigation. Le démontage reste le filet. */
   const rewards = useOptionalRewards();
   const holdRef = useRef(false);
+  const releaseRewards = useCallback(() => {
+    if (!holdRef.current) return;
+    holdRef.current = false;
+    rewards?.release();
+  }, [rewards]);
   useEffect(() => {
-    if (!rewards) return;
-    if (!completed && !holdRef.current) {
-      holdRef.current = true;
-      rewards.hold();
-    }
-    if (completed && holdRef.current) {
-      holdRef.current = false;
-      rewards.release();
-    }
-  }, [rewards, completed]);
-  useEffect(
-    () => () => {
-      if (holdRef.current) {
-        holdRef.current = false;
-        rewards?.release();
-      }
-    },
-    [rewards],
-  );
+    if (!rewards || holdRef.current) return;
+    holdRef.current = true;
+    rewards.hold();
+  }, [rewards]);
+  useEffect(() => () => releaseRewards(), [releaseRewards]);
 
   /* ── Sauvegarde de reprise : étape, score, combo et file de rejeu ── */
   useEffect(() => {
@@ -170,8 +166,16 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     clearCoursePlayerProgress(content.courseId);
     setDurationSeconds(Math.floor((Date.now() - startedAt) / 1000));
     setFinalResult(lessonOutcome(state, questionCount));
-    levelUpSequence();
   }, [completed, finalResult, content.courseId, startedAt, state, questionCount]);
+
+  /** Soumission de la leçon, confiée à l'écran de fin — stable, appelée une fois. */
+  const submitLesson = useCallback(
+    () =>
+      finalResult
+        ? onSubmit(finalResult)
+        : Promise.resolve<LessonSubmitResult>({ status: 'offline', xpAwarded: 0 }),
+    [finalResult, onSubmit],
+  );
 
   /* Remonter en haut à chaque étape, et verrouiller le scroll du fond */
   useEffect(() => {
@@ -446,28 +450,29 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
             <SoundToggle scope="player" className="text-white hover:bg-white/10 hover:text-white" />
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <Spark
-              mood={completed ? 'celebrating' : mascotMood}
-              size={80}
-              halo
-              embers={completed}
-            />
-            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
-              {t('player.sparkLabel')}
-            </p>
-            <div className="mt-2 text-center">
-              <RollingNumber
-                value={xpPreview}
-                prefix="+"
-                bump
-                className="text-3xl font-extrabold text-white drop-shadow-[0_2px_8px_hsl(var(--cia-blue-900)/0.4)]"
-              />
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
-                {t('player.xpEarned')}
+          {/* Un seul héros à la fois : pendant l'écran de fin, c'est le Spark de
+              l'écran de fin, pas celui de la colonne. */}
+          {!completed ? (
+            <div className="flex flex-col items-center gap-4">
+              <Spark mood={mascotMood} size={80} halo />
+              <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
+                {t('player.sparkLabel')}
               </p>
+              <div className="mt-2 text-center">
+                <RollingNumber
+                  value={xpPreview}
+                  prefix="+"
+                  bump
+                  className="text-3xl font-extrabold text-white drop-shadow-[0_2px_8px_hsl(var(--cia-blue-900)/0.4)]"
+                />
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
+                  {t('player.xpEarned')}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <span aria-hidden />
+          )}
 
           <div className="relative w-full space-y-2">
             {comboBadge}
@@ -535,8 +540,9 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
                     correctCount={finalResult.correct}
                     totalQuestions={finalResult.questionCount}
                     bestCombo={finalResult.bestCombo}
-                    onContinue={() => onComplete(finalResult)}
-                    onExit={onExit}
+                    submit={submitLesson}
+                    onSettled={releaseRewards}
+                    onContinue={onFinish}
                   />
                 </motion.div>
               )}
@@ -569,105 +575,6 @@ function ReplayInterstitial({ count }: { count: number }) {
       <Spark mood="encouraging" size={120} halo />
       <h2 className="font-display text-2xl font-bold">{t('player.replayTitle')}</h2>
       <p className="text-muted-foreground">{t('player.replayIntro', { count })}</p>
-    </div>
-  );
-}
-export function CompletionScreen({
-  courseTitle,
-  totalSteps,
-  durationSeconds,
-  correctCount,
-  totalQuestions,
-  bestCombo,
-  onContinue,
-  onExit,
-}: {
-  courseTitle: string;
-  totalSteps: number;
-  durationSeconds: number;
-  correctCount: number;
-  totalQuestions: number;
-  bestCombo: number;
-  onContinue: () => void;
-  onExit: () => void;
-}) {
-  const { t } = useTranslation();
-  // Même barème que l'aperçu du header et que `complete_lesson` côté serveur :
-  // un seul calcul, trois endroits qui l'affichent.
-  const xpEarned = computeLessonXp({
-    correct: correctCount,
-    questionCount: totalQuestions,
-    bestCombo,
-  }).total;
-  const minutes = Math.floor(durationSeconds / 60);
-  const seconds = durationSeconds % 60;
-  const formattedTime = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-  return (
-    <div className="max-w-xl mx-auto text-center space-y-8 py-8">
-      <motion.div
-        initial={{ scale: 0, rotate: -20 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-        className="mx-auto h-24 w-24 rounded-full bg-cia-blue-500 flex items-center justify-center shadow-glow-blue"
-      >
-        <Trophy className="h-12 w-12 text-white" />
-      </motion.div>
-
-      <div className="space-y-2">
-        <h2 className="font-display font-extrabold text-3xl tracking-[-0.01em]">
-          {t('player.completion.title')}
-        </h2>
-        <p className="text-muted-foreground">{courseTitle}</p>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ delay: 0.3, type: 'spring', damping: 13, stiffness: 200 }}
-        className="flex justify-center"
-      >
-        <Spark mood="celebrating" size={120} halo embers />
-      </motion.div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-ink-100 shadow-elev-lg">
-          <p
-            className="font-display font-extrabold text-2xl tabular-nums text-cia-blue-700"
-            data-testid="completion-xp"
-          >
-            +{xpEarned}
-          </p>
-          <p className="text-[10px] uppercase tracking-[.2em] text-muted-foreground mt-1 font-mono">
-            XP
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-card border border-ink-100 shadow-elev-lg">
-          <p className="font-display font-extrabold text-2xl tabular-nums text-cia-blue-700">
-            {totalQuestions > 0 ? `${correctCount}/${totalQuestions}` : totalSteps}
-          </p>
-          <p className="text-[10px] uppercase tracking-[.2em] text-muted-foreground mt-1 font-mono">
-            {totalQuestions > 0 ? t('player.completion.correct') : t('player.completion.steps')}
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-card border border-ink-100 shadow-elev-lg">
-          <p className="font-display font-extrabold text-2xl tabular-nums text-cia-blue-700">
-            {formattedTime}
-          </p>
-          <p className="text-[10px] uppercase tracking-[.2em] text-muted-foreground mt-1 font-mono">
-            {t('player.completion.time')}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Button size="cta" onClick={onContinue} className="gap-2">
-          {t('player.completion.next_course')} <ArrowRight className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" onClick={onExit} className="gap-2">
-          <RotateCcw className="h-4 w-4" /> {t('player.completion.back_catalogue')}
-        </Button>
-      </div>
     </div>
   );
 }
