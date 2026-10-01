@@ -188,6 +188,9 @@ export default {
         '3d-gold-active':  '0 1px 0 0 hsl(var(--cia-gold-600)), 0 2px 4px -2px hsl(var(--cia-gold-500) / 0.35)',
         '3d-success':      '0 4px 0 0 hsl(var(--success-600)), 0 6px 14px -2px hsl(var(--success-500) / 0.35)',
         '3d-red':          '0 4px 0 0 hsl(var(--cia-red-600)), 0 6px 14px -2px hsl(var(--cia-red-500) / 0.35)',
+        /* Neutre : fond blanc + liseré ink — base des options QCM (M3) */
+        '3d-neutral':        '0 4px 0 0 hsl(var(--ink-200)), 0 6px 14px -2px hsl(var(--ink-300) / 0.30)',
+        '3d-neutral-active': '0 1px 0 0 hsl(var(--ink-200)), 0 2px 4px -2px hsl(var(--ink-300) / 0.30)',
         /* Legacy aliases (kept for prior code) */
         '3d-button-sm':    '0 2px 0 0 hsl(var(--cia-blue-700) / 0.35)',
         '3d-button-md':    '0 3px 0 0 hsl(var(--cia-blue-700) / 0.40)',

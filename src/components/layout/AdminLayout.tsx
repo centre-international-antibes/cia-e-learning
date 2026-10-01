@@ -6,6 +6,7 @@ import {
   BarChart3,
   CreditCard,
   Settings,
+  Wand2,
   LogOut,
   ChevronLeft,
   Menu,
@@ -21,6 +22,7 @@ const adminNavItems = [
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { label: 'Abonnements', href: '/admin/abonnements', icon: CreditCard },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },
+  { label: 'Motion Lab', href: '/admin/motion-lab', icon: Wand2 },
 ];
 
 export function AdminLayout() {

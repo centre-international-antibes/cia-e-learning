@@ -260,6 +260,8 @@ export default function SpeedTest() {
                     style={{ left: `${left}%` }}
                     initial={{ y: -20, rotate: 0, opacity: 1 }}
                     animate={{ y: 600, rotate: 720, opacity: [1, 1, 0] }}
+                    // Chute de confettis en boucle : `linear` est volontaire —
+                    // un spring produirait un à-coup à chaque répétition.
                     transition={{ duration, delay, ease: 'linear', repeat: Infinity }}
                   />
                 );

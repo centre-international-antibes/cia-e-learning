@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spark } from '@/components/spark/Spark';
 import { StreakFlame } from './StreakFlame';
 import { streakBurst } from '@/lib/confetti';
+import { feedback } from '@/lib/feedback';
 
 interface StreakMilestoneProps {
   streak: number;
@@ -41,13 +42,7 @@ export function StreakMilestone({ streak, open, onClose }: StreakMilestoneProps)
 
     const burstTimer = setTimeout(() => streakBurst(), reduced ? 0 : 200);
 
-    if (!reduced && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate([30, 20, 30, 20, 50]);
-      } catch {
-        // ignore vibration errors on unsupported devices
-      }
-    }
+    if (!reduced) feedback.complete();
 
     return () => {
       controls.stop();

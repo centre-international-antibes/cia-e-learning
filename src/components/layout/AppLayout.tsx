@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { pageTransition } from '@/lib/animations';
+import { fade, spring } from '@/lib/motion';
 import { GamificationOverlay } from '@/components/gamification/GamificationOverlay';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { useInterfaceLanguage } from '@/hooks/useInterfaceLanguage';
@@ -42,10 +42,17 @@ export function AppLayout() {
         <Suspense fallback={<OutletFallback />}>
           <motion.div
             key={location.pathname}
-            initial={pageTransition.initial}
-            animate={pageTransition.animate}
-            transition={pageTransition.transition}
-            style={pageTransition.style}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              // Une fois la page posée, plus aucune transform inline : le
+              // stacking context disparaît et les overlays (player, modales)
+              // se superposent sans hack.
+              transitionEnd: { transform: 'none' },
+            }}
+            exit={{ opacity: 0, transition: { duration: fade.fast } }}
+            transition={{ ...spring.gentle, opacity: { duration: fade.base } }}
           >
             <Outlet />
           </motion.div>

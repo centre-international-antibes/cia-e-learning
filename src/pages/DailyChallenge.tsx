@@ -266,6 +266,8 @@ export default function DailyChallenge() {
                     {i === 0 ? (
                       <motion.span
                         animate={{ rotate: 360 }}
+                        // Rotation décorative continue : `linear` est volontaire,
+                        // c'est la seule courbe qui boucle sans à-coup.
                         transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
                         className="inline-block"
                       >

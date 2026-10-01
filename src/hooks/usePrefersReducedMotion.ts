@@ -1,22 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useReducedMotionConfig } from 'framer-motion';
 
 /**
- * Tracks the user's `prefers-reduced-motion: reduce` setting reactively.
- * SSR-safe: returns `false` until the browser context is available.
+ * Préférence « animations réduites », telle qu'elle s'applique réellement.
+ *
+ * Lit le réglage du `<MotionConfig>` englobant (cf. `App.tsx`, qui le passe
+ * en `"user"`) et non uniquement la préférence système : un
+ * `MotionConfig reducedMotion="always"` — le bouton de simulation du Motion
+ * Lab, par exemple — est donc pris en compte ici aussi.
+ *
+ * Sert aux animations maison (CSS, canvas, Lottie) qui ne passent pas par
+ * framer-motion ; celles qui y passent sont déjà neutralisées.
+ *
+ * @returns `true` si les animations doivent être réduites.
  */
 export function usePrefersReducedMotion(): boolean {
-  const [prefers, setPrefers] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = (e: MediaQueryListEvent) => setPrefers(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  return prefers;
+  return useReducedMotionConfig() ?? false;
 }
