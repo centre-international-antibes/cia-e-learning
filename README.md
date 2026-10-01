@@ -79,7 +79,7 @@ supabase/
 L'XP est calculée **exclusivement côté serveur** : le client envoie des
 résultats (bonnes réponses, meilleure série), jamais un montant. Le barème vit
 à deux endroits qui doivent rester d'accord — `complete_lesson` dans
-`supabase/migrations/20260610140000_m2_xp_pipeline.sql` et
+`supabase/migrations/20261001144804_m2_xp_pipeline.sql` et
 `src/lib/xp/lessonXp.ts` (aperçu en cours de leçon et mode anonyme).
 
 Le serveur borne l'XP d'une leçon avec son nombre de questions, stocké dans la

@@ -15,7 +15,7 @@ import { buildLessonSpecs, countQuestions, GRADED_STEP_TYPES } from '@/lib/lesso
 
 const MIGRATION = path.resolve(
   __dirname,
-  '../../supabase/migrations/20260610140000_m2_xp_pipeline.sql',
+  '../../supabase/migrations/20261001144804_m2_xp_pipeline.sql',
 );
 
 interface SeedRow {
