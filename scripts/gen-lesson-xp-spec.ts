@@ -24,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { LessonSpec } from '../src/lib/lessonSpec.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const MIGRATION = path.join(ROOT, 'supabase/migrations/20260610140000_m2_xp_pipeline.sql');
+const MIGRATION = path.join(ROOT, 'supabase/migrations/20261001145102_m2_xp_pipeline.sql');
 const BEGIN_MARKER = '-- >>> lesson_xp_spec seed (généré — ne pas éditer à la main)';
 const END_MARKER = '-- <<< lesson_xp_spec seed';
 
