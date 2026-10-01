@@ -21,6 +21,10 @@ export interface CoursePlayerProgress {
   step?: number;
   correctCount?: number;
   totalQuestions?: number;
+  /** Série de bonnes réponses en cours. */
+  combo?: number;
+  /** Meilleure série de la tentative — elle compte dans le barème XP. */
+  bestCombo?: number;
 }
 
 export type CourseProgressMap = Record<string, CourseProgressEntry>;

@@ -12,12 +12,28 @@ function getSavedProgress(): CourseProgressMap {
 
 export function getModuleCompletionPercent(mod: Module): number {
   const savedProgress = getSavedProgress();
-  const completed = mod.lessons.filter(l => savedProgress[`lesson-${l.id}`]?.completed).length;
+  const completed = mod.lessons.filter((l) => savedProgress[`lesson-${l.id}`]?.completed).length;
   return Math.round((completed / mod.lessons.length) * 100);
 }
 
 export function isModuleComplete(mod: Module): boolean {
   return getModuleCompletionPercent(mod) === 100;
+}
+
+/**
+ * Avancement pédagogique dans un niveau : part des leçons terminées sur
+ * l'ensemble des leçons du niveau. C'est ce que montre le profil, à la place
+ * de l'ancienne barre « XP vers le prochain niveau » — l'XP ne fait plus
+ * progresser le niveau.
+ */
+export function getLevelCompletionPercent(level: CECRLevel): number {
+  const levelData = curriculum.find((l) => l.level === level);
+  if (!levelData) return 0;
+  const savedProgress = getSavedProgress();
+  const lessons = levelData.modules.flatMap((m) => m.lessons);
+  if (lessons.length === 0) return 0;
+  const done = lessons.filter((l) => savedProgress[`lesson-${l.id}`]?.completed).length;
+  return Math.round((done / lessons.length) * 100);
 }
 
 /**
@@ -34,8 +50,8 @@ export function isModuleUnlocked(moduleId: string): boolean {
   if (levelIdx === 0 && modNum === 1) return true;
 
   const findModule = (level: string, num: number): Module | undefined => {
-    const levelData = curriculum.find(l => l.level === level);
-    return levelData?.modules.find(m => m.number === num);
+    const levelData = curriculum.find((l) => l.level === level);
+    return levelData?.modules.find((m) => m.number === num);
   };
 
   if (modNum > 1) {
@@ -53,12 +69,22 @@ export function isModuleUnlocked(moduleId: string): boolean {
 }
 
 /** Get all completed module badges */
-export function getEarnedBadges(): { moduleId: string; badge: string; badgeEmoji: string; title: string }[] {
+export function getEarnedBadges(): {
+  moduleId: string;
+  badge: string;
+  badgeEmoji: string;
+  title: string;
+}[] {
   const badges: { moduleId: string; badge: string; badgeEmoji: string; title: string }[] = [];
   for (const levelData of curriculum) {
     for (const mod of levelData.modules) {
       if (isModuleComplete(mod)) {
-        badges.push({ moduleId: mod.id, badge: mod.badge, badgeEmoji: mod.badgeEmoji, title: mod.title });
+        badges.push({
+          moduleId: mod.id,
+          badge: mod.badge,
+          badgeEmoji: mod.badgeEmoji,
+          title: mod.title,
+        });
       }
     }
   }
@@ -69,7 +95,7 @@ export function getEarnedBadges(): { moduleId: string; badge: string; badgeEmoji
 export function computeLevelFromProgress(): CECRLevel {
   let currentLevel: CurriculumLevel = 'A1';
   for (const levelData of curriculum) {
-    const allComplete = levelData.modules.every(m => isModuleComplete(m));
+    const allComplete = levelData.modules.every((m) => isModuleComplete(m));
     if (allComplete) {
       const idx = LEVEL_ORDER.indexOf(levelData.level as CurriculumLevel);
       if (idx >= 0 && idx + 1 < LEVEL_ORDER.length) {
@@ -92,8 +118,8 @@ export function getNewlyUnlockedModules(completedModuleId: string): Module[] {
   const unlocked: Module[] = [];
 
   const findModule = (level: string, num: number): Module | undefined => {
-    const ld = curriculum.find(l => l.level === level);
-    return ld?.modules.find(m => m.number === num);
+    const ld = curriculum.find((l) => l.level === level);
+    return ld?.modules.find((m) => m.number === num);
   };
 
   // Next module in same level

@@ -2179,7 +2179,9 @@
       "lesson": "Lección",
       "listening": "Comprensión oral",
       "finalQuiz": "Quiz final"
-    }
+    },
+    "xpTooFast": "Lección terminada. Demasiado rápido para ganar XP esta vez: tómate tu tiempo, los XP volverán en el próximo intento.",
+    "xpReplayCap": "Lección terminada. Ya has ganado XP en esta lección 3 veces hoy: los XP vuelven mañana."
   },
   "dailyChallenge": {
     "title": "Reto diario",

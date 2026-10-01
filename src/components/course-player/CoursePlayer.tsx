@@ -21,18 +21,35 @@ import { Spark } from '@/components/spark/Spark';
 import type { SparkMood } from '@/components/spark/Spark';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { levelUpSequence } from '@/lib/confetti';
+import { computeLessonXp } from '@/lib/xp/lessonXp';
+import { countQuestions } from '@/lib/lessonSpec';
+import { useOptionalRewards } from '@/features/rewards';
+
+/** Résultats remontés en fin de leçon. Aucun montant d'XP : c'est le serveur
+ *  qui applique le barème à partir de ces chiffres. */
+export interface LessonResult {
+  /** Pourcentage de bonnes réponses, pour l'affichage et `lesson_progress`. */
+  score: number;
+  correct: number;
+  questionCount: number;
+  /** Plus longue série de bonnes réponses consécutives. */
+  bestCombo: number;
+}
 
 interface Props {
   content: CourseContent;
   courseTitle: string;
   onExit: () => void;
-  onComplete: (score: number) => void;
+  onComplete: (result: LessonResult) => void;
 }
 
 interface SavedProgress {
   step: number;
   correctCount: number;
   totalQuestions: number;
+  /** Série en cours et meilleure série, conservées à la reprise. */
+  combo: number;
+  bestCombo: number;
 }
 
 interface FeedbackBubble {
@@ -50,9 +67,11 @@ function loadProgress(courseId: string): SavedProgress {
       step: parsed.step ?? 0,
       correctCount: parsed.correctCount ?? 0,
       totalQuestions: parsed.totalQuestions ?? 0,
+      combo: parsed.combo ?? 0,
+      bestCombo: parsed.bestCombo ?? 0,
     };
   }
-  return { step: 0, correctCount: 0, totalQuestions: 0 };
+  return { step: 0, correctCount: 0, totalQuestions: 0, combo: 0, bestCombo: 0 };
 }
 
 function saveProgress(courseId: string, progress: SavedProgress) {
@@ -67,8 +86,11 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
   const [currentStep, setCurrentStep] = useState(Math.min(saved.step, content.steps.length - 1));
   const [correctCount, setCorrectCount] = useState(saved.correctCount);
   const [totalQuestions, setTotalQuestions] = useState(saved.totalQuestions);
+  const [combo, setCombo] = useState(saved.combo);
+  const [bestCombo, setBestCombo] = useState(saved.bestCombo);
   const [completed, setCompleted] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [finalResult, setFinalResult] = useState<LessonResult | null>(null);
   const [startedAt] = useState(() => Date.now());
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [mascotMood, setMascotMood] = useState<SparkMood>('idle');
@@ -78,19 +100,55 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
   const moodTimerRef = useRef<number | null>(null);
   const bubbleTimerRef = useRef<number | null>(null);
 
+  /* Tant que la leçon est en cours, aucune célébration ne doit s'afficher :
+     le Director retient sa file et ne la relâche qu'à l'écran de fin. */
+  const rewards = useOptionalRewards();
+  const holdRef = useRef(false);
+  useEffect(() => {
+    if (!rewards) return;
+    if (!completed && !holdRef.current) {
+      holdRef.current = true;
+      rewards.hold();
+    }
+    if (completed && holdRef.current) {
+      holdRef.current = false;
+      rewards.release();
+    }
+  }, [rewards, completed]);
+  useEffect(() => {
+    return () => {
+      if (holdRef.current) {
+        holdRef.current = false;
+        rewards?.release();
+      }
+    };
+  }, [rewards]);
+
   const step = content.steps[currentStep];
   const totalSteps = content.steps.length;
   const progressPct = completed
     ? 100
     : ((currentStep + (totalQuestions > 0 ? 0.5 : 0)) / totalSteps) * 100;
-  const xpPreview = useMemo(() => correctCount * 5, [correctCount]);
+  /** Nombre de questions notées de la leçon, règle partagée avec le serveur. */
+  const questionCount = useMemo(() => countQuestions(content.steps), [content.steps]);
+  /** Aperçu seulement : le montant crédité est recalculé par `complete_lesson`. */
+  const xpPreview = useMemo(
+    () => computeLessonXp({ correct: correctCount, questionCount, bestCombo }).total,
+    [correctCount, questionCount, bestCombo],
+  );
 
   /* Persist progress + cleanup timers on unmount */
   useEffect(() => {
     if (!completed) {
-      saveProgress(content.courseId, { step: currentStep, correctCount, totalQuestions });
+      saveProgress(content.courseId, {
+        step: currentStep,
+        correctCount,
+        totalQuestions,
+        combo,
+        bestCombo,
+      });
     }
-  }, [currentStep, correctCount, totalQuestions, content.courseId, completed]);
+  }, [currentStep, correctCount, totalQuestions, combo, bestCombo, content.courseId, completed]);
 
   useEffect(() => {
     return () => {
@@ -143,9 +201,14 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
   const handleNext = (correct?: boolean) => {
     const newCorrect = correctCount + (correct === true ? 1 : 0);
     const newTotal = totalQuestions + (correct !== undefined ? 1 : 0);
+    // La série repart de zéro à la première erreur ; on garde la meilleure.
+    const newCombo = correct === true ? combo + 1 : correct === false ? 0 : combo;
+    const newBestCombo = Math.max(bestCombo, newCombo);
 
     if (correct !== undefined) {
       setTotalQuestions(newTotal);
+      setCombo(newCombo);
+      setBestCombo(newBestCombo);
       if (correct) {
         setCorrectCount(newCorrect);
         setScoreBump((b) => b + 1);
@@ -160,6 +223,12 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     if (currentStep + 1 >= totalSteps) {
       const score = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 100;
       clearCoursePlayerProgress(content.courseId);
+      setFinalResult({
+        score,
+        correct: newCorrect,
+        questionCount: Math.max(questionCount, newTotal),
+        bestCombo: newBestCombo,
+      });
       setFinalScore(score);
       setDurationSeconds(Math.floor((Date.now() - startedAt) / 1000));
       setCompleted(true);
@@ -170,14 +239,22 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
 
   const renderStep = (s: CourseStep) => {
     switch (s.type) {
-      case 'lesson': return <LessonStep step={s} onNext={() => handleNext()} />;
-      case 'qcm': return <QCMStep step={s} onNext={(c) => handleNext(c)} />;
-      case 'fill-blank': return <FillBlankStep step={s} onNext={(c) => handleNext(c)} />;
-      case 'drag-drop': return <DragDropStep step={s} onNext={(c) => handleNext(c)} />;
-      case 'flashcard': return <FlashcardStep step={s} onNext={() => handleNext()} />;
-      case 'listening': return <ListeningStep step={s} onNext={(c) => handleNext(c)} />;
-      case 'final-quiz': return <FinalQuizStep step={s} onNext={(c) => handleNext(c)} />;
-      default: return null;
+      case 'lesson':
+        return <LessonStep step={s} onNext={() => handleNext()} />;
+      case 'qcm':
+        return <QCMStep step={s} onNext={(c) => handleNext(c)} />;
+      case 'fill-blank':
+        return <FillBlankStep step={s} onNext={(c) => handleNext(c)} />;
+      case 'drag-drop':
+        return <DragDropStep step={s} onNext={(c) => handleNext(c)} />;
+      case 'flashcard':
+        return <FlashcardStep step={s} onNext={() => handleNext()} />;
+      case 'listening':
+        return <ListeningStep step={s} onNext={(c) => handleNext(c)} />;
+      case 'final-quiz':
+        return <FinalQuizStep step={s} onNext={(c) => handleNext(c)} />;
+      default:
+        return null;
     }
   };
 
@@ -186,12 +263,20 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     ? {
         initial: { opacity: 0 },
         animate: { opacity: 1, transition: { duration: 0.2 } },
-        exit:    { opacity: 0, transition: { duration: 0.15 } },
+        exit: { opacity: 0, transition: { duration: 0.15 } },
       }
     : {
         initial: { opacity: 0, x: 40 },
-        animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const } },
-        exit:    { opacity: 0, x: -40, transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const } },
+        animate: {
+          opacity: 1,
+          x: 0,
+          transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
+        },
+        exit: {
+          opacity: 0,
+          x: -40,
+          transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const },
+        },
       };
 
   /* P0.1 — Portal to `document.body` so the player escapes the
@@ -204,9 +289,7 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
       style={{ isolation: 'isolate', height: '100dvh' }}
     >
       {/* ===== MOBILE top bar (sticky) ===== */}
-      <header
-        className="lg:hidden shrink-0 z-20 bg-card/95 backdrop-blur-md border-b border-ink-100 px-4 pt-safe pb-3 flex items-center gap-3"
-      >
+      <header className="lg:hidden shrink-0 z-20 bg-card/95 backdrop-blur-md border-b border-ink-100 px-4 pt-safe pb-3 flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
@@ -269,7 +352,9 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
                 )}
               </AnimatePresence>
             </div>
-            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70">{t('player.sparkLabel')}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
+              {t('player.sparkLabel')}
+            </p>
 
             {/* Score session */}
             <div className="text-center mt-2">
@@ -298,7 +383,11 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
             </div>
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
               <motion.div
-                className="absolute inset-y-0 left-0 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)" }}
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{
+                  background:
+                    'linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)',
+                }}
                 initial={false}
                 animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -339,7 +428,16 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
                     durationSeconds={durationSeconds}
                     correctCount={correctCount}
                     totalQuestions={totalQuestions}
-                    onContinue={() => onComplete(finalScore)}
+                    onContinue={() =>
+                      onComplete(
+                        finalResult ?? {
+                          score: finalScore,
+                          correct: correctCount,
+                          questionCount,
+                          bestCombo,
+                        },
+                      )
+                    }
                     onExit={onExit}
                   />
                 </motion.div>
@@ -400,7 +498,11 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
               </div>
               <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
                 <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)" }}
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)',
+                  }}
                   initial={false}
                   animate={{ width: `${progressPct}%` }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -416,7 +518,14 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
 }
 
 function CompletionScreen({
-  courseTitle, score, totalSteps, durationSeconds, correctCount, totalQuestions, onContinue, onExit,
+  courseTitle,
+  score,
+  totalSteps,
+  durationSeconds,
+  correctCount,
+  totalQuestions,
+  onContinue,
+  onExit,
 }: {
   courseTitle: string;
   score: number;

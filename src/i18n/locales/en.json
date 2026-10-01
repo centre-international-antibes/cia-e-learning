@@ -2123,7 +2123,9 @@
       "lesson": "Lesson",
       "listening": "Listening",
       "finalQuiz": "Final quiz"
-    }
+    },
+    "xpTooFast": "Lesson completed. Too fast to earn XP this time — take your time reading, XP will count on your next run.",
+    "xpReplayCap": "Lesson completed. You already earned XP on this lesson 3 times today — XP comes back tomorrow."
   },
   "dailyChallenge": {
     "title": "Daily challenge",

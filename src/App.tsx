@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ErrorBoundary } from '@/components/states/ErrorBoundary';
+import { RewardDirectorProvider, RewardStage } from '@/features/rewards';
 import Index from './pages/Index';
 
 // All non-landing routes are code-split — chunked on demand.
@@ -88,75 +89,79 @@ const App = () => (
     {/* Unique point de réglage du reduced-motion : framer-motion neutralise
         les transforms de toute l'app quand l'OS le demande. */}
     <MotionConfig reducedMotion="user">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <ErrorBoundary>
-              <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  {/* Front-office */}
-                  <Route element={<AppLayout />}>
-                    <Route path="/" element={<LandingOrRedirect />} />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/catalogue" element={<Catalogue />} />
-                    <Route path="/programme" element={<Curriculum />} />
-                    <Route path="/glossaire" element={<Glossaire />} />
-                    <Route path="/cours/:id" element={<CourseDetail />} />
-                    <Route path="/test-niveau" element={<TestNiveau />} />
-                    <Route path="/classement" element={<Classement />} />
-                    <Route path="/test-vitesse/:level" element={<SpeedTest />} />
-                    <Route path="/defi-du-jour" element={<DailyChallenge />} />
-                    <Route path="/connexion" element={<Connexion />} />
-                    <Route path="/inscription" element={<Connexion />} />
-                    <Route path="/profil" element={<Profil />} />
-                    <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
-                    <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
-                    <Route path="/favoris" element={<Catalogue />} />
-                    <Route
-                      path="/abonnement"
-                      element={
-                        <ProtectedRoute>
-                          <Abonnement />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/contact-cia"
-                      element={
-                        <ProtectedRoute>
-                          <ContactCia />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
+      {/* Unique orchestrateur des récompenses : une célébration à la fois,
+          jamais pendant une leçon (le player retient la file). */}
+      <RewardDirectorProvider stage={RewardStage}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <ErrorBoundary>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    {/* Front-office */}
+                    <Route element={<AppLayout />}>
+                      <Route path="/" element={<LandingOrRedirect />} />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/catalogue" element={<Catalogue />} />
+                      <Route path="/programme" element={<Curriculum />} />
+                      <Route path="/glossaire" element={<Glossaire />} />
+                      <Route path="/cours/:id" element={<CourseDetail />} />
+                      <Route path="/test-niveau" element={<TestNiveau />} />
+                      <Route path="/classement" element={<Classement />} />
+                      <Route path="/test-vitesse/:level" element={<SpeedTest />} />
+                      <Route path="/defi-du-jour" element={<DailyChallenge />} />
+                      <Route path="/connexion" element={<Connexion />} />
+                      <Route path="/inscription" element={<Connexion />} />
+                      <Route path="/profil" element={<Profil />} />
+                      <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
+                      <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
+                      <Route path="/favoris" element={<Catalogue />} />
+                      <Route
+                        path="/abonnement"
+                        element={
+                          <ProtectedRoute>
+                            <Abonnement />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/contact-cia"
+                        element={
+                          <ProtectedRoute>
+                            <ContactCia />
+                          </ProtectedRoute>
+                        }
+                      />
+                    </Route>
 
-                  {/* Back-office admin */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="utilisateurs" element={<AdminUsers />} />
-                    <Route path="cours" element={<AdminCourses />} />
-                    <Route path="analytics" element={<AdminAnalytics />} />
-                    <Route path="abonnements" element={<AdminSubscriptions />} />
-                    <Route path="parametres" element={<AdminSettings />} />
-                    <Route path="motion-lab" element={<MotionLab />} />
-                  </Route>
+                    {/* Back-office admin */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="utilisateurs" element={<AdminUsers />} />
+                      <Route path="cours" element={<AdminCourses />} />
+                      <Route path="analytics" element={<AdminAnalytics />} />
+                      <Route path="abonnements" element={<AdminSubscriptions />} />
+                      <Route path="parametres" element={<AdminSettings />} />
+                      <Route path="motion-lab" element={<MotionLab />} />
+                    </Route>
 
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </RewardDirectorProvider>
     </MotionConfig>
   </QueryClientProvider>
 );

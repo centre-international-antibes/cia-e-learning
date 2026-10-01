@@ -590,10 +590,6 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      award_xp: {
-        Args: { _amount: number; _source: string; _source_ref?: string }
-        Returns: Json
-      }
       current_week_monday: { Args: never; Returns: string }
       get_my_profile: {
         Args: never
@@ -635,7 +631,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      complete_lesson: {
+        Args: { _attempt_id: string; _best_combo: number; _correct: number }
+        Returns: Json
+      }
+      complete_speed_test: {
+        Args: { _level: string; _score: number }
+        Returns: Json
+      }
       mark_daily_done: { Args: never; Returns: Json }
+      start_lesson: { Args: { _course_id: string }; Returns: string }
       mark_onboarding_done: { Args: never; Returns: Json }
       rotate_weekly_leagues: { Args: never; Returns: Json }
       set_cecr_level: { Args: { _level: string }; Returns: Json }

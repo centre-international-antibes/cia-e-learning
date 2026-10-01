@@ -4,7 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { fade, spring } from '@/lib/motion';
-import { GamificationOverlay } from '@/components/gamification/GamificationOverlay';
+import { RewardEventBridge } from '@/features/rewards';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { useInterfaceLanguage } from '@/hooks/useInterfaceLanguage';
 
@@ -59,7 +59,8 @@ export function AppLayout() {
         </Suspense>
       </main>
       <Footer />
-      <GamificationOverlay />
+      {/* Convertit les anciens events window en entrées de la file du Director. */}
+      <RewardEventBridge />
       <OnboardingFlow />
     </div>
   );

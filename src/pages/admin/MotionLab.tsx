@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { spring } from '@/lib/motion';
 import { feedback, MAX_COMBO_STEP, playSound, type SoundName } from '@/lib/feedback';
+import { useOptionalRewards } from '@/features/rewards';
 
 /**
  * Motion Lab — banc d'essai des primitives M1.
@@ -210,7 +211,76 @@ export default function MotionLab() {
             </div>
           </div>
         </AdminSectionCard>
+        <AdminSectionCard
+          title="Reward Director"
+          description="Une célébration à la fois, les macro en dernier, rien pendant une leçon."
+        >
+          <RewardDirectorPanel />
+        </AdminSectionCard>
       </div>
     </MotionConfig>
+  );
+}
+
+/**
+ * Banc d'essai de la file des récompenses : on enfile une rafale et on
+ * vérifie qu'elles passent une par une, le passage de niveau en dernier.
+ */
+function RewardDirectorPanel() {
+  const rewards = useOptionalRewards();
+  const [holding, setHolding] = useState(false);
+
+  if (!rewards) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Reward Director non monté (cette page est rendue hors de l'application).
+      </p>
+    );
+  }
+
+  const burst = () => {
+    const stamp = Date.now();
+    rewards.enqueue({ kind: 'xp', id: `lab-${stamp}`, amount: 115, label: 'Leçon terminée' });
+    rewards.enqueue({
+      kind: 'badge',
+      id: `lab-${stamp}`,
+      label: 'Bienvenue à Antibes',
+      emoji: '🏖️',
+    });
+    rewards.enqueue({ kind: 'levelUp', id: `lab-${stamp}`, level: 'A2', previousLevel: 'A1' });
+    rewards.enqueue({
+      kind: 'unlock',
+      id: `lab-${stamp}`,
+      label: 'A1.2 — Mon monde quotidien',
+      emoji: '🧭',
+    });
+  };
+
+  const toggleHold = () => {
+    if (holding) rewards.release();
+    else rewards.hold();
+    setHolding((h) => !h);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={burst}>Enfiler xp + badge + unlock + levelUp</Button>
+        <Button variant="outline" onClick={toggleHold} aria-pressed={holding}>
+          {holding ? 'release()' : 'hold()'}
+        </Button>
+        <Button variant="ghost" onClick={rewards.skip} disabled={!rewards.current}>
+          Passer
+        </Button>
+      </div>
+      <p className="font-mono text-xs text-muted-foreground">
+        file : {rewards.pending} · courante : {rewards.current?.kind ?? '—'} ·{' '}
+        {rewards.held ? 'retenue (hold)' : 'active'}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Attendu : le badge et le module débloqué passent en toast, l'XP en burst, et la modale de
+        niveau arrive <strong>en dernier</strong>, jamais par-dessus une autre.
+      </p>
+    </div>
   );
 }

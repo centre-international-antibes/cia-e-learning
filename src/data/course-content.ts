@@ -745,8 +745,9 @@ import { b2Module3Content } from './b2-module3-content';
 import { b2Module4Content } from './b2-module4-content';
 import { b2Module5Content } from './b2-module5-content';
 
-// Merge all content: legacy demo courses + curriculum lessons
-const allContent = [
+// Merge all content: legacy demo courses + curriculum lessons.
+// Exporté : `lib/lessonSpec` en dérive le référentiel `lesson_xp_spec` (XP serveur).
+export const allContent = [
   ...allCourseContent,
   ...a1Module1Content,
   ...a1Module2Content,

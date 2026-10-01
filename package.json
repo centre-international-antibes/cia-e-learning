@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "gen:lesson-xp-spec": "node --experimental-strip-types scripts/gen-lesson-xp-spec.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -88,6 +89,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
+    "esbuild": "^0.21.5",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

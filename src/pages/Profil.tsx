@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,13 +12,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
+import { getLevelCompletionPercent } from '@/hooks/useModuleUnlock';
 import { ProfileHeaderSkeleton } from '@/components/states/skeletons/ProfileHeaderSkeleton';
 import { Flame, Trophy, Zap } from 'lucide-react';
 
 const LEAGUE_LABEL: Record<string, { label: string; emoji: string }> = {
   bronze: { label: 'Bronze', emoji: '🥉' },
   argent: { label: 'Argent', emoji: '🥈' },
-  or:     { label: 'Or',     emoji: '🥇' },
+  or: { label: 'Or', emoji: '🥇' },
 };
 
 export default function Profil() {
@@ -26,8 +27,10 @@ export default function Profil() {
   const navigate = useNavigate();
   const { user, isLoading } = useAuth();
   const { profile, loading: profileLoading, refetch } = useProfile();
-  const { totalXP, cecrLevel, xpProgress } = useUserProgress();
+  const { totalXP, cecrLevel } = useUserProgress();
   const { streak } = useDailyChallenge();
+  const weeklyXP = profile?.weekly_xp ?? 0;
+  const levelProgress = useMemo(() => getLevelCompletionPercent(cecrLevel), [cecrLevel]);
 
   useEffect(() => {
     if (!isLoading && !user) navigate('/connexion', { replace: true });
@@ -42,7 +45,8 @@ export default function Profil() {
     );
   }
 
-  const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() || user.email;
+  const displayName =
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() || user.email;
   const league = profile?.league && LEAGUE_LABEL[profile.league];
 
   return (
@@ -82,10 +86,22 @@ export default function Profil() {
                 <div className="flex items-baseline justify-between text-xs">
                   <span className="font-bold">{totalXP.toLocaleString()} XP</span>
                   <span className="text-muted-foreground">
-                    {xpProgress.current} / {xpProgress.needed}
+                    {t('profile.weeklyXp', { defaultValue: 'cette semaine' })} :{' '}
+                    {weeklyXP.toLocaleString()} XP
                   </span>
                 </div>
-                <Progress value={xpProgress.progress} className="h-2" />
+                {/* Progression du niveau CECR = part des leçons terminées du
+                    niveau courant. L'XP ne fait plus monter de niveau. */}
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {t('profile.levelProgress', {
+                      defaultValue: 'Progression {{level}}',
+                      level: cecrLevel,
+                    })}
+                  </span>
+                  <span className="text-muted-foreground">{levelProgress} %</span>
+                </div>
+                <Progress value={levelProgress} className="h-2" />
               </div>
             </div>
           </div>
