@@ -4,6 +4,13 @@
  * No-op quand l'API n'existe pas (iOS Safari, desktop) ou quand
  * l'utilisateur demande des animations réduites : une vibration est une
  * animation comme une autre.
+ *
+ * Limite assumée : ce module n'est pas un hook, il lit donc directement
+ * `matchMedia` — c'est-à-dire la préférence du système, pas le réglage d'un
+ * `<MotionConfig reducedMotion="always">`. Simuler le reduced-motion depuis
+ * l'app (Motion Lab) coupe les animations mais pas les vibrations ; seul le
+ * réglage OS les coupe. Pour les suivre aussi, il faudrait passer le réglage
+ * à `vibrate()` depuis un composant.
  */
 
 export type HapticPattern = 'tap' | 'correct' | 'wrong' | 'combo' | 'celebrate';

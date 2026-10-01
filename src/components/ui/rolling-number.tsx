@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useReducedMotionConfig,
+  useSpring,
+  useTransform,
+} from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
@@ -9,6 +15,10 @@ import { spring } from '@/lib/motion';
  * RollingNumber — un nombre qui roule de sa valeur précédente vers la
  * nouvelle. Jamais depuis zéro : passer de 120 à 125 anime 120 → 125, ce qui
  * rend le gain lisible au lieu de rejouer tout le compteur.
+ *
+ * Le texte est dérivé de la MotionValue et réécrit directement dans le nœud
+ * DOM : aucun `setState` par frame, donc aucun re-render de l'arbre React
+ * pendant l'animation.
  */
 
 export interface RollingNumberProps extends Omit<
@@ -39,7 +49,8 @@ export function RollingNumber({
   ...props
 }: RollingNumberProps) {
   const { i18n } = useTranslation();
-  const reduced = useReducedMotion();
+  // Suit le `<MotionConfig>` englobant, pas seulement la préférence système.
+  const reduced = useReducedMotionConfig() ?? false;
 
   // La valeur de départ est la première valeur reçue, jamais 0.
   const motionValue = useMotionValue(value);
@@ -47,16 +58,27 @@ export function RollingNumber({
   const source = reduced ? motionValue : animated;
 
   const scale = useMotionValue(1);
-  const [display, setDisplay] = React.useState(value);
   const previous = React.useRef(value);
   const settleRef = React.useRef(onSettle);
   settleRef.current = onSettle;
+
+  const formatter = React.useMemo(
+    () => new Intl.NumberFormat(i18n.language || 'fr', format),
+    [i18n.language, format],
+  );
+
+  const text = useTransform(
+    source,
+    (latest) => `${prefix}${formatter.format(Math.round(latest))}${suffix}`,
+  );
 
   React.useEffect(() => {
     if (value === previous.current) return;
     const rising = value > previous.current;
     previous.current = value;
     motionValue.set(value);
+    // Sans animation, aucun `animationComplete` n'est émis : on prévient ici.
+    if (reduced) settleRef.current?.(value);
     if (!bump || !rising || reduced) return;
     // 1 → 1.12 → 1 : le nombre « encaisse » le gain.
     scale.set(1.12);
@@ -65,31 +87,21 @@ export function RollingNumber({
   }, [value, motionValue, scale, bump, reduced]);
 
   React.useEffect(() => {
-    const unsubscribe = source.on('change', (latest) => {
-      setDisplay(Math.round(latest));
+    if (reduced) return;
+    return source.on('animationComplete', () => {
+      settleRef.current?.(Math.round(source.get()));
     });
-    return () => unsubscribe();
-  }, [source]);
-
-  React.useEffect(() => {
-    if (display === value) settleRef.current?.(value);
-  }, [display, value]);
-
-  const formatter = React.useMemo(
-    () => new Intl.NumberFormat(i18n.language || 'fr', format),
-    [i18n.language, format],
-  );
+  }, [source, reduced]);
 
   const scaleSpring = useSpring(scale, spring.bouncy);
   const transform = useTransform(scaleSpring, (s) => `scale(${s})`);
-  const text = `${prefix}${formatter.format(display)}${suffix}`;
 
   return (
     <span className={cn('tabular-nums font-display', className)} {...props}>
       {bump && !reduced ? (
         <motion.span style={{ transform, display: 'inline-block' }}>{text}</motion.span>
       ) : (
-        text
+        <motion.span>{text}</motion.span>
       )}
     </span>
   );

@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils';
 import { spring } from '@/lib/motion';
 import { feedback, type SfxScope } from '@/lib/feedback';
 
+/** Créé une seule fois : un `motion.create()` dans le render remonterait
+ *  l'enfant à chaque passage, ce qui perdrait focus, état et animation. */
+const MotionSlot = motion.create(Slot) as typeof motion.button;
+
 /**
  * Pressable — surface tactile 3D, signature gestuelle de l'app.
  *
@@ -88,7 +92,7 @@ export const Pressable = React.forwardRef<HTMLButtonElement, PressableProps>(
     ref,
   ) => {
     const px = DEPTH_PX[depth];
-    const Comp = asChild ? (motion(Slot) as typeof motion.button) : motion.button;
+    const Comp = asChild ? MotionSlot : motion.button;
 
     const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
       if (!silent && !disabled) feedback.tap({ scope });
