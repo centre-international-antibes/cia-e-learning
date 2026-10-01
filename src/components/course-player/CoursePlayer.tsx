@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotionConfig } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { X, Trophy, ArrowRight, RotateCcw } from 'lucide-react';
+import { X, Flame, Trophy, ArrowRight, RotateCcw } from 'lucide-react';
 import type { CourseContent, CourseStep } from '@/data/course-content';
 import { LessonStep } from './LessonStep';
 import { QCMStep } from './QCMStep';
@@ -12,27 +12,44 @@ import { DragDropStep } from './DragDropStep';
 import { FlashcardStep } from './FlashcardStep';
 import { ListeningStep } from './ListeningStep';
 import { FinalQuizStep } from './FinalQuizStep';
+import { CheckBar, CHECK_BAR_HEIGHT, type CheckBarMode } from './CheckBar';
+import {
+  StepControllerContext,
+  type StepAnswer,
+  type StepAnswerResult,
+  type StepController,
+  type StepPhase,
+} from './step-controller';
+import {
+  currentStepIndex,
+  initialPlayerState,
+  isReplaying,
+  lessonOutcome,
+  playerReducer,
+  type PlayerState,
+} from './playerReducer';
 import {
   readCoursePlayerProgress,
   writeCoursePlayerProgress,
   clearCoursePlayerProgress,
 } from '@/lib/courseProgress';
 import { Spark } from '@/components/spark/Spark';
-import type { SparkMood } from '@/components/spark/Spark';
-import { useUserProgress } from '@/hooks/useUserProgress';
-import { levelUpSequence } from '@/lib/confetti';
+import { SoundToggle } from '@/components/ui/sound-toggle';
+import { RollingNumber } from '@/components/ui/rolling-number';
 import { computeLessonXp } from '@/lib/xp/lessonXp';
 import { countQuestions } from '@/lib/lessonSpec';
+import { feedback, MAX_COMBO_STEP } from '@/lib/feedback';
 import { useOptionalRewards } from '@/features/rewards';
+import { levelUpSequence } from '@/lib/confetti';
+import { spring, fade } from '@/lib/motion';
+import { cn } from '@/lib/utils';
 
-/** Résultats remontés en fin de leçon. Aucun montant d'XP : c'est le serveur
- *  qui applique le barème à partir de ces chiffres. */
+/** Résultats remontés en fin de leçon. Aucun montant d'XP : le barème est
+ *  appliqué par le serveur à partir de ces chiffres (cf. M2). */
 export interface LessonResult {
-  /** Pourcentage de bonnes réponses, pour l'affichage et `lesson_progress`. */
   score: number;
   correct: number;
   questionCount: number;
-  /** Plus longue série de bonnes réponses consécutives. */
   bestCombo: number;
 }
 
@@ -43,65 +60,72 @@ interface Props {
   onComplete: (result: LessonResult) => void;
 }
 
-interface SavedProgress {
-  step: number;
-  correctCount: number;
-  totalQuestions: number;
-  /** Série en cours et meilleure série, conservées à la reprise. */
-  combo: number;
-  bestCombo: number;
-}
+/** Étapes qui remontent juste/faux — même règle que `lib/lessonSpec`. */
+const GRADED: ReadonlySet<CourseStep['type']> = new Set([
+  'qcm',
+  'fill-blank',
+  'drag-drop',
+  'listening',
+  'final-quiz',
+]);
 
-interface FeedbackBubble {
-  text: string;
-  mood: 'encouraging' | 'sad';
-}
+/** Paliers où le combo se montre. */
+const COMBO_MILESTONES = [3, 5, 10];
 
-const MOOD_RESET_DELAY = 1500;
-const BUBBLE_LIFETIME = 1800;
-
-function loadProgress(courseId: string): SavedProgress {
+function loadProgress(courseId: string): Partial<PlayerState> {
   const parsed = readCoursePlayerProgress(courseId);
-  if (parsed) {
-    return {
-      step: parsed.step ?? 0,
-      correctCount: parsed.correctCount ?? 0,
-      totalQuestions: parsed.totalQuestions ?? 0,
-      combo: parsed.combo ?? 0,
-      bestCombo: parsed.bestCombo ?? 0,
-    };
+  // La sauvegarde vient du navigateur : on ne lui fait pas confiance au point
+  // de la relire sans vérifier qu'elle a la forme attendue.
+  const saved = parsed?.player as Partial<PlayerState> | undefined;
+  if (!saved || typeof saved.mainIndex !== 'number' || !Array.isArray(saved.replayQueue)) {
+    return {};
   }
-  return { step: 0, correctCount: 0, totalQuestions: 0, combo: 0, bestCombo: 0 };
-}
-
-function saveProgress(courseId: string, progress: SavedProgress) {
-  writeCoursePlayerProgress(courseId, progress);
+  return saved;
 }
 
 export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props) {
   const { t } = useTranslation();
-  const { cecrLevel } = useUserProgress();
-  const reduced = useReducedMotion();
-  const saved = loadProgress(content.courseId);
-  const [currentStep, setCurrentStep] = useState(Math.min(saved.step, content.steps.length - 1));
-  const [correctCount, setCorrectCount] = useState(saved.correctCount);
-  const [totalQuestions, setTotalQuestions] = useState(saved.totalQuestions);
-  const [combo, setCombo] = useState(saved.combo);
-  const [bestCombo, setBestCombo] = useState(saved.bestCombo);
-  const [completed, setCompleted] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [finalResult, setFinalResult] = useState<LessonResult | null>(null);
+  const reduced = useReducedMotionConfig() ?? false;
+  const totalSteps = content.steps.length;
+  const config = useMemo(() => ({ totalSteps }), [totalSteps]);
+
+  const [state, dispatch] = useReducer(
+    (s: PlayerState, a: Parameters<typeof playerReducer>[1]) => playerReducer(s, a, config),
+    undefined,
+    () => initialPlayerState(loadProgress(content.courseId)),
+  );
+
+  const [phase, setPhase] = useState<StepPhase>('answering');
+  const [result, setResult] = useState<StepAnswerResult | null>(null);
+  const [modeOverride, setModeOverride] = useState<CheckBarMode | null>(null);
+  const [comboFlash, setComboFlash] = useState<{ value: number; id: number } | null>(null);
   const [startedAt] = useState(() => Date.now());
   const [durationSeconds, setDurationSeconds] = useState(0);
-  const [mascotMood, setMascotMood] = useState<SparkMood>('idle');
-  const [bubble, setBubble] = useState<FeedbackBubble | null>(null);
-  const [scoreBump, setScoreBump] = useState(0);
+  const [finalResult, setFinalResult] = useState<LessonResult | null>(null);
 
-  const moodTimerRef = useRef<number | null>(null);
-  const bubbleTimerRef = useRef<number | null>(null);
+  const answerRef = useRef<StepAnswer | null>(null);
+  const continueHandlerRef = useRef<(() => void) | null>(null);
+  const optionShortcutRef = useRef<((index: number) => void) | null>(null);
+  const [ready, setReady] = useState(false);
 
-  /* Tant que la leçon est en cours, aucune célébration ne doit s'afficher :
-     le Director retient sa file et ne la relâche qu'à l'écran de fin. */
+  const stepIndex = currentStepIndex(state);
+  const step = stepIndex !== null ? content.steps[stepIndex] : null;
+  const graded = step ? GRADED.has(step.type) : false;
+  const replaying = isReplaying(state);
+  const completed = state.phase === 'done';
+
+  const questionCount = useMemo(() => countQuestions(content.steps), [content.steps]);
+  const xpPreview = useMemo(
+    () =>
+      computeLessonXp({
+        correct: state.correctCount,
+        questionCount,
+        bestCombo: state.bestCombo,
+      }).total,
+    [state.correctCount, questionCount, state.bestCombo],
+  );
+
+  /* ── Le Director retient ses célébrations tant que la leçon tourne ── */
   const rewards = useOptionalRewards();
   const holdRef = useRef(false);
   useEffect(() => {
@@ -115,75 +139,43 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
       rewards.release();
     }
   }, [rewards, completed]);
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (holdRef.current) {
         holdRef.current = false;
         rewards?.release();
       }
-    };
-  }, [rewards]);
-
-  const step = content.steps[currentStep];
-  const totalSteps = content.steps.length;
-  const progressPct = completed
-    ? 100
-    : ((currentStep + (totalQuestions > 0 ? 0.5 : 0)) / totalSteps) * 100;
-  /** Nombre de questions notées de la leçon, règle partagée avec le serveur. */
-  const questionCount = useMemo(() => countQuestions(content.steps), [content.steps]);
-  /** Aperçu seulement : le montant crédité est recalculé par `complete_lesson`. */
-  const xpPreview = useMemo(
-    () => computeLessonXp({ correct: correctCount, questionCount, bestCombo }).total,
-    [correctCount, questionCount, bestCombo],
+    },
+    [rewards],
   );
 
-  /* Persist progress + cleanup timers on unmount */
+  /* ── Sauvegarde de reprise : étape, score, combo et file de rejeu ── */
   useEffect(() => {
-    if (!completed) {
-      saveProgress(content.courseId, {
-        step: currentStep,
-        correctCount,
-        totalQuestions,
-        combo,
-        bestCombo,
-      });
-    }
-  }, [currentStep, correctCount, totalQuestions, combo, bestCombo, content.courseId, completed]);
+    if (completed) return;
+    writeCoursePlayerProgress(content.courseId, {
+      step: state.mainIndex,
+      correctCount: state.correctCount,
+      totalQuestions: state.answeredCount,
+      combo: state.combo,
+      bestCombo: state.bestCombo,
+      player: state as unknown as Record<string, unknown>,
+    });
+  }, [state, content.courseId, completed]);
 
+  /* ── Fin de leçon ── */
   useEffect(() => {
-    return () => {
-      if (moodTimerRef.current) window.clearTimeout(moodTimerRef.current);
-      if (bubbleTimerRef.current) window.clearTimeout(bubbleTimerRef.current);
-    };
-  }, []);
+    if (!completed || finalResult) return;
+    clearCoursePlayerProgress(content.courseId);
+    setDurationSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    setFinalResult(lessonOutcome(state, questionCount));
+    levelUpSequence();
+  }, [completed, finalResult, content.courseId, startedAt, state, questionCount]);
 
-  /* Scroll to top on step change so the user doesn't stay scrolled at the bottom */
+  /* Remonter en haut à chaque étape, et verrouiller le scroll du fond */
   useEffect(() => {
-    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, left: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
-  }, [currentStep, completed]);
+    window.scrollTo({ top: 0, left: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }, [stepIndex, state.phase, reduced]);
 
-  /* Mood auto-reset : 1.5 s après un mood non-idle (charte §2) */
-  useEffect(() => {
-    if (mascotMood === 'idle' || completed) return;
-    if (moodTimerRef.current) window.clearTimeout(moodTimerRef.current);
-    moodTimerRef.current = window.setTimeout(() => {
-      setMascotMood('idle');
-    }, MOOD_RESET_DELAY);
-    return () => {
-      if (moodTimerRef.current) window.clearTimeout(moodTimerRef.current);
-    };
-  }, [mascotMood, completed]);
-
-  /* Confetti at completion (palette LEVELUP_BLUE_WHITE — charte §8) */
-  useEffect(() => {
-    if (completed) {
-      levelUpSequence();
-    }
-  }, [completed]);
-
-  /* P0.1 — Lock body scroll while the player is mounted, so there's no
-     double scroll with the marketing page underneath that bleeds through. */
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -192,252 +184,353 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
     };
   }, []);
 
-  const showBubble = (text: string, mood: 'encouraging' | 'sad') => {
-    setBubble({ text, mood });
-    if (bubbleTimerRef.current) window.clearTimeout(bubbleTimerRef.current);
-    bubbleTimerRef.current = window.setTimeout(() => setBubble(null), BUBBLE_LIFETIME);
-  };
+  /* ── Contrôleur d'étape ── */
+  const setAnswer = useCallback((answer: StepAnswer | null) => {
+    answerRef.current = answer;
+    setReady(answer?.ready ?? false);
+  }, []);
+  const setContinueHandler = useCallback((handler: (() => void) | null) => {
+    continueHandlerRef.current = handler;
+  }, []);
+  const setOptionShortcut = useCallback((handler: ((index: number) => void) | null) => {
+    optionShortcutRef.current = handler;
+  }, []);
+  const resetPhase = useCallback(() => {
+    setPhase('answering');
+    setResult(null);
+  }, []);
 
-  const handleNext = (correct?: boolean) => {
-    const newCorrect = correctCount + (correct === true ? 1 : 0);
-    const newTotal = totalQuestions + (correct !== undefined ? 1 : 0);
-    // La série repart de zéro à la première erreur ; on garde la meilleure.
-    const newCombo = correct === true ? combo + 1 : correct === false ? 0 : combo;
-    const newBestCombo = Math.max(bestCombo, newCombo);
+  const controller = useMemo<StepController>(
+    () => ({
+      phase,
+      result,
+      setAnswer,
+      setContinueHandler,
+      setOptionShortcut,
+      resetPhase,
+      setMode: setModeOverride,
+    }),
+    [phase, result, setAnswer, setContinueHandler, setOptionShortcut, resetPhase],
+  );
 
-    if (correct !== undefined) {
-      setTotalQuestions(newTotal);
-      setCombo(newCombo);
-      setBestCombo(newBestCombo);
-      if (correct) {
-        setCorrectCount(newCorrect);
-        setScoreBump((b) => b + 1);
-        setMascotMood('encouraging');
-        showBubble(t('player.bubbleCorrect'), 'encouraging');
-      } else {
-        setMascotMood('sad');
-        showBubble(t('player.bubbleWrong'), 'sad');
-      }
+  /* ── Valider ── */
+  const handleCheck = useCallback(() => {
+    const answer = answerRef.current;
+    if (!answer?.ready || phase === 'revealed') return;
+    const evaluated = answer.evaluate();
+    setResult(evaluated);
+    setPhase('revealed');
+
+    if (evaluated.correct) {
+      // La note monte avec la série : le son suit la progression de l'apprenant.
+      const comboStep = replaying ? 0 : Math.min(state.combo, MAX_COMBO_STEP);
+      feedback.correct(comboStep, { scope: 'player' });
+    } else {
+      feedback.wrong({ scope: 'player' });
     }
 
-    if (currentStep + 1 >= totalSteps) {
-      const score = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 100;
-      clearCoursePlayerProgress(content.courseId);
-      setFinalResult({
-        score,
-        correct: newCorrect,
-        questionCount: Math.max(questionCount, newTotal),
-        bestCombo: newBestCombo,
+    if (!replaying && graded) {
+      const nextCombo = evaluated.correct ? state.combo + 1 : 0;
+      if (evaluated.correct && COMBO_MILESTONES.includes(nextCombo)) {
+        setComboFlash({ value: nextCombo, id: Date.now() });
+      }
+      dispatch({
+        type: 'answer',
+        graded: true,
+        correct: evaluated.correct,
+        replayable: step?.type !== 'final-quiz',
       });
-      setFinalScore(score);
-      setDurationSeconds(Math.floor((Date.now() - startedAt) / 1000));
-      setCompleted(true);
+    }
+  }, [phase, replaying, graded, state.combo, step?.type]);
+
+  /* ── Continuer ── */
+  const handleContinue = useCallback(() => {
+    // Une étape à questions internes (quiz final) garde la main.
+    if (continueHandlerRef.current) {
+      continueHandlerRef.current();
       return;
     }
-    setCurrentStep(currentStep + 1);
-  };
+    answerRef.current = null;
+    setReady(false);
+    setPhase('answering');
+    setResult(null);
+    setModeOverride(null);
+    dispatch({ type: 'advance' });
+  }, []);
+
+  /* ── Le badge de combo s'efface tout seul ── */
+  useEffect(() => {
+    if (!comboFlash) return;
+    const timer = window.setTimeout(() => setComboFlash(null), 1500);
+    return () => window.clearTimeout(timer);
+  }, [comboFlash]);
+
+  /* ── Clavier : Entrée valide / continue, 1–4 sélectionnent ── */
+  useEffect(() => {
+    if (completed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (phase === 'revealed') handleContinue();
+        else if (mode === 'continue') handleContinue();
+        else if (ready) handleCheck();
+        return;
+      }
+      if (/^[1-4]$/.test(e.key) && phase === 'answering') {
+        optionShortcutRef.current?.(Number(e.key) - 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completed, phase, ready, handleCheck, handleContinue, modeOverride, graded]);
+
+  const mode: CheckBarMode = modeOverride ?? (graded ? 'check' : 'continue');
+  const mascotMood = result ? (result.correct ? 'celebrating' : 'encouraging') : 'idle';
+  const goldProgress = comboFlash !== null && comboFlash.value >= 5;
+
+  const onSelect = useCallback(() => feedback.select({ scope: 'player' }), []);
 
   const renderStep = (s: CourseStep) => {
     switch (s.type) {
       case 'lesson':
-        return <LessonStep step={s} onNext={() => handleNext()} />;
+        return <LessonStep step={s} />;
       case 'qcm':
-        return <QCMStep step={s} onNext={(c) => handleNext(c)} />;
+        return <QCMStep step={s} onSelect={onSelect} />;
       case 'fill-blank':
-        return <FillBlankStep step={s} onNext={(c) => handleNext(c)} />;
+        return <FillBlankStep step={s} onSelect={onSelect} />;
       case 'drag-drop':
-        return <DragDropStep step={s} onNext={(c) => handleNext(c)} />;
+        return <DragDropStep step={s} onSelect={onSelect} />;
       case 'flashcard':
-        return <FlashcardStep step={s} onNext={() => handleNext()} />;
+        return <FlashcardStep step={s} />;
       case 'listening':
-        return <ListeningStep step={s} onNext={(c) => handleNext(c)} />;
+        return <ListeningStep step={s} onSelect={onSelect} />;
       case 'final-quiz':
-        return <FinalQuizStep step={s} onNext={(c) => handleNext(c)} />;
+        return (
+          <FinalQuizStep
+            step={s}
+            onSelect={onSelect}
+            onFinish={() => {
+              answerRef.current = null;
+              setReady(false);
+              setPhase('answering');
+              setResult(null);
+              setModeOverride(null);
+              continueHandlerRef.current = null;
+              dispatch({ type: 'advance' });
+            }}
+          />
+        );
       default:
         return null;
     }
   };
 
-  /* ===== STAGE animations ===== */
   const stepVariants = reduced
     ? {
         initial: { opacity: 0 },
-        animate: { opacity: 1, transition: { duration: 0.2 } },
-        exit: { opacity: 0, transition: { duration: 0.15 } },
+        animate: { opacity: 1, transition: { duration: fade.base } },
+        exit: { opacity: 0, transition: { duration: fade.fast } },
       }
     : {
-        initial: { opacity: 0, x: 40 },
-        animate: {
-          opacity: 1,
-          x: 0,
-          transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
-        },
-        exit: {
-          opacity: 0,
-          x: -40,
-          transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const },
-        },
+        initial: { opacity: 0, x: 24 },
+        animate: { opacity: 1, x: 0, transition: spring.snappy },
+        exit: { opacity: 0, x: -24, transition: { duration: fade.fast } },
       };
 
-  /* P0.1 — Portal to `document.body` so the player escapes the
-     transformed stacking context created by AppLayout's pageTransition
-     wrapper (which clamps `position: fixed` and lets the marketing
-     footer bleed through). Combined with body scroll lock above. */
+  const progressBar = (
+    <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
+      <motion.div
+        className="absolute inset-y-0 left-0 rounded-full"
+        style={{
+          background: goldProgress
+            ? 'linear-gradient(90deg, hsl(var(--cia-gold-600)) 0%, hsl(var(--cia-gold-400)) 50%, hsl(var(--cia-gold-200)) 100%)'
+            : 'linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)',
+        }}
+        initial={false}
+        animate={{ width: `${state.progressPct}%` }}
+        transition={reduced ? { duration: 0 } : spring.gentle}
+      />
+      {/* Un reflet traverse la barre à chaque bonne réponse. */}
+      {!reduced && (
+        <motion.div
+          key={`shine-${state.correctCount}`}
+          className="absolute inset-y-0 w-1/3"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.65) 50%, transparent 100%)',
+          }}
+          initial={{ x: '-100%' }}
+          animate={{ x: '320%' }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+      )}
+    </div>
+  );
+
+  const comboBadge = (
+    <AnimatePresence>
+      {comboFlash && (
+        <motion.div
+          key={comboFlash.id}
+          initial={reduced ? { opacity: 0 } : { scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={reduced ? { duration: fade.fast } : spring.bouncy}
+          className="pointer-events-none absolute -top-7 right-0 flex items-center gap-1 rounded-full bg-cia-gold-500 px-2.5 py-1 text-xs font-bold text-cia-blue-900 shadow-elev-lg"
+        >
+          <Flame className="h-3.5 w-3.5" aria-hidden />×{comboFlash.value}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-background flex flex-col lg:flex-row overflow-hidden"
+      className="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-background lg:flex-row"
       style={{ isolation: 'isolate', height: '100dvh' }}
     >
-      {/* ===== MOBILE top bar (sticky) ===== */}
-      <header className="lg:hidden shrink-0 z-20 bg-card/95 backdrop-blur-md border-b border-ink-100 px-4 pt-safe pb-3 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onExit}
-          aria-label={t('player.exit')}
-          className="shrink-0 mt-3"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-        <p className="flex-1 min-w-0 mt-3 truncate font-mono text-[10px] uppercase tracking-[.2em] text-muted-foreground">
-          {courseTitle}
-        </p>
-      </header>
-
-      {/* ===== DESKTOP sidebar + main ===== */}
-      <div className="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12 lg:overflow-hidden">
-        {/* Sidebar desktop (col-span-3) */}
-        <aside
-          className="hidden lg:flex lg:col-span-3 bg-cia-blue-500 text-white flex-col items-center justify-between p-6 sticky top-0 h-screen"
-          aria-label="Tableau de bord de leçon"
-        >
+      {/* ===== MOBILE : barre haute (sortie, son, progression, XP) ===== */}
+      <header className="z-20 shrink-0 border-b border-ink-100 bg-cia-blue-500 px-4 pb-3 pt-safe text-white lg:hidden">
+        <div className="mt-3 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={onExit}
             aria-label={t('player.exit')}
-            className="self-start text-white hover:bg-white/10 hover:text-white focus-visible:ring-white/40"
+            className="shrink-0 text-white hover:bg-white/10 hover:text-white"
           >
             <X className="h-5 w-5" />
           </Button>
-
-          {/* Spark + score */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <Spark
-                mood={completed ? 'celebrating' : mascotMood}
-                size={80}
-                halo
-                embers={completed}
+          <p className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
+            {courseTitle}
+          </p>
+          <SoundToggle scope="player" className="text-white hover:bg-white/10 hover:text-white" />
+        </div>
+        {!completed && (
+          <div className="relative mt-2">
+            {comboBadge}
+            <div className="mb-1.5 flex items-center justify-between font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
+              <span className="tabular-nums">{state.progressPct} %</span>
+              <RollingNumber
+                value={xpPreview}
+                prefix="+"
+                suffix=" XP"
+                bump
+                className="text-sm font-extrabold text-white"
               />
-              {/* Bulle contextuelle au feedback */}
-              <AnimatePresence>
-                {bubble && (
-                  <motion.div
-                    key={bubble.text}
-                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-                    className="absolute -top-2 left-full ml-3 max-w-[180px] bg-white text-foreground border-2 border-cia-spark-mid/30 rounded-2xl px-3 py-2 shadow-elev-lg"
-                  >
-                    <p className="text-xs font-semibold leading-snug whitespace-nowrap">
-                      {bubble.text}
-                    </p>
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-3 -left-[7px] h-3 w-3 rotate-45 bg-white border-l-2 border-b-2 border-cia-spark-mid/30"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
+            {progressBar}
+          </div>
+        )}
+      </header>
+
+      {/* ===== DESKTOP : colonne latérale ===== */}
+      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-12 lg:overflow-hidden">
+        <aside
+          className="sticky top-0 hidden h-screen flex-col items-center justify-between bg-cia-blue-500 p-6 text-white lg:col-span-3 lg:flex"
+          aria-label={t('player.sparkLabel')}
+        >
+          <div className="flex w-full items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onExit}
+              aria-label={t('player.exit')}
+              className="text-white hover:bg-white/10 hover:text-white focus-visible:ring-white/40"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <SoundToggle scope="player" className="text-white hover:bg-white/10 hover:text-white" />
+          </div>
+
+          <div className="flex flex-col items-center gap-4">
+            <Spark
+              mood={completed ? 'celebrating' : mascotMood}
+              size={80}
+              halo
+              embers={completed}
+            />
             <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
               {t('player.sparkLabel')}
             </p>
-
-            {/* Score session */}
-            <div className="text-center mt-2">
-              <motion.p
-                key={`score-${scoreBump}`}
-                initial={reduced ? false : { scale: 0.92, opacity: 0.7 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 18 }}
-                className="font-display font-extrabold text-3xl tabular-nums text-white drop-shadow-[0_2px_8px_hsl(var(--cia-blue-900)/0.4)]"
-              >
-                +{xpPreview}
-              </motion.p>
-              <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70 mt-1">
+            <div className="mt-2 text-center">
+              <RollingNumber
+                value={xpPreview}
+                prefix="+"
+                bump
+                className="text-3xl font-extrabold text-white drop-shadow-[0_2px_8px_hsl(var(--cia-blue-900)/0.4)]"
+              />
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
                 {t('player.xpEarned')}
               </p>
             </div>
           </div>
 
-          {/* Progress bar — bg-g-shine charte §6 */}
-          <div className="w-full space-y-2">
-            <div className="flex justify-between text-[10px] font-mono uppercase tracking-[.2em] text-white/70">
+          <div className="relative w-full space-y-2">
+            {comboBadge}
+            <div className="flex justify-between font-mono text-[10px] uppercase tracking-[.2em] text-white/70">
               <span>{t('player.step')}</span>
-              <span className="tabular-nums">
-                {Math.min(currentStep + 1, totalSteps)} / {totalSteps}
-              </span>
+              <span className="tabular-nums">{state.progressPct} %</span>
             </div>
-            <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
-              <motion.div
-                className="absolute inset-y-0 left-0 rounded-full"
-                style={{
-                  background:
-                    'linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)',
-                }}
-                initial={false}
-                animate={{ width: `${progressPct}%` }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-            <p className="text-[10px] uppercase tracking-[.2em] text-white/60 truncate font-mono">
+            {progressBar}
+            <p className="truncate font-mono text-[10px] uppercase tracking-[.2em] text-white/60">
               {courseTitle}
             </p>
           </div>
         </aside>
 
-        {/* Main zone step */}
-        <main className="lg:col-span-9 flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
-          <div className="px-4 py-6 lg:px-8 lg:py-12 max-w-3xl mx-auto w-full pb-[180px] lg:pb-12">
+        {/* ===== Zone d'étape ===== */}
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain lg:col-span-9">
+          <div
+            className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-12"
+            style={{ paddingBottom: completed ? 48 : CHECK_BAR_HEIGHT + 24 }}
+          >
             <AnimatePresence mode="wait" initial={false}>
-              {!completed && step && (
+              {state.phase === 'interstitial' && (
                 <motion.div
-                  key={step.id}
+                  key="interstitial"
                   initial={stepVariants.initial}
                   animate={stepVariants.animate}
                   exit={stepVariants.exit}
                 >
-                  {renderStep(step)}
+                  <ReplayInterstitial count={state.replayQueue.length} />
                 </motion.div>
               )}
 
-              {completed && (
+              {!completed && state.phase !== 'interstitial' && step && (
+                <motion.div
+                  key={`${state.phase}-${stepIndex}-${step.id}`}
+                  initial={stepVariants.initial}
+                  animate={stepVariants.animate}
+                  exit={stepVariants.exit}
+                >
+                  <StepControllerContext.Provider value={controller}>
+                    {replaying && (
+                      <p className="mb-4 text-center font-mono text-[10px] uppercase tracking-[.2em] text-muted-foreground">
+                        {t('player.replayBadge')}
+                      </p>
+                    )}
+                    {renderStep(step)}
+                  </StepControllerContext.Provider>
+                </motion.div>
+              )}
+
+              {completed && finalResult && (
                 <motion.div
                   key="completion"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  transition={reduced ? { duration: fade.base } : spring.gentle}
                 >
                   <CompletionScreen
                     courseTitle={courseTitle}
-                    score={finalScore}
+                    score={finalResult.score}
                     totalSteps={totalSteps}
                     durationSeconds={durationSeconds}
-                    correctCount={correctCount}
-                    totalQuestions={totalQuestions}
-                    onContinue={() =>
-                      onComplete(
-                        finalResult ?? {
-                          score: finalScore,
-                          correct: correctCount,
-                          questionCount,
-                          bestCombo,
-                        },
-                      )
-                    }
+                    correctCount={finalResult.correct}
+                    totalQuestions={finalResult.questionCount}
+                    onContinue={() => onComplete(finalResult)}
                     onExit={onExit}
                   />
                 </motion.div>
@@ -447,76 +540,32 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
         </main>
       </div>
 
-      {/* ===== MOBILE bottom dock ===== */}
+      {/* ===== La barre, toujours au même endroit ===== */}
       {!completed && (
-        <div
-          className="lg:hidden shrink-0 relative z-30 bg-cia-blue-500 text-white rounded-t-2xl shadow-elev-lg px-4 pt-3 pb-safe"
-          aria-label="Tableau de bord de leçon"
-        >
-          {/* Bulle de feedback ancrée au-dessus du Spark */}
-          <AnimatePresence>
-            {bubble && (
-              <motion.div
-                key={bubble.text}
-                initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-                className="absolute -top-12 left-4 max-w-[70%] bg-white text-foreground border-2 border-cia-spark-mid/30 rounded-2xl px-3 py-2 shadow-elev-lg"
-              >
-                <p className="text-xs font-semibold leading-snug">{bubble.text}</p>
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-[7px] left-6 h-3 w-3 rotate-45 bg-white border-r-2 border-b-2 border-cia-spark-mid/30"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={mascotMood === 'idle' ? { scale: 1 } : { scale: [1, 1.15, 1] }}
-              transition={{ duration: 0.5 }}
-              className="shrink-0"
-            >
-              <Spark mood={mascotMood} size={52} halo />
-            </motion.div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[.2em] text-white/70 mb-1.5">
-                <span className="tabular-nums">
-                  {t('player.step')} {Math.min(currentStep + 1, totalSteps)} / {totalSteps}
-                </span>
-                <motion.span
-                  key={`m-score-${scoreBump}`}
-                  initial={reduced ? false : { scale: 0.9, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 320, damping: 18 }}
-                  className="font-display font-extrabold text-sm text-white tabular-nums"
-                >
-                  +{xpPreview} XP
-                </motion.span>
-              </div>
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
-                <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, hsl(var(--cia-spark-deep)) 0%, hsl(var(--cia-spark-mid)) 60%, hsl(var(--cia-spark-light)) 100%)',
-                  }}
-                  initial={false}
-                  animate={{ width: `${progressPct}%` }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <CheckBar
+          mode={state.phase === 'interstitial' ? 'continue' : mode}
+          ready={state.phase === 'interstitial' ? true : ready}
+          result={state.phase === 'interstitial' ? null : result}
+          onCheck={handleCheck}
+          onContinue={handleContinue}
+        />
       )}
     </div>,
     document.body,
   );
 }
 
+/** Intertitre qui ouvre la phase de rejeu. */
+function ReplayInterstitial({ count }: { count: number }) {
+  const { t } = useTranslation();
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-12 text-center">
+      <Spark mood="encouraging" size={120} halo />
+      <h2 className="font-display text-2xl font-bold">{t('player.replayTitle')}</h2>
+      <p className="text-muted-foreground">{t('player.replayIntro', { count })}</p>
+    </div>
+  );
+}
 function CompletionScreen({
   courseTitle,
   score,

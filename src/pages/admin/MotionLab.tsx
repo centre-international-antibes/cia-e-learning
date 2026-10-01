@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { spring } from '@/lib/motion';
 import { feedback, MAX_COMBO_STEP, playSound, type SoundName } from '@/lib/feedback';
 import { useOptionalRewards } from '@/features/rewards';
+import { PlayerLabPanel } from './PlayerLabPanel';
 
 /**
  * Motion Lab — banc d'essai des primitives M1.
@@ -211,6 +212,13 @@ export default function MotionLab() {
             </div>
           </div>
         </AdminSectionCard>
+        <AdminSectionCard
+          title="Player"
+          description="Mini-leçon jouable : CheckBar, sélection avant validation, combo, rejeu des erreurs."
+        >
+          <PlayerLabPanel />
+        </AdminSectionCard>
+
         <AdminSectionCard
           title="Reward Director"
           description="Une célébration à la fois, les macro en dernier, rien pendant une leçon."

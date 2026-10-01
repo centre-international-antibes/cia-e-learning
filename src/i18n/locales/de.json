@@ -267,7 +267,22 @@
     "xpEarned": "XP erhalten",
     "bubbleCorrect": "Super, +5 XP!",
     "bubbleWrong": "Fast! Weiter so.",
-    "generating": "Audio wird erzeugt..."
+    "generating": "Audio wird erzeugt...",
+    "praise": {
+      "excellent": "Ausgezeichnet!",
+      "perfect": "Perfekt!",
+      "wellDone": "Gut gemacht!",
+      "spotOn": "Genau richtig!",
+      "bravo": "Bravo!",
+      "keepGoing": "Weiter so!"
+    },
+    "notQuite": "Nicht ganz",
+    "correctAnswerIs": "Richtige Antwort: {{solution}}",
+    "checkHint": "Wähle deine Antwort und prüfe sie dann.",
+    "replayTitle": "Schauen wir uns deine Fehler an",
+    "replayIntro": "Du wiederholst {{count}} verpasste Frage(n). Dieser zweite Versuch ändert deine Punktzahl nicht — er dient der Wiederholung.",
+    "replayBadge": "Wiederholung",
+    "livesLeft": "Noch {{count}} Leben"
   },
   "indicators": {
     "xp_tooltip": "{{count}} XP insgesamt",

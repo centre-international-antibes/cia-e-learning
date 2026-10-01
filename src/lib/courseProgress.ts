@@ -25,6 +25,12 @@ export interface CoursePlayerProgress {
   combo?: number;
   /** Meilleure série de la tentative — elle compte dans le barème XP. */
   bestCombo?: number;
+  /**
+   * État complet du séquenceur du player (étape, score, file de rejeu).
+   * Typé librement ici pour ne pas faire dépendre `lib/` d'un composant ;
+   * la forme est celle de `PlayerState` (course-player/playerReducer).
+   */
+  player?: Record<string, unknown>;
 }
 
 export type CourseProgressMap = Record<string, CourseProgressEntry>;
