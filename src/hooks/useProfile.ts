@@ -15,6 +15,8 @@ export type ProfileSnapshot = EditableProfile & {
   email: string | null;
   cecr_level: string | null;
   total_xp: number;
+  /** XP de la semaine en cours — remis à zéro chaque lundi côté serveur. */
+  weekly_xp: number;
   league: string | null;
   daily_streak: number;
 };
@@ -25,7 +27,11 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
 
   const refetch = useCallback(async () => {
-    if (!user) { setProfile(null); setLoading(false); return; }
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     // Sensitive PII columns (email/phone/nationality) are not readable via direct
     // table select. Use the SECURITY DEFINER RPC that scopes to auth.uid().
@@ -34,7 +40,9 @@ export function useProfile() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { refetch(); }, [refetch]);
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const update = useCallback(
     async (patch: Partial<EditableProfile>): Promise<{ ok: boolean; error?: string }> => {

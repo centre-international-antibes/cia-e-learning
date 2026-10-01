@@ -2179,7 +2179,9 @@
       "lesson": "Lezione",
       "listening": "Ascolto",
       "finalQuiz": "Quiz finale"
-    }
+    },
+    "xpTooFast": "Lezione completata. Troppo veloce per guadagnare XP questa volta: prenditi il tempo di leggere, gli XP torneranno al prossimo giro.",
+    "xpReplayCap": "Lezione completata. Hai già guadagnato XP in questa lezione 3 volte oggi: gli XP tornano domani."
   },
   "dailyChallenge": {
     "title": "Sfida del giorno",

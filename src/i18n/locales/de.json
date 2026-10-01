@@ -2179,7 +2179,9 @@
       "lesson": "Lektion",
       "listening": "Hörverstehen",
       "finalQuiz": "Abschlussquiz"
-    }
+    },
+    "xpTooFast": "Lektion abgeschlossen. Zu schnell für XP diesmal — nimm dir Zeit zum Lesen, beim nächsten Durchgang zählen die XP wieder.",
+    "xpReplayCap": "Lektion abgeschlossen. Du hast heute schon 3-mal XP in dieser Lektion verdient — morgen gibt es wieder XP."
   },
   "dailyChallenge": {
     "title": "Tagesherausforderung",

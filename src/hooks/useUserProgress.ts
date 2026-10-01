@@ -9,12 +9,10 @@ const XP_PER_LEVEL = 5000;
 
 const XP_UPDATE_EVENT = 'xp-update';
 
-interface AwardXPResult {
-  xp_before: number;
-  xp_after: number;
-  level_before: CECRLevel;
-  level_after: CECRLevel;
-  leveled_up: boolean;
+/** Réponse d'une RPC serveur qui crédite de l'XP (`complete_lesson`, …). */
+export interface ServerXpResult {
+  xp_after?: number;
+  weekly_xp_after?: number;
 }
 
 interface SetPlacementLevelResult {
@@ -27,15 +25,14 @@ function emitXPUpdate(xp: number, level: CECRLevel) {
   window.dispatchEvent(new CustomEvent(XP_UPDATE_EVENT, { detail: { xp, level } }));
 }
 
+/**
+ * @deprecated Mode anonyme uniquement. Sur un compte, le niveau CECR vient de
+ * la progression pédagogique (`computeLevelFromProgress`) ou du test de
+ * placement — jamais du total d'XP.
+ */
 export function getLevelFromXP(xp: number): CECRLevel {
   const idx = Math.min(Math.floor(xp / XP_PER_LEVEL), LEVEL_ORDER.length - 1);
   return LEVEL_ORDER[idx];
-}
-
-export function getXPForNextLevel(xp: number): { current: number; needed: number; progress: number } {
-  const currentLevelXP = Math.floor(xp / XP_PER_LEVEL) * XP_PER_LEVEL;
-  const current = xp - currentLevelXP;
-  return { current, needed: XP_PER_LEVEL, progress: Math.round((current / XP_PER_LEVEL) * 100) };
 }
 
 export function isLevelAccessible(courseLevel: CECRLevel, userLevel: CECRLevel): boolean {
@@ -102,61 +99,35 @@ export function useUserProgress() {
     fetchProgress();
   }, [user]);
 
-  const addXP = useCallback(
-    async (
-      amount: number,
-      source: string = 'unknown',
-      sourceRef?: string,
-    ): Promise<{ leveledUp: boolean; newLevel: CECRLevel }> => {
-      if (!Number.isFinite(amount) || amount <= 0) {
-        return { leveledUp: false, newLevel: cecrLevel };
-      }
+  /**
+   * Applique à l'état local l'XP renvoyée par une RPC serveur.
+   *
+   * Le client ne crédite plus rien lui-même : `complete_lesson`,
+   * `complete_speed_test` et `mark_daily_done` sont les seules sources d'XP,
+   * et le niveau CECR ne dépend plus du total.
+   */
+  const applyServerXp = useCallback(
+    (result: ServerXpResult | null | undefined) => {
+      if (!result || typeof result.xp_after !== 'number') return;
+      setTotalXP(result.xp_after);
+      emitXPUpdate(result.xp_after, cecrLevel);
+      window.dispatchEvent(new CustomEvent('weekly-xp-update'));
+    },
+    [cecrLevel],
+  );
 
-      const previousLevel = cecrLevel;
-
-      if (user) {
-        const { data, error } = await supabase.rpc('award_xp', {
-          _amount: amount,
-          _source: source,
-          _source_ref: sourceRef,
-        });
-        if (error) {
-          console.error('[addXP] award_xp failed', error);
-          toast.error(`Erreur XP: ${error.message}`);
-          return { leveledUp: false, newLevel: cecrLevel };
-        }
-        const result = data as AwardXPResult | null;
-        const newXP = result?.xp_after ?? totalXP;
-        const newLevel = result?.level_after ?? cecrLevel;
-        const leveledUp = !!result?.leveled_up;
-
-        setTotalXP(newXP);
-        setCecrLevel(newLevel);
-        emitXPUpdate(newXP, newLevel);
-        window.dispatchEvent(new CustomEvent('weekly-xp-update'));
-        if (leveledUp) {
-          window.dispatchEvent(new CustomEvent('level-up', {
-            detail: { level: newLevel, previousLevel },
-          }));
-        }
-        return { leveledUp, newLevel };
-      }
-
-      // Anonymous fallback (local only)
+  /**
+   * Gain d'XP en mode anonyme uniquement (pas de compte où créditer).
+   * Sur un compte, l'XP vient exclusivement du serveur.
+   */
+  const addLocalXP = useCallback(
+    (amount: number) => {
+      if (user) return;
+      if (!Number.isFinite(amount) || amount <= 0) return;
       const newXP = Math.max(0, totalXP + amount);
-      const newLevel = getLevelFromXP(newXP);
-      const leveledUp = newLevel !== cecrLevel;
       setTotalXP(newXP);
-      setCecrLevel(newLevel);
-      emitXPUpdate(newXP, newLevel);
+      emitXPUpdate(newXP, cecrLevel);
       localStorage.setItem('user-xp', String(newXP));
-      localStorage.setItem('user-cecr-level', newLevel);
-      if (leveledUp) {
-        window.dispatchEvent(new CustomEvent('level-up', {
-          detail: { level: newLevel, previousLevel },
-        }));
-      }
-      return { leveledUp, newLevel };
     },
     [totalXP, cecrLevel, user],
   );
@@ -198,7 +169,7 @@ export function useUserProgress() {
         const msg = error.message || '';
         const already = msg.includes('déjà passé');
         if (already) {
-          toast.warning('Test de placement déjà passé — votre niveau n\'a pas été modifié.');
+          toast.warning("Test de placement déjà passé — votre niveau n'a pas été modifié.");
         } else {
           toast.error(`Erreur test de placement: ${msg}`);
         }
@@ -221,9 +192,9 @@ export function useUserProgress() {
     cecrLevel,
     placementTestTakenAt,
     loading,
-    addXP,
+    applyServerXp,
+    addLocalXP,
     setLevel,
     setPlacementLevel,
-    xpProgress: getXPForNextLevel(totalXP),
   };
 }

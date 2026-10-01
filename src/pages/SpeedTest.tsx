@@ -5,8 +5,15 @@ import { Zap, Trophy, Timer, ArrowLeft, RotateCcw, Crown, Lock } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { SPEED_TEST_QUESTIONS, SPEED_TEST_DURATION, type SpeedQuestion } from '@/data/speed-test-questions';
+import {
+  SPEED_TEST_QUESTIONS,
+  SPEED_TEST_DURATION,
+  type SpeedQuestion,
+} from '@/data/speed-test-questions';
 import { useUserProgress } from '@/hooks/useUserProgress';
+import { useAuth } from '@/hooks/useAuth';
+import { useRewards } from '@/features/rewards';
+import { supabase } from '@/integrations/supabase/client';
 import { curriculum } from '@/data/curriculum';
 import { isModuleComplete } from '@/hooks/useModuleUnlock';
 import type { CECRLevel } from '@/data/demo-courses';
@@ -26,12 +33,23 @@ function shuffleQuestion(q: SpeedQuestion): SpeedQuestion {
   return { question: q.question, options: opts, correctIndex: opts.indexOf(correct) };
 }
 
+/** Réponse de la RPC `complete_speed_test`. */
+interface CompleteSpeedTestResult {
+  outcome: 'rewarded' | 'replay_cap';
+  xp_awarded: number;
+  is_record: boolean;
+  best_score: number;
+  xp_after: number;
+}
+
 export default function SpeedTest() {
   const { t } = useTranslation();
   const { level: levelParam } = useParams();
   const level = (levelParam as CECRLevel) || 'A1';
   const navigate = useNavigate();
-  const { addXP } = useUserProgress();
+  const { applyServerXp, addLocalXP } = useUserProgress();
+  const { user } = useAuth();
+  const { enqueue } = useRewards();
 
   const [phase, setPhase] = useState<Phase>('intro');
   const [questions, setQuestions] = useState<SpeedQuestion[]>([]);
@@ -45,11 +63,13 @@ export default function SpeedTest() {
   const [combo, setCombo] = useState(0);
   const [burstKey, setBurstKey] = useState(0);
 
+  // Le record fait autorité côté serveur ; `localStorage` n'est plus qu'un
+  // cache d'affichage, pour que l'écran d'intro ne soit pas vide au chargement.
   const bestKey = `speed-test-best:${level}`;
-  const bestScore = useMemo(() => {
+  const [bestScore, setBestScore] = useState(() => {
     const v = localStorage.getItem(bestKey);
     return v ? parseInt(v, 10) : 0;
-  }, [bestKey, phase]);
+  });
 
   const intervalRef = useRef<number | null>(null);
   const phaseRef = useRef(phase);
@@ -62,26 +82,72 @@ export default function SpeedTest() {
     return levelData.modules.some((m) => isModuleComplete(m));
   }, [levelData]);
 
-  const finish = useCallback(async (finalScore: number) => {
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setPhase('done');
-    let xp = finalScore * 10;
-    let record = false;
-    if (finalScore > bestScore) {
-      localStorage.setItem(bestKey, String(finalScore));
-      xp += 50;
-      record = true;
-    }
-    setXpEarned(xp);
-    setNewRecord(record);
-    if (xp > 0) {
-      await addXP(xp, 'speed_test', level);
-      toast.success(`+${xp} XP gagnés !`);
-    }
-  }, [addXP, bestKey, bestScore]);
+  const finish = useCallback(
+    async (finalScore: number) => {
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setPhase('done');
+
+      if (user) {
+        // Barème, record et plafond de rejeu : tout est décidé par le serveur.
+        const { data, error } = await supabase.rpc('complete_speed_test', {
+          _level: level,
+          _score: finalScore,
+        });
+        if (error) {
+          console.error('[complete_speed_test]', error);
+          setXpEarned(0);
+          return;
+        }
+        const res = data as CompleteSpeedTestResult | null;
+        if (!res) return;
+        applyServerXp(res);
+        setXpEarned(res.xp_awarded);
+        setNewRecord(res.is_record);
+        setBestScore(res.best_score);
+        localStorage.setItem(bestKey, String(res.best_score));
+        if (res.xp_awarded > 0) {
+          enqueue({
+            kind: 'xp',
+            id: `speed-${level}-${Date.now()}`,
+            amount: res.xp_awarded,
+            label: t('speedTest.title', { defaultValue: 'Speed test' }),
+          });
+        } else if (res.outcome === 'replay_cap') {
+          toast.info(
+            t('speedTest.replayCap', {
+              defaultValue:
+                'Déjà 5 parties comptabilisées sur ce niveau aujourd’hui — le score compte, pas les XP.',
+            }),
+          );
+        }
+        return;
+      }
+
+      // Anonyme : même barème, appliqué localement.
+      const effective = Math.min(finalScore, 60);
+      const record = effective > bestScore;
+      const xp = effective * 10 + (record ? 50 : 0);
+      if (record) {
+        setBestScore(effective);
+        localStorage.setItem(bestKey, String(effective));
+      }
+      setXpEarned(xp);
+      setNewRecord(record);
+      if (xp > 0) {
+        addLocalXP(xp);
+        enqueue({
+          kind: 'xp',
+          id: `speed-local-${Date.now()}`,
+          amount: xp,
+          label: t('speedTest.title', { defaultValue: 'Speed test' }),
+        });
+      }
+    },
+    [user, level, bestKey, bestScore, applyServerXp, addLocalXP, enqueue, t],
+  );
 
   // Timer
   useEffect(() => {
@@ -157,14 +223,19 @@ export default function SpeedTest() {
   if (!unlocked) {
     return (
       <div className="container py-12 max-w-2xl">
-        <Link to="/programme" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to="/programme"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Programme
         </Link>
         <Card className="p-8 text-center rounded-3xl">
           <div className="inline-flex h-16 w-16 rounded-2xl bg-muted items-center justify-center mb-4">
             <Lock className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h1 className="font-display text-2xl text-primary mb-2">{t('speedTest.lockedTitle', { level })}</h1>
+          <h1 className="font-display text-2xl text-primary mb-2">
+            {t('speedTest.lockedTitle', { level })}
+          </h1>
           <p className="text-muted-foreground text-sm mb-6">
             {t('speedTest.lockedBody', { level })}
           </p>
@@ -180,7 +251,10 @@ export default function SpeedTest() {
   if (phase === 'intro') {
     return (
       <div className="container py-8 max-w-2xl">
-        <Link to="/programme" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to="/programme"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Programme
         </Link>
         <Card className="p-8 text-center rounded-3xl bg-gradient-to-br from-cia-gold-50 to-cia-gold-100 dark:from-cia-gold-900/30 dark:to-cia-gold-900/20 border-2 border-cia-gold-300 relative overflow-hidden">
@@ -192,12 +266,19 @@ export default function SpeedTest() {
             className="inline-flex h-20 w-20 rounded-3xl bg-gradient-to-br from-cia-gold-400 to-streak-500 items-center justify-center mb-4 shadow-xl relative"
           >
             <div className="absolute inset-0 rounded-3xl bg-cia-gold-400/40 blur-xl -z-10" />
-            <motion.div animate={{ rotate: [0, -8, 8, 0] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}>
+            <motion.div
+              animate={{ rotate: [0, -8, 8, 0] }}
+              transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+            >
               <Zap className="h-10 w-10 text-white" />
             </motion.div>
           </motion.div>
-          <h1 className="font-display text-3xl md:text-4xl text-primary mb-2">Test de vitesse {level}</h1>
-          <p className="text-muted-foreground mb-6">Réponds correctement au plus de questions possible en 1 min 30 !</p>
+          <h1 className="font-display text-3xl md:text-4xl text-primary mb-2">
+            Test de vitesse {level}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Réponds correctement au plus de questions possible en 1 min 30 !
+          </p>
 
           <div className="grid grid-cols-3 gap-3 mb-6 text-sm">
             {[
@@ -226,11 +307,16 @@ export default function SpeedTest() {
               transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
               className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cia-gold-100 dark:bg-cia-gold-800/30 text-cia-gold-700 dark:text-cia-gold-300 text-sm font-bold"
             >
-              <Trophy className="h-4 w-4" /> Ton record : <AnimatedCounter target={bestScore} duration={800} /> bonnes réponses
+              <Trophy className="h-4 w-4" /> Ton record :{' '}
+              <AnimatedCounter target={bestScore} duration={800} /> bonnes réponses
             </motion.div>
           )}
 
-          <Button size="lg" onClick={start} className="w-full rounded-2xl text-base font-bold gap-2 bg-gradient-to-r from-cia-gold-500 to-streak-500 hover:from-cia-gold-600 hover:to-streak-500 shadow-lg hover:shadow-xl transition-shadow">
+          <Button
+            size="lg"
+            onClick={start}
+            className="w-full rounded-2xl text-base font-bold gap-2 bg-gradient-to-r from-cia-gold-500 to-streak-500 hover:from-cia-gold-600 hover:to-streak-500 shadow-lg hover:shadow-xl transition-shadow"
+          >
             <Zap className="h-5 w-5" /> Commencer le test
           </Button>
         </Card>
@@ -242,7 +328,9 @@ export default function SpeedTest() {
   if (phase === 'done') {
     const total = score + errors;
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
-    const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return (
       <div className="container py-8 max-w-2xl">
         <Card className="p-8 text-center rounded-3xl bg-gradient-to-br from-cia-gold-50 to-cia-gold-100 dark:from-cia-gold-900/30 dark:to-cia-gold-900/20 border-2 border-cia-gold-300 relative overflow-hidden">
@@ -252,7 +340,12 @@ export default function SpeedTest() {
                 const left = Math.random() * 100;
                 const delay = Math.random() * 0.4;
                 const duration = 2 + Math.random() * 1.4;
-                const colors = ['bg-cia-gold-400', 'bg-streak-500', 'bg-cia-blue-500', 'bg-cia-success'];
+                const colors = [
+                  'bg-cia-gold-400',
+                  'bg-streak-500',
+                  'bg-cia-blue-500',
+                  'bg-cia-success',
+                ];
                 return (
                   <motion.span
                     key={i}
@@ -290,9 +383,27 @@ export default function SpeedTest() {
 
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
-              { v: score, suffix: '', cls: 'text-cia-success', border: 'border-cia-success/30', label: t('speedTest.correct') },
-              { v: errors, suffix: '', cls: 'text-destructive', border: 'border-destructive/30', label: t('speedTest.errors') },
-              { v: accuracy, suffix: '%', cls: 'text-primary', border: 'border-primary/30', label: t('speedTest.accuracy') },
+              {
+                v: score,
+                suffix: '',
+                cls: 'text-cia-success',
+                border: 'border-cia-success/30',
+                label: t('speedTest.correct'),
+              },
+              {
+                v: errors,
+                suffix: '',
+                cls: 'text-destructive',
+                border: 'border-destructive/30',
+                label: t('speedTest.errors'),
+              },
+              {
+                v: accuracy,
+                suffix: '%',
+                cls: 'text-primary',
+                border: 'border-primary/30',
+                label: t('speedTest.accuracy'),
+              },
             ].map((s, i) => (
               <motion.div
                 key={i}
@@ -319,10 +430,19 @@ export default function SpeedTest() {
           </motion.div>
 
           <div className="flex gap-3">
-            <Button onClick={start} size="lg" className="flex-1 rounded-2xl gap-2 bg-gradient-to-r from-cia-gold-500 to-streak-500 hover:from-cia-gold-600 hover:to-streak-500">
+            <Button
+              onClick={start}
+              size="lg"
+              className="flex-1 rounded-2xl gap-2 bg-gradient-to-r from-cia-gold-500 to-streak-500 hover:from-cia-gold-600 hover:to-streak-500"
+            >
               <RotateCcw className="h-4 w-4" /> {t('speedTest.replay')}
             </Button>
-            <Button onClick={() => navigate('/programme')} size="lg" variant="outline" className="flex-1 rounded-2xl">
+            <Button
+              onClick={() => navigate('/programme')}
+              size="lg"
+              variant="outline"
+              className="flex-1 rounded-2xl"
+            >
               {t('nav.curriculum')}
             </Button>
           </div>
@@ -343,13 +463,21 @@ export default function SpeedTest() {
           <ComboBadge combo={combo} />
         </div>
         <div className="flex items-center gap-2">
-          <motion.div layout className="px-3 py-1 rounded-full bg-cia-success/15 text-cia-success text-sm font-bold">
+          <motion.div
+            layout
+            className="px-3 py-1 rounded-full bg-cia-success/15 text-cia-success text-sm font-bold"
+          >
             ✓ <AnimatedCounter target={score} duration={300} />
           </motion.div>
-          <motion.div layout className="px-3 py-1 rounded-full bg-destructive/15 text-destructive text-sm font-bold">
+          <motion.div
+            layout
+            className="px-3 py-1 rounded-full bg-destructive/15 text-destructive text-sm font-bold"
+          >
             ✗ <AnimatedCounter target={errors} duration={300} />
           </motion.div>
-          <Button size="sm" variant="ghost" onClick={stop} className="text-xs">{t('speedTest.stop')}</Button>
+          <Button size="sm" variant="ghost" onClick={stop} className="text-xs">
+            {t('speedTest.stop')}
+          </Button>
         </div>
       </div>
 
@@ -371,11 +499,18 @@ export default function SpeedTest() {
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Card className={`p-6 rounded-3xl transition-colors duration-200 ${
-              feedback === 'correct' ? 'bg-cia-success/10 border-cia-success ring-4 ring-cia-success/30' :
-              feedback === 'wrong' ? 'bg-destructive/10 border-destructive ring-4 ring-destructive/30' : ''
-            }`}>
-              <p className="text-xs text-muted-foreground font-bold mb-2">QUESTION {currentIdx + 1}</p>
+            <Card
+              className={`p-6 rounded-3xl transition-colors duration-200 ${
+                feedback === 'correct'
+                  ? 'bg-cia-success/10 border-cia-success ring-4 ring-cia-success/30'
+                  : feedback === 'wrong'
+                    ? 'bg-destructive/10 border-destructive ring-4 ring-destructive/30'
+                    : ''
+              }`}
+            >
+              <p className="text-xs text-muted-foreground font-bold mb-2">
+                QUESTION {currentIdx + 1}
+              </p>
               <h2 className="text-xl md:text-2xl font-bold mb-6 leading-snug">{q?.question}</h2>
               <div className="grid gap-3">
                 {q?.options.map((opt, i) => {
@@ -389,9 +524,11 @@ export default function SpeedTest() {
                       whileTap={{ scale: 0.97 }}
                       whileHover={!feedback ? { scale: 1.01 } : {}}
                       className={`w-full text-left p-4 rounded-2xl border-2 font-semibold transition-all ${
-                        isCorrect ? 'bg-cia-success text-primary-foreground border-cia-success' :
-                        isWrong ? 'opacity-40 border-border' :
-                        'bg-card border-border hover:border-primary hover:bg-muted'
+                        isCorrect
+                          ? 'bg-cia-success text-primary-foreground border-cia-success'
+                          : isWrong
+                            ? 'opacity-40 border-border'
+                            : 'bg-card border-border hover:border-primary hover:bg-muted'
                       }`}
                     >
                       {opt}

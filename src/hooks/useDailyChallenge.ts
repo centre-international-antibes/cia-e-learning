@@ -23,12 +23,11 @@ interface MarkDailyDoneResult {
   streak: number;
   total_xp_after?: number;
   level_after?: CECRLevel;
-  leveled_up?: boolean;
 }
 
 export function useDailyChallenge(initialLevel?: CECRLevel) {
   const { user } = useAuth();
-  const { cecrLevel, addXP } = useUserProgress();
+  const { cecrLevel, addLocalXP } = useUserProgress();
   const [selectedLevel, setSelectedLevel] = useState<CECRLevel>(initialLevel || cecrLevel);
   const [streak, setStreak] = useState(0);
   const [lastDate, setLastDate] = useState<string | null>(null);
@@ -65,65 +64,70 @@ export function useDailyChallenge(initialLevel?: CECRLevel) {
       setLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const dailyLesson: DailyLessonInfo | null = getDailyLesson(selectedLevel);
   const isDoneToday = lastDate === todayKey();
 
-  const markDoneToday = useCallback(
-    async (): Promise<{ awarded: boolean; xp: number; newStreak: number }> => {
-      if (user) {
-        const { data, error } = await supabase.rpc('mark_daily_done');
-        if (error) {
-          console.error('[markDoneToday] mark_daily_done failed', error);
-          toast.error(`Erreur défi du jour: ${error.message}`);
-          return { awarded: false, xp: 0, newStreak: streak };
-        }
-        const result = data as MarkDailyDoneResult | null;
-        const today = todayKey();
-        if (!result?.awarded) {
-          // Déjà fait aujourd'hui — synchronise l'état local
-          const s = result?.streak ?? streak;
-          setStreak(s);
-          setLastDate(today);
-          return { awarded: false, xp: 0, newStreak: s };
-        }
-        const newStreak = result.streak;
-        const xpAwarded = result.xp_awarded ?? STREAK_BONUS_XP;
-        setStreak(newStreak);
-        setLastDate(today);
-        // Diffuse les events pour synchroniser l'UI XP
-        if (typeof result.total_xp_after === 'number' && result.level_after) {
-          window.dispatchEvent(
-            new CustomEvent('xp-update', {
-              detail: { xp: result.total_xp_after, level: result.level_after },
-            }),
-          );
-        }
-        window.dispatchEvent(new CustomEvent('weekly-xp-update'));
-        if ([7, 14, 30, 100].includes(newStreak)) {
-          window.dispatchEvent(new CustomEvent('streak-milestone', { detail: { streak: newStreak } }));
-        }
-        return { awarded: true, xp: xpAwarded, newStreak };
+  const markDoneToday = useCallback(async (): Promise<{
+    awarded: boolean;
+    xp: number;
+    newStreak: number;
+  }> => {
+    if (user) {
+      const { data, error } = await supabase.rpc('mark_daily_done');
+      if (error) {
+        console.error('[markDoneToday] mark_daily_done failed', error);
+        toast.error(`Erreur défi du jour: ${error.message}`);
+        return { awarded: false, xp: 0, newStreak: streak };
       }
-
-      // Anonyme — fallback local
-      const { streak: newStreak, alreadyDone } = computeStreakUpdate(lastDate, streak);
-      if (alreadyDone) return { awarded: false, xp: 0, newStreak: streak };
+      const result = data as MarkDailyDoneResult | null;
       const today = todayKey();
+      if (!result?.awarded) {
+        // Déjà fait aujourd'hui — synchronise l'état local
+        const s = result?.streak ?? streak;
+        setStreak(s);
+        setLastDate(today);
+        return { awarded: false, xp: 0, newStreak: s };
+      }
+      const newStreak = result.streak;
+      const xpAwarded = result.xp_awarded ?? STREAK_BONUS_XP;
       setStreak(newStreak);
       setLastDate(today);
-      localStorage.setItem(LS_STREAK, String(newStreak));
-      localStorage.setItem(LS_LAST, today);
-      await addXP(STREAK_BONUS_XP, 'daily_challenge', today);
-      if ([7, 14, 30, 100].includes(newStreak)) {
-        window.dispatchEvent(new CustomEvent('streak-milestone', { detail: { streak: newStreak } }));
+      // Diffuse les events pour synchroniser l'UI XP
+      if (typeof result.total_xp_after === 'number' && result.level_after) {
+        window.dispatchEvent(
+          new CustomEvent('xp-update', {
+            detail: { xp: result.total_xp_after, level: result.level_after },
+          }),
+        );
       }
-      return { awarded: true, xp: STREAK_BONUS_XP, newStreak };
-    },
-    [lastDate, streak, user, addXP],
-  );
+      window.dispatchEvent(new CustomEvent('weekly-xp-update'));
+      if ([7, 14, 30, 100].includes(newStreak)) {
+        window.dispatchEvent(
+          new CustomEvent('streak-milestone', { detail: { streak: newStreak } }),
+        );
+      }
+      return { awarded: true, xp: xpAwarded, newStreak };
+    }
+
+    // Anonyme — fallback local
+    const { streak: newStreak, alreadyDone } = computeStreakUpdate(lastDate, streak);
+    if (alreadyDone) return { awarded: false, xp: 0, newStreak: streak };
+    const today = todayKey();
+    setStreak(newStreak);
+    setLastDate(today);
+    localStorage.setItem(LS_STREAK, String(newStreak));
+    localStorage.setItem(LS_LAST, today);
+    addLocalXP(STREAK_BONUS_XP);
+    if ([7, 14, 30, 100].includes(newStreak)) {
+      window.dispatchEvent(new CustomEvent('streak-milestone', { detail: { streak: newStreak } }));
+    }
+    return { awarded: true, xp: STREAK_BONUS_XP, newStreak };
+  }, [lastDate, streak, user, addLocalXP]);
 
   return {
     selectedLevel,

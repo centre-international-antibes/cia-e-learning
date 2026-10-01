@@ -34,18 +34,19 @@ npm run dev
 
 ## Scripts npm
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Dev server avec HMR sur port 8080 |
-| `npm run build` | Build production (sortie `dist/`) |
-| `npm run preview` | Preview du build production |
-| `npm run lint` | ESLint sur tout le code |
-| `npm run lint:fix` | ESLint en mode auto-fix |
-| `npm run typecheck` | Vérif TypeScript sans build |
-| `npm run format` | Prettier sur tout le code |
-| `npm run format:check` | Prettier en mode check (CI) |
-| `npm run test` | Tests Vitest one-shot |
-| `npm run test:watch` | Tests Vitest en watch |
+| Script                                  | Description                                                |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `npm run dev`                           | Dev server avec HMR sur port 8080                          |
+| `npm run build`                         | Build production (sortie `dist/`)                          |
+| `npm run preview`                       | Preview du build production                                |
+| `npm run lint`                          | ESLint sur tout le code                                    |
+| `npm run lint:fix`                      | ESLint en mode auto-fix                                    |
+| `npm run typecheck`                     | Vérif TypeScript sans build                                |
+| `npm run format`                        | Prettier sur tout le code                                  |
+| `npm run format:check`                  | Prettier en mode check (CI)                                |
+| `npm run test`                          | Tests Vitest one-shot                                      |
+| `npm run test:watch`                    | Tests Vitest en watch                                      |
+| `npm run gen:lesson-xp-spec -- --write` | Régénère le référentiel XP des leçons dans la migration M2 |
 
 ## Structure
 
@@ -73,9 +74,32 @@ supabase/
 └── migrations/                  # 9 migrations SQL versionnées
 ```
 
+## XP et récompenses
+
+L'XP est calculée **exclusivement côté serveur** : le client envoie des
+résultats (bonnes réponses, meilleure série), jamais un montant. Le barème vit
+à deux endroits qui doivent rester d'accord — `complete_lesson` dans
+`supabase/migrations/20260610140000_m2_xp_pipeline.sql` et
+`src/lib/xp/lessonXp.ts` (aperçu en cours de leçon et mode anonyme).
+
+Le serveur borne l'XP d'une leçon avec son nombre de questions, stocké dans la
+table `lesson_xp_spec`. Après toute modification du contenu de `src/data` :
+
+```bash
+npm run gen:lesson-xp-spec -- --write   # régénère le seed dans la migration
+```
+
+`src/lib/lessonSpec.test.ts` échoue si le seed ne correspond plus au contenu.
+
+Toutes les récompenses visibles (XP, série, badge, module débloqué, succès,
+passage de niveau) passent par le **Reward Director** (`src/features/rewards`) :
+une seule célébration à l'écran à la fois, les macro en dernier, et rien
+pendant une leçon. `/admin/motion-lab` permet de le tester à la main.
+
 ## Charte graphique
 
 Sources de vérité dans `/design-reference/` :
+
 - `CIA_Design_System.html` — charte v2 navigable
 - `tokens.jsx`, `components.jsx`, `spark.jsx`, `gamification.jsx`, `pages.jsx`
 - `lottie/spark-{idle,talking,encouraging,celebrating,sad}.json`

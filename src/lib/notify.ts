@@ -32,35 +32,24 @@ export const notify = {
   promise: sonnerToast.promise,
 
   // ----- Gamification -----
-  xp: (amount: number, source?: string) =>
-    sonnerToast.success(`+${amount} XP`, {
-      description: source,
-      duration: DURATIONS.gamification,
-      icon: '⚡',
-    }),
-
+  // Ces trois helpers ne sont appelés que par la scène du Reward Director,
+  // qui décide seule du moment où une récompense s'affiche. Les appeler
+  // directement remettrait des toasts concurrents à l'écran.
+  //
+  // `xp` et `levelUp` ont été retirés : l'XP passe par `enqueue({ kind: 'xp' })`
+  // et le passage de niveau par la célébration plein écran.
   streak: (days: number, xp?: number) =>
-    sonnerToast.success(
-      `Défi du jour validé !`,
-      {
-        description: `Série : ${days} jour${days > 1 ? 's' : ''}${xp ? ` · +${xp} XP` : ''}`,
-        duration: DURATIONS.gamification,
-        icon: '🔥',
-      },
-    ),
+    sonnerToast.success(`Défi du jour validé !`, {
+      description: `Série : ${days} jour${days > 1 ? 's' : ''}${xp ? ` · +${xp} XP` : ''}`,
+      duration: DURATIONS.gamification,
+      icon: '🔥',
+    }),
 
   badge: (label: string, emoji?: string) =>
     sonnerToast.success(`Badge obtenu`, {
       description: `${emoji ? emoji + ' ' : ''}${label}`,
       duration: DURATIONS.gamification,
       icon: '🏅',
-    }),
-
-  levelUp: (newLevel: string) =>
-    sonnerToast.success(`Niveau supérieur !`, {
-      description: `Vous êtes maintenant ${newLevel}`,
-      duration: DURATIONS.gamification,
-      icon: '🎉',
     }),
 
   unlock: (label: string, emoji?: string) =>
