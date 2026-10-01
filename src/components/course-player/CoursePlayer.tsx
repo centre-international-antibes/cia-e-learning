@@ -12,7 +12,7 @@ import { DragDropStep } from './DragDropStep';
 import { FlashcardStep } from './FlashcardStep';
 import { ListeningStep } from './ListeningStep';
 import { FinalQuizStep } from './FinalQuizStep';
-import { CheckBar, CHECK_BAR_HEIGHT, type CheckBarMode } from './CheckBar';
+import { CheckBar, type CheckBarMode } from './CheckBar';
 import {
   StepControllerContext,
   type StepAnswer,
@@ -102,6 +102,8 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
   const [startedAt] = useState(() => Date.now());
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [finalResult, setFinalResult] = useState<LessonResult | null>(null);
+  /** Hauteur réelle de la CheckBar, mesurée — safe-area comprise. */
+  const [barHeight, setBarHeight] = useState(0);
 
   const answerRef = useRef<StepAnswer | null>(null);
   const continueHandlerRef = useRef<(() => void) | null>(null);
@@ -484,7 +486,10 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
         <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain lg:col-span-9">
           <div
             className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-12"
-            style={{ paddingBottom: completed ? 48 : CHECK_BAR_HEIGHT + 24 }}
+            // La barre est en position absolue : elle recouvrirait la fin de
+            // l'étape. On réserve sa hauteur mesurée (safe-area comprise) plus
+            // une marge de respiration.
+            style={{ paddingBottom: completed ? 48 : barHeight + 24 }}
           >
             <AnimatePresence mode="wait" initial={false}>
               {state.phase === 'interstitial' && (
@@ -548,6 +553,7 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
           result={state.phase === 'interstitial' ? null : result}
           onCheck={handleCheck}
           onContinue={handleContinue}
+          onHeightChange={setBarHeight}
         />
       )}
     </div>,

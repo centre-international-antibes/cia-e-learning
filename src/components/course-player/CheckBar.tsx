@@ -11,17 +11,14 @@ import type { StepAnswerResult } from './step-controller';
 /**
  * CheckBar — la barre qui porte toute la boucle de la leçon.
  *
- * Elle ne bouge jamais : même position, même hauteur, que l'apprenant soit en
- * train de répondre, qu'il ait juste ou faux. Seul son fond change. C'est ce
- * qui supprime le saut de layout et le scroll qu'imposait l'ancien bouton
- * inséré sous le contenu.
+ * Deux garanties tiennent la mise en page :
+ *   - le **bouton** est ancré en bas et ne bouge jamais, quel que soit l'état ;
+ *   - le **panneau** de résultat grandit vers le haut, donc une solution longue
+ *     s'affiche en entier (jusqu'à trois lignes) sans déplacer le bouton.
+ *
+ * La hauteur réelle est remontée au player (`onHeightChange`) : c'est elle qui
+ * détermine l'espace réservé sous le contenu, safe-area comprise.
  */
-
-/**
- * Hauteur réservée dans le flux du player pour que rien ne passe dessous.
- * Elle couvre le cas le plus haut : panneau d'erreur sur deux lignes à 375 px.
- */
-export const CHECK_BAR_HEIGHT = 112;
 
 /** Six formulations, tirées au sort : la même phrase à chaque bonne réponse lasse. */
 const PRAISE_KEYS = [
@@ -46,9 +43,19 @@ export interface CheckBarProps {
   onContinue: () => void;
   /** Explication facultative affichée dans le panneau. */
   explanation?: string;
+  /** Hauteur réelle de la barre, mesurée à chaque changement. */
+  onHeightChange?: (height: number) => void;
 }
 
-export function CheckBar({ mode, ready, result, onCheck, onContinue, explanation }: CheckBarProps) {
+export function CheckBar({
+  mode,
+  ready,
+  result,
+  onCheck,
+  onContinue,
+  explanation,
+  onHeightChange,
+}: CheckBarProps) {
   const { t } = useTranslation();
   const reduced = useReducedMotionConfig() ?? false;
   const barRef = React.useRef<HTMLDivElement>(null);
@@ -71,6 +78,20 @@ export function CheckBar({ mode, ready, result, onCheck, onContinue, explanation
     return () => cancelAnimationFrame(frame);
   }, [result]);
 
+  // La hauteur varie avec le contenu du panneau : on la mesure plutôt que de
+  // la deviner, pour que l'espace réservé sous le contenu colle au pixel.
+  React.useLayoutEffect(() => {
+    const node = barRef.current;
+    if (!node || !onHeightChange) return;
+    onHeightChange(node.offsetHeight);
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => onHeightChange(node.offsetHeight));
+    // `border-box` : la safe-area vit dans le padding de la barre, et un
+    // changement de padding seul ne bouge pas la boîte de contenu.
+    observer.observe(node, { box: 'border-box' });
+    return () => observer.disconnect();
+  }, [onHeightChange]);
+
   const isCorrect = result?.correct === true;
   const panel = result !== null;
 
@@ -85,21 +106,17 @@ export function CheckBar({ mode, ready, result, onCheck, onContinue, explanation
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* Hauteur figée : le panneau de résultat est plus haut que la ligne de
-          saisie, et sans cela la barre « grandissait » de 12 px au moment de
-          la validation — exactement le saut qu'elle est censée supprimer. */}
-      <div
-        className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 sm:gap-4"
-        style={{ minHeight: CHECK_BAR_HEIGHT - 16 }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {panel ? (
+      <div className="mx-auto flex max-w-2xl flex-col gap-2 px-4 pt-3">
+        {/* Panneau : il pousse vers le haut, jamais vers le bas. */}
+        <AnimatePresence initial={false}>
+          {panel && (
             <motion.div
               key={isCorrect ? 'correct' : 'incorrect'}
-              initial={reduced ? { opacity: 0 } : { y: '100%', opacity: 0 }}
+              initial={reduced ? { opacity: 0 } : { y: 12, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={reduced ? { duration: fade.fast } : spring.gentle}
-              className="flex min-w-0 flex-1 items-center gap-3"
+              className="flex items-start gap-3"
               role="status"
               aria-live="polite"
             >
@@ -109,7 +126,7 @@ export function CheckBar({ mode, ready, result, onCheck, onContinue, explanation
                 halo={isCorrect}
                 className="shrink-0"
               />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 pt-1">
                 <p
                   className={cn(
                     'font-display text-base font-bold',
@@ -119,61 +136,50 @@ export function CheckBar({ mode, ready, result, onCheck, onContinue, explanation
                   {isCorrect ? t(praiseKey) : t('player.notQuite')}
                 </p>
                 {!isCorrect && result?.solution && (
-                  <p className="truncate text-sm text-cia-red-600">
+                  <p className="line-clamp-3 text-sm text-cia-red-600">
                     {t('player.correctAnswerIs', { solution: result.solution })}
                   </p>
                 )}
                 {isCorrect && explanation && (
-                  <p className="truncate text-sm text-success-700/80">{explanation}</p>
+                  <p className="line-clamp-3 text-sm text-success-700/80">{explanation}</p>
                 )}
               </div>
             </motion.div>
-          ) : (
-            <motion.p
-              key="idle"
-              initial={false}
-              animate={{ opacity: 1 }}
-              className="hidden min-w-0 flex-1 text-sm text-muted-foreground sm:block"
-            >
-              {mode === 'check' ? t('player.checkHint') : ''}
-            </motion.p>
           )}
         </AnimatePresence>
 
-        {panel ? (
-          <Pressable
-            data-continue
-            tone={isCorrect ? 'success' : 'danger'}
-            depth="lg"
-            scope="player"
-            onClick={onContinue}
-            className="h-14 min-w-[8rem] px-8 text-base"
-          >
-            {t('player.continue')}
-          </Pressable>
-        ) : mode === 'check' ? (
-          <Pressable
-            tone="primary"
-            depth="lg"
-            scope="player"
-            disabled={!ready}
-            onClick={onCheck}
-            className="h-14 w-full px-8 text-base sm:w-auto sm:min-w-[10rem]"
-          >
-            {t('player.check')}
-          </Pressable>
-        ) : (
-          <Pressable
-            tone="primary"
-            depth="lg"
-            scope="player"
-            disabled={!ready}
-            onClick={onContinue}
-            className="h-14 w-full px-8 text-base sm:w-auto sm:min-w-[10rem]"
-          >
-            {t('player.continue')}
-          </Pressable>
-        )}
+        {/* Rangée d'action — hauteur constante, ancrée au bas de la barre. */}
+        <div className="flex h-14 shrink-0 items-center gap-3 pb-3 sm:gap-4">
+          {!panel && (
+            <p className="hidden min-w-0 flex-1 text-sm text-muted-foreground sm:block">
+              {mode === 'check' ? t('player.checkHint') : ''}
+            </p>
+          )}
+
+          {panel ? (
+            <Pressable
+              data-continue
+              tone={isCorrect ? 'success' : 'danger'}
+              depth="lg"
+              scope="player"
+              onClick={onContinue}
+              className="ml-auto h-full min-w-[8rem] px-8 text-base"
+            >
+              {t('player.continue')}
+            </Pressable>
+          ) : (
+            <Pressable
+              tone="primary"
+              depth="lg"
+              scope="player"
+              disabled={!ready}
+              onClick={mode === 'check' ? onCheck : onContinue}
+              className="h-full w-full px-8 text-base sm:ml-auto sm:w-auto sm:min-w-[10rem]"
+            >
+              {mode === 'check' ? t('player.check') : t('player.continue')}
+            </Pressable>
+          )}
+        </div>
       </div>
     </div>
   );
