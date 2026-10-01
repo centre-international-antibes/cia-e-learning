@@ -1,29 +1,19 @@
-import { useEffect, useState } from 'react';
+import { RollingNumber } from '@/components/ui/rolling-number';
 
 interface AnimatedCounterProps {
   target: number;
+  /** @deprecated — la durée est désormais donnée par le spring `gentle`. */
   duration?: number;
   suffix?: string;
   className?: string;
 }
 
-export function AnimatedCounter({ target, duration = 1000, suffix = '', className }: AnimatedCounterProps) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration]);
-
-  return <span className={className}>{count}{suffix}</span>;
+/**
+ * Compteur animé — API conservée, implémentation déléguée à `RollingNumber`.
+ *
+ * Changement de comportement voulu : une mise à jour anime désormais depuis
+ * la valeur affichée, et non depuis zéro.
+ */
+export function AnimatedCounter({ target, suffix = '', className }: AnimatedCounterProps) {
+  return <RollingNumber value={target} suffix={suffix} className={className} />;
 }

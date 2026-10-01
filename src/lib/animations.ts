@@ -1,31 +1,49 @@
+/**
+ * @deprecated — utiliser `@/lib/motion` (tokens `spring` / `fade` / `stagger`)
+ * et les primitives `Pressable` / `RollingNumber` pour tout nouveau mouvement.
+ *
+ * Ce fichier reste en place pour les écrans déjà câblés : les exports gardent
+ * leur nom et leur forme, mais sont ré-implémentés sur les tokens motion.
+ * Les transforms passent donc par des springs ; les `duration` restantes ne
+ * portent plus que de l'opacité.
+ */
 import type { Variants } from 'framer-motion';
 import { useCallback, useRef, useState } from 'react';
+import { fade, spring, stagger } from '@/lib/motion';
 
 /* =========================================================================
- * Primitives existantes — INCHANGÉES
+ * Primitives — API inchangée, implémentation sur tokens
  * ========================================================================= */
 
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, transition: { duration: fade.slow } },
 };
 
 export const slideUp: Variants = {
   hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { ...spring.gentle, opacity: { duration: fade.base } },
+  },
 };
 
 export const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+    transition: { staggerChildren: stagger.base, delayChildren: 0.1 },
   },
 };
 
 export const staggerItem: Variants = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { ...spring.gentle, opacity: { duration: fade.base } },
+  },
 };
 
 export const scalePop: Variants = {
@@ -33,14 +51,14 @@ export const scalePop: Variants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] },
+    transition: { ...spring.bouncy, opacity: { duration: fade.base } },
   },
-  exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  exit: { opacity: 0, scale: 0.8, transition: { duration: fade.base } },
 };
 
 export const hoverLift = {
-  rest:  { y: 0,  scale: 1, transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } },
-  hover: { y: -4, scale: 1.01, transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } },
+  rest: { y: 0, scale: 1, transition: spring.snappy },
+  hover: { y: -4, scale: 1.01, transition: spring.snappy },
 };
 
 export const xpBurst: Variants = {
@@ -50,29 +68,36 @@ export const xpBurst: Variants = {
     x: Math.cos((i / 8) * Math.PI * 2) * 60,
     y: Math.sin((i / 8) * Math.PI * 2) * 60,
     scale: [0, 1, 0.5],
+    // Keyframes : une durée est ici la seule façon de séquencer la rafale.
     transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
+/**
+ * Transition de page. Plus aucune rotation 3D : le `rotateX` créait un
+ * stacking context persistant sur le conteneur de page (cause racine du
+ * portal du CoursePlayer).
+ */
 export const pageTransition = {
-  initial: { opacity: 0, y: 12, rotateX: 2 },
-  animate: { opacity: 1, y: 0, rotateX: 0 },
-  exit:    { opacity: 0, y: -8, rotateX: -1 },
-  transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
-  style: { transformPerspective: 1200 } as const,
+  initial: { opacity: 0, y: 8 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    // Une fois la page posée, on retire la transform : plus de stacking
+    // context, les overlays (player, modales) se superposent normalement.
+    transitionEnd: { transform: 'none' },
+  },
+  exit: { opacity: 0 },
+  transition: { ...spring.gentle, opacity: { duration: fade.fast } },
 };
 
 /* =========================================================================
- * NOUVELLES PRIMITIVES — Batch A1
+ * Primitives d'accent
  * ========================================================================= */
 
 /**
- * springPop — rebond physique vrai (vs scalePop qui est en easing custom).
- * À utiliser pour les éléments qui doivent donner une sensation de
- * "matérialité" : trophées, badges débloqués, niveau au level-up.
- *
- * Utilisation framer-motion :
- *   <motion.div variants={springPop} initial="hidden" animate="visible" />
+ * springPop — rebond physique pour les éléments qui doivent donner une
+ * sensation de matérialité : trophées, badges débloqués, niveau au level-up.
  */
 export const springPop: Variants = {
   hidden: { opacity: 0, scale: 0, rotate: -30 },
@@ -80,59 +105,41 @@ export const springPop: Variants = {
     opacity: 1,
     scale: 1,
     rotate: 0,
-    transition: {
-      type: 'spring',
-      damping: 11,
-      stiffness: 220,
-      mass: 0.8,
-    },
+    transition: { ...spring.bouncy, opacity: { duration: fade.base } },
   },
-  exit: { opacity: 0, scale: 0.5, rotate: 15, transition: { duration: 0.25 } },
+  exit: { opacity: 0, scale: 0.5, rotate: 15, transition: { duration: fade.base } },
 };
 
 /**
- * floatY — lévitation infinie verticale. Pour les éléments décoratifs
- * type badges flottants du hero, mascottes en attente, particules
- * ambiantes.
- *
- * Utilisation :
- *   <motion.div animate="float" variants={floatY} />
+ * floatY — lévitation infinie verticale (décoratif : mascottes en attente,
+ * badges flottants). Boucle continue → easing, pas de spring.
  */
 export const floatY: Variants = {
   float: {
     y: [0, -8, 0],
-    transition: {
-      duration: 4,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    },
+    transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
   },
 };
 
 /**
- * slideRotate — slide + rotation 3D légère pour les transitions de
- * step ou de page qui doivent donner du "mouvement". Utilise les axes
- * X et Y, légère rotation Y pour donner de la profondeur.
- *
- * Utilisation custom dans AnimatePresence avec direction +1 / -1 :
- *   <motion.div {...slideRotate(direction)} />
+ * slideRotate — slide directionnel pour les transitions de step.
+ * La rotation 3D (`rotateY`) a été retirée : même cause que `pageTransition`.
  */
 export const slideRotate = (direction: 1 | -1) => ({
-  initial: { opacity: 0, x: direction * 80, rotateY: direction * 8 },
-  animate: { opacity: 1, x: 0, rotateY: 0 },
-  exit:    { opacity: 0, x: -direction * 80, rotateY: -direction * 8 },
-  transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-  style: { transformPerspective: 1000 } as const,
+  initial: { opacity: 0, x: direction * 80 },
+  animate: { opacity: 1, x: 0, transitionEnd: { transform: 'none' } },
+  exit: { opacity: 0, x: -direction * 80 },
+  transition: { ...spring.gentle, opacity: { duration: fade.fast } },
 });
 
 /**
- * useTilt3D — hook qui retourne les props onPointerMove/onPointerLeave
- * et le style transform à appliquer pour un effet de tilt 3D
- * pointer-based.
+ * useTilt3D — props pointer + style transform pour un tilt 3D au survol.
  *
- * Utilisation :
- *   const tilt = useTilt3D({ max: 12 });
- *   <div {...tilt.bind} style={tilt.style}>...</div>
+ * Seul endroit où une rotation 3D subsiste, et volontairement : l'angle suit
+ * le pointeur en continu, ce n'est pas une animation jouée. Le `perspective`
+ * est posé sur l'élément lui-même, pas sur le conteneur de page — donc pas de
+ * stacking context au-dessus des overlays. Utilisé par les cartes de la
+ * landing et le CourseCard.
  */
 export interface UseTilt3DOptions {
   /** Angle max en degrés (défaut 12) */
@@ -161,7 +168,7 @@ export function useTilt3D(options: UseTilt3DOptions = {}) {
       const dy = (e.clientY - cy) / (rect.height / 2);
       setRot({
         x: Math.max(-max, Math.min(max, -dy * max)),
-        y: Math.max(-max, Math.min(max,  dx * max)),
+        y: Math.max(-max, Math.min(max, dx * max)),
       });
     },
     [active, max],

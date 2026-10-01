@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Spark } from '@/components/spark/Spark';
 import { springPop } from '@/lib/animations';
 import { levelUpSequence } from '@/lib/confetti';
+import { feedback } from '@/lib/feedback';
 
 interface LevelUpCelebrationProps {
   /** Niveau atteint (A2, B1, B2, C1, C2) */
@@ -58,18 +59,7 @@ export function LevelUpCelebration({
       timers.push(setTimeout(() => levelUpSequence(), 100));
     }
 
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate([50, 30, 50, 30, 100]);
-      } catch {
-        // ignore vibration errors on unsupported devices
-      }
-    }
-
-    // TODO: jouer sound effect quand asset disponible
-    // const audio = new Audio('/sounds/level-up.mp3');
-    // audio.volume = 0.5;
-    // audio.play().catch(() => {});
+    feedback.levelUp();
 
     return () => {
       timers.forEach((timer) => clearTimeout(timer));

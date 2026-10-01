@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, animate } from 'framer-motion';
 import { Sparkles, Star } from 'lucide-react';
+import { feedback } from '@/lib/feedback';
 
 interface XPBurstProps {
   x: number;
@@ -146,13 +147,7 @@ export function XPBurst({ x, y, amount, onComplete }: XPBurstProps) {
 
   useEffect(() => {
     if (reduced) return;
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate(8);
-      } catch {
-        // ignore vibration errors on unsupported devices
-      }
-    }
+    feedback.tap();
   }, [reduced]);
 
   return (
