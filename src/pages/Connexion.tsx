@@ -37,6 +37,7 @@ export default function Connexion() {
   const [lastName, setLastName] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [postAuthRedirect, setPostAuthRedirect] = useState<string | null>(null);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -54,14 +55,13 @@ export default function Connexion() {
     }
   }, [searchParams]);
 
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
+  const baseRedirect = searchParams.get('redirect') || '/dashboard';
+  const redirectTo = postAuthRedirect ?? baseRedirect;
 
 
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });
   }, [user, navigate, redirectTo]);
-
-  if (user) return null;
 
   const isLogin = tab === 'login';
 
@@ -94,7 +94,11 @@ export default function Connexion() {
         if (error) toast.error(error.message);
         else {
           toast.success(t('auth.loginSuccess'));
-          navigate(redirectTo);
+          // No direct navigate(): the `useEffect` watching `user` will fire
+          // exactly one `navigate(redirectTo, { replace: true })` once the
+          // session is applied. Navigating here *and* there in the same tick
+          // wedges `AnimatePresence mode="wait"` and leaves <main> blank
+          // until a hard refresh.
         }
       } else {
         const interestedPlan = (() => {
@@ -112,7 +116,9 @@ export default function Connexion() {
         if (error) toast.error(error.message);
         else {
           toast.success(t('auth.signupSuccess'));
-          navigate('/dashboard?welcome=1');
+          // Same as login — defer the navigation to the user effect. We just
+          // override the redirect target so the welcome flag is preserved.
+          setPostAuthRedirect('/dashboard?welcome=1');
         }
       }
     } finally {

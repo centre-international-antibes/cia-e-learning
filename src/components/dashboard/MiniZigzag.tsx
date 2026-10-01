@@ -5,6 +5,7 @@ import { ArrowRight, Lock, Check } from 'lucide-react';
 import { curriculum } from '@/data/curriculum';
 import { isModuleUnlocked, isModuleComplete } from '@/hooks/useModuleUnlock';
 import type { CECRLevel } from '@/data/demo-courses';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
 
 interface Props {
   currentLevel: CECRLevel;
@@ -60,6 +61,7 @@ const STATE_BG: Record<NodeState, string> = {
 
 export function MiniZigzag({ currentLevel }: Props) {
   const { t } = useTranslation();
+  const ci = useCurriculumI18n();
   const nodes = pickWindow(currentLevel);
   if (nodes.length === 0) return null;
 
@@ -94,7 +96,7 @@ export function MiniZigzag({ currentLevel }: Props) {
                 className={`relative inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full shadow-md transition-transform duration-200 ${
                   node.state === 'locked' ? 'cursor-default pointer-events-none' : 'hover:-translate-y-1 active:translate-y-0'
                 } ${STATE_BG[node.state]}`}
-                aria-label={`${t('dashboard.path.module_aria')} ${node.moduleId}: ${node.title}`}
+                aria-label={`${t('dashboard.path.module_aria')} ${node.moduleId}: ${ci.moduleTitle(node.moduleId, node.title)}`}
               >
                 {node.state === 'locked' ? (
                   <Lock className="h-6 w-6" />

@@ -56,7 +56,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Invalid text parameter" }), { status: 400, headers: jsonHeaders });
   }
 
-  const voiceId = requestedVoiceId || "FGY2WhTYpPnrIDTdsKH5";
+  // Default Marie voice (CIA pedagogical voice)
+  const voiceId = requestedVoiceId || "Y54PWsHC8udAjARe8URQ";
   const defaultSettings = { stability: 0.6, similarity_boost: 0.75, style: 0.4, use_speaker_boost: true, speed: 0.9 };
   const mergedSettings = voiceSettings ? { ...defaultSettings, ...voiceSettings, use_speaker_boost: true } : defaultSettings;
 

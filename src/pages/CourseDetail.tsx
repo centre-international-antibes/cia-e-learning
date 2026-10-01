@@ -12,13 +12,15 @@ import { demoCourses } from '@/data/demo-courses';
 import { getCourseContent } from '@/data/course-content';
 import { getLessonById, curriculum } from '@/data/curriculum';
 import { getEntryLessonForModule, getRegistryModule } from '@/data/contentRegistry';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
 import { CoursePlayer } from '@/components/course-player/CoursePlayer';
 import { useUserProgress, isLevelAccessible } from '@/hooks/useUserProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { getNewlyUnlockedModules, isModuleComplete, computeLevelFromProgress } from '@/hooks/useModuleUnlock';
 import { useDailyChallenge } from '@/hooks/useDailyChallenge';
 import { getDailyLesson } from '@/lib/dailyChallenge';
-import { readCourseProgressMap, writeCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { readCourseProgressMap, setLastLessonOpened } from '@/lib/courseProgress';
+import { upsertLessonProgress } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 import { notify } from '@/lib/notify';
 
@@ -38,6 +40,7 @@ const contentTypeIcons: Record<string, { i18nKey: string; icon: React.ElementTyp
 
 export default function CourseDetail() {
   const { t } = useTranslation();
+  const ci = useCurriculumI18n();
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -75,10 +78,10 @@ export default function CourseDetail() {
   const displayCourse = course || (curriculumData ? {
     id: id!,
     code: `${curriculumData.module.id}-${String(curriculumData.lesson.id).padStart(3, '0')}`,
-    title: curriculumData.lesson.title,
-    description: curriculumData.lesson.description,
+    title: ci.lessonTitle(curriculumData.lesson.id, curriculumData.lesson.title),
+    description: ci.lessonDescription(curriculumData.lesson.id, curriculumData.lesson.description),
     level: curriculumData.level.level,
-    theme: curriculumData.module.theme,
+    theme: ci.moduleTheme(curriculumData.module.id, curriculumData.module.theme),
     duration: 10,
     isNew: false,
     imageUrl: 'https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=800&h=500&fit=crop&q=80',
@@ -108,10 +111,17 @@ export default function CourseDetail() {
           setFinalScore(score);
           setPlaying(false);
 
-          // Save progress
-          const progress = readCourseProgressMap();
-          progress[displayCourse.id] = { score, completed: true, date: new Date().toISOString() };
-          writeCourseProgressMap(progress);
+          // Persist progress to Lovable Cloud (lesson_progress) and refresh the
+          // local cache so every consumer (parcours, drawer, resume card, etc.)
+          // sees the completion immediately.
+          await upsertLessonProgress({
+            userId: user?.id ?? '',
+            lessonId: displayCourse.id,
+            score,
+            courseId: displayCourse.id,
+            level: displayCourse.level,
+            completed: true,
+          });
 
           // Award XP based on score
           const xpEarned = Math.max(5, Math.round(score * 5));

@@ -30,23 +30,65 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
 
-  await getSupabase().from("subscriptions").upsert(
-    {
-      user_id: userId,
-      plan: planFromStatus(subscription.status),
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer,
-      product_id: productId,
-      price_id: priceId,
-      status: subscription.status,
-      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-      cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-      environment: env,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "stripe_subscription_id" },
-  );
+  const row = {
+    user_id: userId,
+    plan: planFromStatus(subscription.status),
+    stripe_subscription_id: subscription.id,
+    stripe_customer_id: subscription.customer,
+    product_id: productId,
+    price_id: priceId,
+    status: subscription.status,
+    current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+    current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+    environment: env,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Manual upsert: the unique index on stripe_subscription_id is PARTIAL
+  // (WHERE stripe_subscription_id IS NOT NULL), which PostgREST cannot use
+  // as an ON CONFLICT target — so .upsert() fails. Do select-then-update
+  // or insert ourselves and log any DB error so we never lose a payment.
+  const sb = getSupabase();
+  const { data: existing, error: selErr } = await sb
+    .from("subscriptions")
+    .select("id")
+    .eq("stripe_subscription_id", subscription.id)
+    .maybeSingle();
+  if (selErr) {
+    console.error("[webhook] select existing failed", selErr);
+  }
+
+  if (existing?.id) {
+    const { error } = await sb.from("subscriptions").update(row).eq("id", existing.id);
+    if (error) console.error("[webhook] update subscription failed", error);
+    else console.log("[webhook] subscription updated", subscription.id, "user", userId);
+    return;
+  }
+
+  // No row tied to this stripe_subscription_id. Recycle the user's existing
+  // free row (one per user from handle_new_user) when present, otherwise
+  // insert a new row. This keeps the table tidy and avoids duplicates.
+  const { data: freeRow } = await sb
+    .from("subscriptions")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("environment", env)
+    .is("stripe_subscription_id", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (freeRow?.id) {
+    const { error } = await sb.from("subscriptions").update(row).eq("id", freeRow.id);
+    if (error) console.error("[webhook] upgrade free row failed", error);
+    else console.log("[webhook] free row upgraded to premium", subscription.id, "user", userId);
+    return;
+  }
+
+  const { error } = await sb.from("subscriptions").insert(row);
+  if (error) console.error("[webhook] insert subscription failed", error);
+  else console.log("[webhook] subscription inserted", subscription.id, "user", userId);
 }
 
 async function markCanceled(subscription: any, env: StripeEnv) {
@@ -99,6 +141,7 @@ Deno.serve(async (req) => {
   const env: StripeEnv = rawEnv;
   try {
     const event = await verifyWebhook(req, env);
+    console.log("[payments-webhook] env=", env, "type=", event.type, "id=", (event.data?.object as any)?.id);
     switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated":

@@ -51,6 +51,21 @@ export function useSubscription() {
 
   useEffect(() => { void refetch(); }, [refetch]);
 
+  // Refetch on tab focus and at a low-frequency interval. We previously used
+  // Realtime on the `subscriptions` table, but it was removed from the
+  // realtime publication to prevent cross-tenant channel subscription to
+  // billing data (RLS protects row delivery, but channel topics were open).
+  useEffect(() => {
+    if (!user) return;
+    const onFocus = () => { void refetch(); };
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(onFocus, 60_000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+    };
+  }, [user, refetch]);
+
   // Try to sync with Stripe on first load so a freshly completed checkout
   // gets reflected even if the webhook is still in flight.
   const syncWithStripe = useCallback(async () => {

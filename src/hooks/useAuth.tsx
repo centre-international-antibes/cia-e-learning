@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, useCallback, useRef } f
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { setActiveProgressUser } from '@/lib/courseProgress';
+import { syncLessonProgressFromCloud } from '@/lib/lessonProgressSync';
 import { toast } from 'sonner';
 
 interface AuthContextType {
@@ -60,15 +61,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const applySession = useCallback((nextSession: Session | null) => {
     setSession(nextSession);
     setActiveProgressUser(nextSession?.user?.id);
+    void syncLessonProgressFromCloud(nextSession?.user?.id);
   }, []);
 
   useEffect(() => {
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted || !initializedRef.current) return;
-
+      if (!mounted) return;
+      // Always apply session updates, even before initial getSession() resolves.
+      // Previously we dropped events while `initializedRef.current` was false,
+      // which could race with sign-in: SIGNED_IN fires immediately after
+      // signInWithPassword resolves, and skipping it left the app in a half-
+      // hydrated state until a hard refresh.
       applySession(nextSession);
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        setIsLoading(false);
+      }
       void syncAdminRole(nextSession?.user?.id);
     });
 
@@ -78,10 +88,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!mounted) return;
 
-        applySession(initialSession);
-        initializedRef.current = true;
-        setIsLoading(false);
-        void syncAdminRole(initialSession?.user?.id);
+        // Only apply if onAuthStateChange hasn't already initialized us
+        // with a fresher session (typical after a fresh signIn).
+        if (!initializedRef.current) {
+          applySession(initialSession);
+          initializedRef.current = true;
+          setIsLoading(false);
+          void syncAdminRole(initialSession?.user?.id);
+        }
       } catch (error) {
         console.error('[auth] getSession failed', error);
 

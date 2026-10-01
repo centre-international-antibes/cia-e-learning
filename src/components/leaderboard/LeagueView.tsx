@@ -7,6 +7,7 @@ import { useLeague, type League, type LeagueMember } from '@/hooks/useLeague';
 import { LeagueBadge, leagueLabel } from './LeagueBadge';
 import { CountdownDigit } from './CountdownDigit';
 import { PromoZoneIndicator } from './PromoZoneIndicator';
+import { LeaderboardSkeleton } from '@/components/states/skeletons/LeaderboardSkeleton';
 
 const LEAGUES: League[] = ['bronze', 'argent', 'or'];
 
@@ -111,7 +112,7 @@ export function LeagueView() {
     <div className="space-y-5">
       {/* Header card */}
       <Card className="p-5 rounded-3xl bg-gradient-to-br from-card to-muted/40 border-2">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeLeague}
@@ -125,10 +126,10 @@ export function LeagueView() {
           </AnimatePresence>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-muted-foreground tracking-wider">VOTRE LIGUE</p>
-            <h2 className="font-display text-2xl text-primary">Ligue {leagueLabel(activeLeague)}</h2>
-            <div className={`flex items-center gap-1.5 text-xs mt-1 ${countdownColorClass}`}>
-              <Clock className="h-3.5 w-3.5" />
-              <span className="inline-flex items-center gap-0.5">
+            <h2 className="font-display text-xl md:text-2xl text-primary truncate">Ligue {leagueLabel(activeLeague)}</h2>
+            <div className={`hidden md:flex items-center gap-1.5 text-xs mt-1 ${countdownColorClass}`}>
+              <Clock className="h-3.5 w-3.5 shrink-0" />
+              <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
                 Fin dans&nbsp;
                 <CountdownDigit value={cd.d} className="font-bold" /><span>j&nbsp;</span>
                 <CountdownDigit value={cd.h} className="font-bold" /><span>h&nbsp;</span>
@@ -139,11 +140,22 @@ export function LeagueView() {
           </div>
           {user && (
             <div className="text-right shrink-0">
-              <p className="text-xs text-muted-foreground">Cette semaine</p>
-              <p className="font-extrabold text-cia-xp text-lg">⚡ {myWeeklyXP.toLocaleString()}</p>
-              {myRank && <p className="text-xs font-bold">Rang #{myRank}</p>}
+              <p className="text-[10px] md:text-xs text-muted-foreground">Cette semaine</p>
+              <p className="font-extrabold text-cia-xp text-base md:text-lg whitespace-nowrap">⚡ {myWeeklyXP.toLocaleString()}</p>
+              {myRank && <p className="text-[10px] md:text-xs font-bold">Rang #{myRank}</p>}
             </div>
           )}
+        </div>
+        {/* Countdown line — full width on mobile */}
+        <div className={`md:hidden flex items-center justify-center gap-1.5 text-xs mt-3 pt-3 border-t border-border/40 ${countdownColorClass}`}>
+          <Clock className="h-3.5 w-3.5 shrink-0" />
+          <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
+            Fin dans&nbsp;
+            <CountdownDigit value={cd.d} className="font-bold" /><span>j&nbsp;</span>
+            <CountdownDigit value={cd.h} className="font-bold" /><span>h&nbsp;</span>
+            <CountdownDigit value={cd.m} className="font-bold" /><span>m&nbsp;</span>
+            <CountdownDigit value={cd.s} className="font-bold" /><span>s</span>
+          </span>
         </div>
       </Card>
 
@@ -192,7 +204,7 @@ export function LeagueView() {
 
       {/* Members list */}
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-8">Chargement…</p>
+        <LeaderboardSkeleton />
       ) : members.length === 0 ? (
         <Card className="p-10 text-center rounded-3xl">
           <p className="text-muted-foreground font-bold">Aucun apprenant dans cette ligue.</p>

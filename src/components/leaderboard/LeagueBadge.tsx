@@ -26,7 +26,7 @@ const CONFIG: Record<League, { label: string; icon: typeof Trophy; gradient: str
 };
 
 export function LeagueBadge({ league, size = 'md' }: { league: League; size?: 'sm' | 'md' | 'lg' }) {
-  const c = CONFIG[league];
+  const c = CONFIG[league] || CONFIG.bronze;
   const Icon = c.icon;
   const sz = size === 'lg' ? 'h-24 w-24' : size === 'md' ? 'h-14 w-14' : 'h-9 w-9';
   const iconSz = size === 'lg' ? 'h-12 w-12' : size === 'md' ? 'h-7 w-7' : 'h-5 w-5';
@@ -38,5 +38,5 @@ export function LeagueBadge({ league, size = 'md' }: { league: League; size?: 's
 }
 
 export function leagueLabel(l: League) {
-  return CONFIG[l].label;
+  return (CONFIG[l] || CONFIG.bronze).label;
 }

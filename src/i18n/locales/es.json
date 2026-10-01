@@ -404,35 +404,1411 @@
     }
   },
   "curriculum": {
-    "title": "Parcours pédagogique",
-    "subtitle": "Ton chemin du A1 au C2 — niveau actuel :",
-    "your_level": "Tu es ici",
-    "module": "Module",
-    "coming_soon": "Modules en préparation. Disponibles bientôt.",
-    "you_are_here": "Tu es ici",
-    "unit_label": "UNIDAD",
-    "unit_progress": "{{done}} / {{total}} módulos",
-    "bubble_continue": "¡Sigue, ya casi lo tienes!",
-    "bubble_keep_going": "Queda {{count}} módulo para terminar la unidad.",
-    "bubble_keep_going_plural": "Quedan {{count}} módulos para terminar la unidad.",
-    "bubble_start_unit": "¿Listo/a? ¡Empezamos esta unidad!",
-    "unit_complete_toast": "🎉 ¡Unidad {{level}} completada!",
+    "levels": {
+      "A1": {
+        "title": "Descubrimiento",
+        "objective": "Comprender y utilizar expresiones familiares y cotidianas. Presentarse y hacer preguntas sencillas."
+      },
+      "A2": {
+        "title": "Supervivencia",
+        "objective": "Comprender expresiones de uso frecuente. Comunicarse en tareas sencillas. Describir su entorno."
+      },
+      "B1": {
+        "title": "Umbral",
+        "objective": "Desenvolverse en la mayoría de las situaciones de viaje. Contar, expresar un deseo, dar razones."
+      },
+      "B2": {
+        "title": "Avanzado",
+        "objective": "Comprender el contenido esencial de temas concretos o abstractos. Expresarse de forma clara y detallada."
+      },
+      "C1": {
+        "title": "Autónomo",
+        "objective": "Comprender textos largos y exigentes. Expresarse espontánea y fluidamente. Utilizar la lengua de forma flexible y eficaz."
+      },
+      "C2": {
+        "title": "Dominio",
+        "objective": "Comprender sin esfuerzo prácticamente todo. Expresarse espontáneamente, con gran fluidez y precisión."
+      }
+    },
+    "modules": {
+      "A1.1": {
+        "title": "Mis primeros pasos en francés",
+        "theme": "Saludos, identidad, alfabeto y sonidos",
+        "badge": "Bienvenido a Antibes"
+      },
+      "A1.2": {
+        "title": "Mi mundo cotidiano",
+        "theme": "Familia, descripción física, objetos, colores",
+        "badge": "Explorador"
+      },
+      "A1.3": {
+        "title": "Mi día",
+        "theme": "Rutina, hora, verbos cotidianos, gustos",
+        "badge": "Gourmet Principiante"
+      },
+      "A1.4": {
+        "title": "Desplazarse",
+        "theme": "Ciudad, transportes, direcciones, lugares públicos",
+        "badge": "Viajero"
+      },
+      "A1.5": {
+        "title": "Comunicarse en el día a día",
+        "theme": "Teléfono, correo electrónico, redes sociales",
+        "badge": "Nivel A1 validado"
+      },
+      "A2.1": {
+        "title": "Contar en pasado",
+        "theme": "Pretérito compuesto, acontecimientos, recuerdos",
+        "badge": "Narrador Principiante"
+      },
+      "A2.2": {
+        "title": "La vida social",
+        "theme": "Invitaciones, salidas, opiniones, sentimientos",
+        "badge": "Mariposa Social"
+      },
+      "A2.3": {
+        "title": "El mundo laboral",
+        "theme": "Profesiones, entrevista, currículum vitae",
+        "badge": "Profesional Principiante"
+      },
+      "A2.4": {
+        "title": "Salud y bienestar",
+        "theme": "Cuerpo, salud, deporte, alimentación",
+        "badge": "Bien en tu piel"
+      },
+      "A2.5": {
+        "title": "Descubrir Francia",
+        "theme": "Geografía, cultura, tradiciones, fiestas",
+        "badge": "Nivel A2 validado"
+      },
+      "B1.1": {
+        "title": "Expresar su opinión",
+        "theme": "Opinión, subjuntivo, medios de comunicación",
+        "badge": "Pensador Crítico"
+      },
+      "B1.2": {
+        "title": "Viajar y desenvolverse",
+        "theme": "Hotel, viaje, condicional, problemas",
+        "badge": "Trotamundos"
+      },
+      "B1.3": {
+        "title": "Vida cotidiana avanzada",
+        "theme": "Alojamiento, presupuesto, administración",
+        "badge": "Autónomo"
+      },
+      "B1.4": {
+        "title": "Estudios y formación",
+        "theme": "Sistema educativo, universidad, presentación",
+        "badge": "Estudiante Modelo"
+      },
+      "B1.5": {
+        "title": "Cultura y sociedad",
+        "theme": "Medio ambiente, cine, estilo de vida",
+        "badge": "Nivel B1 validado"
+      },
+      "B2.1": {
+        "title": "Argumentar y convencer",
+        "theme": "Argumentación, condicional pasado, debate",
+        "badge": "Orador"
+      },
+      "B2.2": {
+        "title": "El mundo profesional",
+        "theme": "Carta de presentación, reunión, negociación",
+        "badge": "Gerente"
+      },
+      "B2.3": {
+        "title": "Actualidad y sociedad",
+        "theme": "Prensa, idiomas, política",
+        "badge": "Ciudadano Informado"
+      },
+      "B2.4": {
+        "title": "Artes y literatura",
+        "theme": "Literatura, canción, cine de autor",
+        "badge": "Crítico Literario"
+      },
+      "B2.5": {
+        "title": "Hacia el dominio",
+        "theme": "Conectores, síntesis, francofonía",
+        "badge": "Nivel B2 validado"
+      },
+      "C1.1": {
+        "title": "Dominar el matiz",
+        "theme": "Tiempos literarios, ensayo, concesión avanzada",
+        "badge": "Intelectual"
+      },
+      "C1.2": {
+        "title": "Francés profesional experto",
+        "theme": "Informe, conferencia, jurídico, negocios",
+        "badge": "Experto Profesional"
+      },
+      "C1.3": {
+        "title": "Cultura y civilización",
+        "theme": "Filosofía, historia, francofonía",
+        "badge": "Francófilo"
+      },
+      "C1.4": {
+        "title": "Medios y comunicación",
+        "theme": "Documental, retórica, podcast",
+        "badge": "Comunicador"
+      },
+      "C1.5": {
+        "title": "Hacia la excelencia",
+        "theme": "Sutilezas, DALF C1, variedades del francés",
+        "badge": "Nivel C1 validado"
+      },
+      "C2.1": {
+        "title": "La excelencia lingüística",
+        "theme": "Arcaísmos, estilística, improvisación",
+        "badge": "Virtuoso"
+      },
+      "C2.2": {
+        "title": "Creación y expresión personal",
+        "theme": "Poesía, cuento, teatro, resumen experto",
+        "badge": "Creador"
+      },
+      "C2.3": {
+        "title": "Francés experto",
+        "theme": "Jurídico, científico, médico, diplomático",
+        "badge": "Especialista"
+      },
+      "C2.4": {
+        "title": "Francia en el mundo",
+        "theme": "Francofonía, geopolítica, IA, influencia",
+        "badge": "Diplomático"
+      },
+      "C2.5": {
+        "title": "El dominio absoluto",
+        "theme": "Trampas definitivas, conversación, elocuencia",
+        "badge": "Maestro de Francés"
+      }
+    },
+    "lessons": {
+      "1": {
+        "title": "¡Hola!",
+        "description": "Saludos (bonjour, bonsoir, salut, au revoir). Diálogo: llegada a la escuela del CIA en Antibes."
+      },
+      "2": {
+        "title": "Me llamo…",
+        "description": "Presentarse (je m'appelle, je suis, j'habite). Completar la ficha de identidad."
+      },
+      "3": {
+        "title": "Los sonidos del francés",
+        "description": "El alfabeto francés, los acentos (é, è, ê, ë), los sonidos específicos (u, ou, on, an)."
+      },
+      "4": {
+        "title": "¿Tú o usted?",
+        "description": "Tuteo vs ustedeo. Diálogo: en el mercado provenzal de Antibes."
+      },
+      "5": {
+        "title": "Los números del 0 al 20",
+        "description": "Contar, dar su número de teléfono, su edad."
+      },
+      "6": {
+        "title": "¿Cuál es tu nacionalidad?",
+        "description": "Las nacionalidades, el masculino/femenino de los adjetivos de nacionalidad."
+      },
+      "7": {
+        "title": "Los días y los meses",
+        "description": "Días de la semana, meses, estaciones. Planificar una actividad en Antibes."
+      },
+      "8": {
+        "title": "En el café de Antibes",
+        "description": "Pedir una bebida sencilla. Diálogo en el café. Juego de rol guiado."
+      },
+      "9": {
+        "title": "Repaso del Módulo A1.1",
+        "description": "Quiz recapitulativo: 20 preguntas mixtas (CO, CE, vocabulario, gramática)."
+      },
+      "10": {
+        "title": "Examen del Módulo A1.1",
+        "description": "Prueba calificada que cubre todas las competencias del módulo."
+      },
+      "11": {
+        "title": "Mi familia",
+        "description": "Miembros de la familia. Árbol genealógico interactivo."
+      },
+      "12": {
+        "title": "Él es alto, ella es baja",
+        "description": "Adjetivos de descripción física. Concordancia masculino/femenino."
+      },
+      "13": {
+        "title": "Los colores de la Provenza",
+        "description": "Los colores. Contexto: los coloridos mercados de Provenza."
+      },
+      "14": {
+        "title": "¿Qué es esto?",
+        "description": "Objetos cotidianos. Artículos definidos/indefinidos (le, la, un, une)."
+      },
+      "15": {
+        "title": "Los números del 20 al 100",
+        "description": "Contar hasta 100, decir los precios."
+      },
+      "16": {
+        "title": "Tengo / No tengo",
+        "description": "El verbo avoir en presente, la negación simple."
+      },
+      "17": {
+        "title": "Es mi / mi / mis",
+        "description": "Los adjetivos posesivos (mon, ma, mes, ton, ta, tes, son, sa, ses)."
+      },
+      "18": {
+        "title": "En mi casa",
+        "description": "Describir su vivienda. Contexto: un apartamento en Juan-les-Pins."
+      },
+      "19": {
+        "title": "Repaso del Módulo A1.2",
+        "description": "Quiz recapitulativo."
+      },
+      "20": {
+        "title": "Examen del Módulo A1.2",
+        "description": "Prueba calificada. Insignia 'Explorador' desbloqueada."
+      },
+      "21": {
+        "title": "¿Qué hora es?",
+        "description": "Decir y comprender la hora."
+      },
+      "22": {
+        "title": "Mi día típico",
+        "description": "Verbos de la rutina (levantarse, comer, trabajar, dormir)."
+      },
+      "23": {
+        "title": "Los verbos terminados en -ER",
+        "description": "Conjugación del presente de indicativo de los verbos del 1er grupo."
+      },
+      "24": {
+        "title": "Me gusta / No me gusta",
+        "description": "Expresar sus gustos (j'aime, j'adore, je déteste + sustantivo)."
+      },
+      "25": {
+        "title": "En el restaurante en Antibes",
+        "description": "Pedir una comida sencilla (entrada, plato principal, postre)."
+      },
+      "26": {
+        "title": "Los alimentos",
+        "description": "Vocabulario de la comida. Gastronomía provenzal."
+      },
+      "27": {
+        "title": "Ir de compras",
+        "description": "Comprar en el mercado, preguntar el precio, la cantidad."
+      },
+      "28": {
+        "title": "El fin de semana",
+        "description": "Contar su fin de semana en presente."
+      },
+      "29": {
+        "title": "Repaso del Módulo A1.3",
+        "description": "Quiz recapitulativo."
+      },
+      "30": {
+        "title": "Examen del Módulo A1.3",
+        "description": "Prueba calificada. Insignia 'Gourmet Principiante' desbloqueada."
+      },
+      "31": {
+        "title": "La ciudad de Antibes",
+        "description": "Los lugares de la ciudad. Mapa interactivo de Antibes."
+      },
+      "32": {
+        "title": "¿Dónde está la estación?",
+        "description": "Preguntar y dar indicaciones para llegar a un lugar."
+      },
+      "33": {
+        "title": "Los transportes",
+        "description": "Autobús, tren, bicicleta, coche, avión. Comprar un billete."
+      },
+      "34": {
+        "title": "Las preposiciones de lugar",
+        "description": "Delante, detrás, al lado de, enfrente de, entre, sobre, bajo."
+      },
+      "35": {
+        "title": "Concertar una cita",
+        "description": "Fijar una cita (fecha, hora, lugar)."
+      },
+      "36": {
+        "title": "Los verbos aller y venir",
+        "description": "Conjugación + uso (je vais à, je viens de)."
+      },
+      "37": {
+        "title": "En la farmacia",
+        "description": "Expresar un problema de salud sencillo. Comprar medicamentos."
+      },
+      "38": {
+        "title": "Tiempo y ropa",
+        "description": "Hace calor, llueve. La ropa según la estación."
+      },
+      "39": {
+        "title": "Repaso del Módulo A1.4",
+        "description": "Quiz recapitulativo."
+      },
+      "40": {
+        "title": "Examen del Módulo A1.4",
+        "description": "Prueba calificada. Insignia 'Viajero' desbloqueada."
+      },
+      "41": {
+        "title": "Por teléfono",
+        "description": "Hacer una llamada sencilla (allô, c'est X, je voudrais parler à…)."
+      },
+      "42": {
+        "title": "Escribir un correo electrónico simple",
+        "description": "Fórmulas de cortesía, estructura de un correo electrónico corto."
+      },
+      "43": {
+        "title": "Los verbos être y avoir — Balance",
+        "description": "Resumen completo être/avoir en presente."
+      },
+      "44": {
+        "title": "Hablar de los pasatiempos",
+        "description": "Deportes, música, cine, lectura. Expresar una preferencia."
+      },
+      "45": {
+        "title": "Publicar en redes sociales",
+        "description": "Escribir una publicación/comentario corto en francés."
+      },
+      "46": {
+        "title": "Los números del 100 al 1000",
+        "description": "Números grandes, fechas, direcciones."
+      },
+      "47": {
+        "title": "¿Cuándo es tu cumpleaños?",
+        "description": "Hablar de fechas, celebraciones, invitar a alguien."
+      },
+      "48": {
+        "title": "Balance de comunicación A1",
+        "description": "Simulación global: llegar a Antibes, presentarse, comunicarse."
+      },
+      "49": {
+        "title": "Repaso final A1",
+        "description": "Quiz completo que cubre los 5 módulos (40 preguntas)."
+      },
+      "50": {
+        "title": "EXAMEN FINAL A1",
+        "description": "Prueba de certificación. Insignia 'Nivel A1 validado — Descubrimiento' + certificado."
+      },
+      "51": {
+        "title": "Ayer, visité Cannes",
+        "description": "Introducción al pretérito compuesto con 'avoir'."
+      },
+      "52": {
+        "title": "Fui a la playa",
+        "description": "Pretérito compuesto con 'être'. Concordancia del participio pasado."
+      },
+      "53": {
+        "title": "Mi fin de semana en Niza",
+        "description": "Leer/escribir un relato en pretérito compuesto."
+      },
+      "54": {
+        "title": "El Festival de Cannes",
+        "description": "Reportaje simplificado sobre el festival. Vocabulario de cine."
+      },
+      "55": {
+        "title": "Hacer preguntas en pasado",
+        "description": "¿Has...?, ¿Adónde fuiste?"
+      },
+      "56": {
+        "title": "Las vacaciones",
+        "description": "Vocabulario de las vacaciones. Escribir una postal."
+      },
+      "57": {
+        "title": "¿Qué tal fue?",
+        "description": "Introducción al imperfecto (descripción, hábitos pasados)."
+      },
+      "58": {
+        "title": "Pretérito compuesto vs Imperfecto — Intro",
+        "description": "Primera distinción PC/Imperfecto."
+      },
+      "59": {
+        "title": "Revisión A2.1",
+        "description": "Quiz de repaso."
+      },
+      "60": {
+        "title": "Examen A2.1",
+        "description": "Insignia 'Narrador Principiante' desbloqueada."
+      },
+      "61": {
+        "title": "¿Salimos esta noche?",
+        "description": "Proponer, aceptar, rechazar una salida."
+      },
+      "62": {
+        "title": "¿Qué te parece?",
+        "description": "Dar una opinión sencilla."
+      },
+      "63": {
+        "title": "Las emociones",
+        "description": "Contento, triste, cansado, sorprendido, enfadado."
+      },
+      "64": {
+        "title": "Comparar",
+        "description": "El comparativo (más… que, menos… que, tan… como)."
+      },
+      "65": {
+        "title": "El superlativo",
+        "description": "El más, el menos, el mejor."
+      },
+      "66": {
+        "title": "Contar una película",
+        "description": "Resumir una película en pasado."
+      },
+      "67": {
+        "title": "Escribir una reseña en línea",
+        "description": "Redactar una reseña de un restaurante/hotel."
+      },
+      "68": {
+        "title": "Los pronombres COD",
+        "description": "Le, la, les, l'. Sustituir el nombre por el pronombre."
+      },
+      "69": {
+        "title": "Revisión A2.2",
+        "description": "Quiz de repaso."
+      },
+      "70": {
+        "title": "Examen A2.2",
+        "description": "Insignia 'Mariposa Social' desbloqueada."
+      },
+      "71": {
+        "title": "Las profesiones",
+        "description": "Profesiones comunes (m/f)."
+      },
+      "72": {
+        "title": "Mi CV en francés",
+        "description": "Estructura de un CV sencillo."
+      },
+      "73": {
+        "title": "La entrevista de trabajo",
+        "description": "Presentarse profesionalmente."
+      },
+      "74": {
+        "title": "En la oficina",
+        "description": "Objetos y acciones de oficina."
+      },
+      "75": {
+        "title": "El futuro próximo",
+        "description": "Ir a + infinitivo (voy a trabajar)."
+      },
+      "76": {
+        "title": "Llamar por teléfono en el trabajo",
+        "description": "Dejar un mensaje, concertar una cita profesional."
+      },
+      "77": {
+        "title": "Escribir un correo electrónico profesional",
+        "description": "Fórmulas formales."
+      },
+      "78": {
+        "title": "Los pronombres COI",
+        "description": "Le, les, me, te."
+      },
+      "79": {
+        "title": "Revisión A2.3",
+        "description": "Quiz de repaso."
+      },
+      "80": {
+        "title": "Examen A2.3",
+        "description": "Insignia 'Profesional Principiante' desbloqueada."
+      },
+      "81": {
+        "title": "El cuerpo humano",
+        "description": "Partes del cuerpo."
+      },
+      "82": {
+        "title": "En el médico",
+        "description": "Describir los síntomas."
+      },
+      "83": {
+        "title": "Los verbos pronominales",
+        "description": "Levantarse, acostarse, lavarse."
+      },
+      "84": {
+        "title": "El deporte en Francia",
+        "description": "Los deportes populares en Francia."
+      },
+      "85": {
+        "title": "El imperativo",
+        "description": "Dar consejos/órdenes."
+      },
+      "86": {
+        "title": "Comer bien",
+        "description": "La alimentación equilibrada. Las comidas francesas."
+      },
+      "87": {
+        "title": "En la playa",
+        "description": "Vocabulario balneario. Playa de la Gravette en Antibes."
+      },
+      "88": {
+        "title": "Los adverbios de frecuencia",
+        "description": "Siempre, a menudo, a veces, nunca."
+      },
+      "89": {
+        "title": "Revisión A2.4",
+        "description": "Quiz de repaso."
+      },
+      "90": {
+        "title": "Examen A2.4",
+        "description": "Insignia 'Bien en tu piel' desbloqueada."
+      },
+      "91": {
+        "title": "Las regiones de Francia",
+        "description": "Mapa interactivo de Francia."
+      },
+      "92": {
+        "title": "Las fiestas francesas",
+        "description": "Navidad, 14 de julio, Todos los Santos, Pascua."
+      },
+      "93": {
+        "title": "La gastronomía francesa",
+        "description": "Especialidades regionales."
+      },
+      "94": {
+        "title": "PC vs Imperfecto — Profundización",
+        "description": "Distinción en profundidad en contextos narrativos."
+      },
+      "95": {
+        "title": "Contar un recuerdo de la infancia",
+        "description": "Cuando era pequeño/a…"
+      },
+      "96": {
+        "title": "La música francesa",
+        "description": "Escuchar extractos, identificar el género."
+      },
+      "97": {
+        "title": "Escribir una carta amistosa",
+        "description": "Estructura de una carta/correo electrónico amistoso/a."
+      },
+      "98": {
+        "title": "Balance de comunicación A2",
+        "description": "Simulación global."
+      },
+      "99": {
+        "title": "Revisión final A2",
+        "description": "Quiz completo (40 preguntas)."
+      },
+      "100": {
+        "title": "EXAMEN FINAL A2",
+        "description": "Test certificador. Insignia 'Nivel A2 validado — Supervivencia' + certificado."
+      },
+      "101": {
+        "title": "Pienso que…",
+        "description": "Dar su opinión. Indicativo vs subjuntivo (intro)."
+      },
+      "102": {
+        "title": "El subjuntivo presente — Introducción",
+        "description": "Formación del subjuntivo. Il faut que, je veux que."
+      },
+      "103": {
+        "title": "Debatir educadamente",
+        "description": "Expresar el desacuerdo de forma educada."
+      },
+      "104": {
+        "title": "Los medios de comunicación franceses",
+        "description": "Leer un artículo simplificado. Escuchar un avance de noticias."
+      },
+      "105": {
+        "title": "Escribir un ensayo simple",
+        "description": "Estructura: introducción, argumentos, conclusión. 150 palabras."
+      },
+      "106": {
+        "title": "Los pronombres relativos: qui, que, où",
+        "description": "Combinar dos frases con el pronombre relativo correcto."
+      },
+      "107": {
+        "title": "La prensa y las fake news",
+        "description": "Identificar una fuente fiable. Analizar un artículo."
+      },
+      "108": {
+        "title": "Expresar la causa y la consecuencia",
+        "description": "Parce que, donc, c'est pourquoi, grâce à, à cause de."
+      },
+      "109": {
+        "title": "Repaso B1.1",
+        "description": "Quiz de recapitulación."
+      },
+      "110": {
+        "title": "Examen B1.1",
+        "description": "Insignia \"Pensador Crítico\" desbloqueada."
+      },
+      "111": {
+        "title": "Reservar un hotel",
+        "description": "Telefonear/escribir para reservar."
+      },
+      "112": {
+        "title": "Contar un viaje",
+        "description": "Utilizar los tiempos pasados con fluidez."
+      },
+      "113": {
+        "title": "El condicional presente",
+        "description": "Formación y uso (cortesía, hipótesis, deseo)."
+      },
+      "114": {
+        "title": "Si tuviera tiempo…",
+        "description": "La hipótesis con si + imperfecto → condicional."
+      },
+      "115": {
+        "title": "Resolver un problema",
+        "description": "Quejarse educadamente."
+      },
+      "116": {
+        "title": "Los transportes en Francia",
+        "description": "TGV, metro, coche compartido, avión."
+      },
+      "117": {
+        "title": "La Francia de ultramar",
+        "description": "Guadalupe, Martinica, Reunión."
+      },
+      "118": {
+        "title": "Escribir una reclamación",
+        "description": "Redactar un correo electrónico de reclamación educado y estructurado."
+      },
+      "119": {
+        "title": "Repaso B1.2",
+        "description": "Quiz de recapitulación."
+      },
+      "120": {
+        "title": "Examen B1.2",
+        "description": "Insignia \"Trotamundos\" desbloqueada."
+      },
+      "121": {
+        "title": "Buscar alojamiento",
+        "description": "Leer anuncios inmobiliarios."
+      },
+      "122": {
+        "title": "La vida en piso compartido",
+        "description": "Escuchar un testimonio. Reglas de convivencia."
+      },
+      "123": {
+        "title": "Las tareas del hogar",
+        "description": "Pronombres EN e Y."
+      },
+      "124": {
+        "title": "Gestionar su presupuesto",
+        "description": "Leer un extracto bancario simplificado."
+      },
+      "125": {
+        "title": "El estilo indirecto en presente",
+        "description": "Él dice que, ella pregunta si."
+      },
+      "126": {
+        "title": "En el banco",
+        "description": "Abrir una cuenta, solicitar un préstamo."
+      },
+      "127": {
+        "title": "Los trámites administrativos",
+        "description": "Rellenar un formulario oficial."
+      },
+      "128": {
+        "title": "La tecnología en la vida cotidiana",
+        "description": "Vocabulario digital."
+      },
+      "129": {
+        "title": "Repaso B1.3",
+        "description": "Quiz de recapitulación."
+      },
+      "130": {
+        "title": "Examen B1.3",
+        "description": "Insignia \"Autónomo\" desbloqueada."
+      },
+      "131": {
+        "title": "El sistema educativo francés",
+        "description": "Escuela, colegio, instituto, universidad."
+      },
+      "132": {
+        "title": "Inscribirse en la universidad",
+        "description": "Carta de motivación, Campus France."
+      },
+      "133": {
+        "title": "El gerundio",
+        "description": "En + participio presente."
+      },
+      "134": {
+        "title": "Tomar apuntes",
+        "description": "Escuchar una clase → tomar apuntes estructurados."
+      },
+      "135": {
+        "title": "Presentar una exposición",
+        "description": "Estructura (introducción, desarrollo, conclusión)."
+      },
+      "136": {
+        "title": "La voz pasiva",
+        "description": "Formación y uso."
+      },
+      "137": {
+        "title": "La vida estudiantil en Francia",
+        "description": "Becas, comedores universitarios, asociaciones."
+      },
+      "138": {
+        "title": "Redactar un resumen",
+        "description": "Técnica del resumen. Resumir en 80 palabras."
+      },
+      "139": {
+        "title": "Repaso B1.4",
+        "description": "Quiz de recapitulación."
+      },
+      "140": {
+        "title": "Examen B1.4",
+        "description": "Insignia \"Estudiante Modelo\" desbloqueada."
+      },
+      "141": {
+        "title": "El medio ambiente",
+        "description": "Vocabulario ecológico. Debatir sobre ecología."
+      },
+      "142": {
+        "title": "El cine francés",
+        "description": "Escuchar un fragmento de película. Leer una crítica."
+      },
+      "143": {
+        "title": "El arte de vivir a la francesa",
+        "description": "La bise, el aperitivo, las terrazas."
+      },
+      "144": {
+        "title": "El subjuntivo — Profundización",
+        "description": "Después de expresiones de sentimiento, de duda."
+      },
+      "145": {
+        "title": "Escribir una crítica",
+        "description": "Crítica de película/libro/restaurante (150-200 palabras)."
+      },
+      "146": {
+        "title": "Los estereotipos culturales",
+        "description": "Discutir sobre estereotipos. Matizar."
+      },
+      "147": {
+        "title": "La literatura francesa — Primeros pasos",
+        "description": "Fragmentos simplificados (El Principito, Los Miserables)."
+      },
+      "148": {
+        "title": "Balance de comunicación B1",
+        "description": "Debatir, contar, argumentar, escribir un ensayo."
+      },
+      "149": {
+        "title": "Repaso final B1",
+        "description": "Quiz completo (40 preguntas)."
+      },
+      "150": {
+        "title": "EXAMEN FINAL B1",
+        "description": "Prueba de certificación. Insignia \"Nivel B1 validado — Umbral\" + certificado."
+      },
+      "151": {
+        "title": "Estructurar un argumento",
+        "description": "Tesis, antítesis, síntesis. Conectores avanzados."
+      },
+      "152": {
+        "title": "El condicional pasado",
+        "description": "Me hubiera gustado, habría sido necesario. Expresar el arrepentimiento."
+      },
+      "153": {
+        "title": "La hipótesis irreal",
+        "description": "Si + pluscuamperfecto → condicional pasado."
+      },
+      "154": {
+        "title": "Analizar un discurso",
+        "description": "Escuchar un discurso. Identificar las técnicas de persuasión."
+      },
+      "155": {
+        "title": "Redactar un ensayo argumentativo",
+        "description": "250 palabras mínimo, formato DELF B2."
+      },
+      "156": {
+        "title": "El subjuntivo pasado",
+        "description": "Aunque él hubiera hecho, antes de que ella se hubiera ido."
+      },
+      "157": {
+        "title": "Debate contradictorio",
+        "description": "Defender una posición, refutar, conceder."
+      },
+      "158": {
+        "title": "Los registros de lengua",
+        "description": "Familiar, corriente, culto."
+      },
+      "159": {
+        "title": "Revisión B2.1",
+        "description": "Cuestionario recapitulativo."
+      },
+      "160": {
+        "title": "Examen B2.1",
+        "description": "Insignia \"Orador\" desbloqueada."
+      },
+      "161": {
+        "title": "La carta de presentación avanzada",
+        "description": "Redactar una carta convincente y personalizada."
+      },
+      "162": {
+        "title": "La entrevista de trabajo avanzada",
+        "description": "Preguntas trampa, puntos fuertes/débiles."
+      },
+      "163": {
+        "title": "Dirigir una reunión",
+        "description": "Abrir, dar la palabra, sintetizar, concluir."
+      },
+      "164": {
+        "title": "El estilo indirecto en pasado",
+        "description": "Concordancia de los tiempos."
+      },
+      "165": {
+        "title": "Redactar un informe",
+        "description": "Notas de reunión → informe estructurado."
+      },
+      "166": {
+        "title": "Negociar",
+        "description": "Proponer, contraproponer, compromiso."
+      },
+      "167": {
+        "title": "La cultura de empresa francesa",
+        "description": "Jerarquía, pausa para el almuerzo, vacaciones pagadas, 35 horas."
+      },
+      "168": {
+        "title": "Las nominalizaciones",
+        "description": "Verbos → sustantivos (aumentar → aumento)."
+      },
+      "169": {
+        "title": "Revisión B2.2",
+        "description": "Cuestionario recapitulativo."
+      },
+      "170": {
+        "title": "Examen B2.2",
+        "description": "Insignia \"Gerente\" desbloqueada."
+      },
+      "171": {
+        "title": "La actualidad francesa",
+        "description": "Noticiero de radio. Artículo de prensa."
+      },
+      "172": {
+        "title": "Las expresiones idiomáticas",
+        "description": "20 expresiones comunes."
+      },
+      "173": {
+        "title": "La política francesa",
+        "description": "Presidente, Asamblea Nacional, Senado."
+      },
+      "174": {
+        "title": "Los pronombres dobles",
+        "description": "Se lo doy, me lo dijo."
+      },
+      "175": {
+        "title": "Escribir un artículo de blog",
+        "description": "Artículo de 300 palabras sobre un tema social."
+      },
+      "176": {
+        "title": "El humor francés",
+        "description": "Comprender chistes, ironía, segundo grado."
+      },
+      "177": {
+        "title": "Las relaciones sociales complejas",
+        "description": "Reproche, disculpas, justificación matizada."
+      },
+      "178": {
+        "title": "El participio presente y el adjetivo verbal",
+        "description": "Diferencia entre -ant (participio) y -ant (adjetivo)."
+      },
+      "179": {
+        "title": "Revisión B2.3",
+        "description": "Cuestionario recapitulativo."
+      },
+      "180": {
+        "title": "Examen B2.3",
+        "description": "Insignia \"Ciudadano Informado\" desbloqueada."
+      },
+      "181": {
+        "title": "La literatura francesa",
+        "description": "Extractos de Camus, Maupassant, Prévert."
+      },
+      "182": {
+        "title": "Escribir una narración corta",
+        "description": "Técnicas narrativas (descripción, diálogo, suspense)."
+      },
+      "183": {
+        "title": "El pasado simple",
+        "description": "Reconocimiento en la escritura."
+      },
+      "184": {
+        "title": "La canción francesa",
+        "description": "Brel, Piaf, Stromae. Analizar letras."
+      },
+      "185": {
+        "title": "El arte contemporáneo",
+        "description": "Describir una obra de arte."
+      },
+      "186": {
+        "title": "El cine de autor",
+        "description": "Análisis de una secuencia fílmica."
+      },
+      "187": {
+        "title": "Las figuras retóricas",
+        "description": "Metáfora, ironía, hipérbole, lítotes."
+      },
+      "188": {
+        "title": "Escribir una crítica cultural",
+        "description": "300 palabras, tono formal, argumentación estructurada."
+      },
+      "189": {
+        "title": "Revisión B2.4",
+        "description": "Cuestionario recapitulativo."
+      },
+      "190": {
+        "title": "Examen B2.4",
+        "description": "Insignia \"Crítico Literario\" desbloqueada."
+      },
+      "191": {
+        "title": "Los conectores lógicos avanzados",
+        "description": "A pesar de, por más que, tanto más cuanto que."
+      },
+      "192": {
+        "title": "La síntesis de documentos",
+        "description": "2 documentos → síntesis (formato DALF)."
+      },
+      "193": {
+        "title": "Presentación oral formal",
+        "description": "Presentar un tema complejo durante 3-5 minutos."
+      },
+      "194": {
+        "title": "La concordancia del participio pasado — Casos complejos",
+        "description": "Con los pronombres de objeto directo antepuestos."
+      },
+      "195": {
+        "title": "La francofonía",
+        "description": "El francés en el mundo."
+      },
+      "196": {
+        "title": "Los matices de sentido",
+        "description": "Sinónimos cercanos pero diferentes."
+      },
+      "197": {
+        "title": "Simulación DELF B2",
+        "description": "Prueba en blanco completa formato DELF B2."
+      },
+      "198": {
+        "title": "Balance de comunicación B2",
+        "description": "Negociar, argumentar, redactar, analizar."
+      },
+      "199": {
+        "title": "Revisión final B2",
+        "description": "Cuestionario completo (50 preguntas)."
+      },
+      "200": {
+        "title": "EXAMEN FINAL B2",
+        "description": "Examen certificador. Insignia \"Nivel B2 validado — Avanzado\" + certificado."
+      },
+      "201": {
+        "title": "Los tiempos literarios",
+        "description": "Pretérito perfecto simple, pretérito anterior, subjuntivo imperfecto."
+      },
+      "202": {
+        "title": "El ensayo filosófico",
+        "description": "Redactar un ensayo sobre un tema abstracto."
+      },
+      "203": {
+        "title": "Comprender un debate televisivo",
+        "description": "Escuchar un debate auténtico."
+      },
+      "204": {
+        "title": "La concesión y la oposición avanzadas",
+        "description": "Quoique, bien que, encore que, pour autant."
+      },
+      "205": {
+        "title": "El francés académico",
+        "description": "Estilo académico, citas, bibliografía."
+      },
+      "206": {
+        "title": "La argumentación sofisticada",
+        "description": "Refutar, matizar, conceder con sutileza."
+      },
+      "207": {
+        "title": "Los registros literarios",
+        "description": "Trágico, cómico, satírico, lírico."
+      },
+      "208": {
+        "title": "Redacción avanzada: cohesión textual",
+        "description": "Anáforas, repeticiones nominales, tema/rema."
+      },
+      "209": {
+        "title": "Revisión C1.1",
+        "description": "Cuestionario avanzado."
+      },
+      "210": {
+        "title": "Examen C1.1",
+        "description": "Insignia \"Intelectual\" desbloqueada."
+      },
+      "211": {
+        "title": "Redactar un informe profesional",
+        "description": "Estructura, tono, recomendaciones. 500 palabras."
+      },
+      "212": {
+        "title": "Presentación de conferencia",
+        "description": "Presentar ante un público experto (10 minutos)."
+      },
+      "213": {
+        "title": "El francés jurídico — Introducción",
+        "description": "Contratos, cláusulas, vocabulario jurídico."
+      },
+      "214": {
+        "title": "El francés de los negocios",
+        "description": "Negociación comercial avanzada."
+      },
+      "215": {
+        "title": "El discurso indirecto complejo",
+        "description": "Cambios de referencias temporales y espaciales."
+      },
+      "216": {
+        "title": "Redactar un comunicado de prensa",
+        "description": "Formato, tono periodístico, las 5W."
+      },
+      "217": {
+        "title": "El francés diplomático",
+        "description": "Eufemismos, fórmulas de cortesía extrema."
+      },
+      "218": {
+        "title": "Estudio de caso completo",
+        "description": "Analizar → presentar → redactar un memorándum."
+      },
+      "219": {
+        "title": "Revisión C1.2",
+        "description": "Cuestionario avanzado."
+      },
+      "220": {
+        "title": "Examen C1.2",
+        "description": "Insignia \"Experto Profesional\" desbloqueada."
+      },
+      "221": {
+        "title": "La filosofía francesa",
+        "description": "Descartes, Sartre, Beauvoir, Foucault."
+      },
+      "222": {
+        "title": "La historia de Francia — Grandes momentos",
+        "description": "De la Revolución a la V República."
+      },
+      "223": {
+        "title": "La francofonía avanzada",
+        "description": "Literatura africana, quebequense, suiza romanda."
+      },
+      "224": {
+        "title": "Los implícitos culturales",
+        "description": "Comprender lo implícito, lo no dicho."
+      },
+      "225": {
+        "title": "El sistema social francés",
+        "description": "Seguridad social, pensiones, educación."
+      },
+      "226": {
+        "title": "El urbanismo y la arquitectura",
+        "description": "Haussmann, Le Corbusier, la Promenade des Anglais."
+      },
+      "227": {
+        "title": "La gastronomía como patrimonio",
+        "description": "Patrimonio UNESCO, grandes chefs."
+      },
+      "228": {
+        "title": "Escribir un ensayo de civilización",
+        "description": "400 palabras sobre un aspecto de la cultura francesa."
+      },
+      "229": {
+        "title": "Revisión C1.3",
+        "description": "Cuestionario avanzado."
+      },
+      "230": {
+        "title": "Examen C1.3",
+        "description": "Insignia \"Francófilo\" desbloqueada."
+      },
+      "231": {
+        "title": "Analizar un documental",
+        "description": "Ver un extracto → análisis crítico."
+      },
+      "232": {
+        "title": "El periodismo de opinión",
+        "description": "Editorial, crónica, artículo de opinión."
+      },
+      "233": {
+        "title": "La retórica",
+        "description": "Ethos, pathos, logos."
+      },
+      "234": {
+        "title": "Los anglicismos y neologismos",
+        "description": "Evolución de la lengua francesa."
+      },
+      "235": {
+        "title": "Redactar un editorial",
+        "description": "350 palabras, estilo periodístico."
+      },
+      "236": {
+        "title": "La sátira y la caricatura",
+        "description": "Comprender el humor satírico francés."
+      },
+      "237": {
+        "title": "Podcast y radio",
+        "description": "Escuchar un podcast largo → resumen estructurado."
+      },
+      "238": {
+        "title": "La comunicación de crisis",
+        "description": "Redactar un comunicado, gestionar una entrevista difícil."
+      },
+      "239": {
+        "title": "Revisión C1.4",
+        "description": "Cuestionario avanzado."
+      },
+      "240": {
+        "title": "Examen C1.4",
+        "description": "Insignia \"Comunicador\" desbloqueada."
+      },
+      "241": {
+        "title": "Las sutilezas gramaticales",
+        "description": "Ne expletivo, subjuntivo después de superlativo, inversión."
+      },
+      "242": {
+        "title": "La traducción literaria",
+        "description": "Traducir un pasaje literario corto."
+      },
+      "243": {
+        "title": "El francés oral auténtico",
+        "description": "Comprender a hablantes rápidos, argot, elisiones."
+      },
+      "244": {
+        "title": "Redactar una carta abierta",
+        "description": "Género literario comprometido. J'accuse (Zola)."
+      },
+      "245": {
+        "title": "Defender una tesis compleja",
+        "description": "Presentación argumentada de 10 minutos."
+      },
+      "246": {
+        "title": "Simulación DALF C1",
+        "description": "Prueba completa de formato DALF C1."
+      },
+      "247": {
+        "title": "Las variedades del francés",
+        "description": "Acentos regionales, francés canadiense, africano."
+      },
+      "248": {
+        "title": "Balance de comunicación C1",
+        "description": "Situación de expertos."
+      },
+      "249": {
+        "title": "Revisión final C1",
+        "description": "Cuestionario completo (50 preguntas)."
+      },
+      "250": {
+        "title": "EXAMEN FINAL C1",
+        "description": "Prueba de certificación. Insignia \"Nivel C1 validado — Autónomo\" + certificado."
+      },
+      "251": {
+        "title": "Arcaísmos y rarezas grammaticales",
+        "description": "Subjuntivo imperfecto activo, concordancia literaria."
+      },
+      "252": {
+        "title": "Estilística avanzada",
+        "description": "Analizar e imitar el estilo de un autor."
+      },
+      "253": {
+        "title": "Comprender todo tipo de discurso oral",
+        "description": "Conferencia, monólogo, alegato."
+      },
+      "254": {
+        "title": "Redactar una memoria (introducción)",
+        "description": "Problemática, plan detallado, bibliografía."
+      },
+      "255": {
+        "title": "El francés culto y literario",
+        "description": "Dominar el estilo culto sin ser artificial."
+      },
+      "256": {
+        "title": "Improvisar un discurso",
+        "description": "5 minutos de improvisación estructurada."
+      },
+      "257": {
+        "title": "Análisis crítico de un texto filosófico",
+        "description": "Leer un extracto → redactar un comentario."
+      },
+      "258": {
+        "title": "Los registros del francés oral",
+        "description": "Del argot al lenguaje de Molière."
+      },
+      "259": {
+        "title": "Revisión C2.1",
+        "description": "Examen experto."
+      },
+      "260": {
+        "title": "Examen C2.1",
+        "description": "Insignia \"Virtuoso\" desbloqueada."
+      },
+      "261": {
+        "title": "Escribir poesía",
+        "description": "Versificación, rimas, figuras retóricas."
+      },
+      "262": {
+        "title": "El cuento literario",
+        "description": "Escribir un cuento de 500 palabras."
+      },
+      "263": {
+        "title": "El teatro francés",
+        "description": "Molière/Ionesco. Puesta en voz."
+      },
+      "264": {
+        "title": "El arte del resumen experto",
+        "description": "1000 palabras → 100 palabras."
+      },
+      "265": {
+        "title": "Convencer a un jurado",
+        "description": "Simulación de un gran oral."
+      },
+      "266": {
+        "title": "El humor y el juego de palabras",
+        "description": "Calambures, agudezas."
+      },
+      "267": {
+        "title": "La traducción avanzada",
+        "description": "Traducir texto técnico y literario."
+      },
+      "268": {
+        "title": "Redactar un discurso",
+        "description": "Escribir y pronunciar un discurso de 5 minutos."
+      },
+      "269": {
+        "title": "Revisión C2.2",
+        "description": "Examen experto."
+      },
+      "270": {
+        "title": "Examen C2.2",
+        "description": "Insignia \"Creador\" desbloqueada."
+      },
+      "271": {
+        "title": "El francés jurídico avanzado",
+        "description": "Análisis de contrato, de jurisprudencia."
+      },
+      "272": {
+        "title": "El francés científico",
+        "description": "Resumen científico → nota de síntesis."
+      },
+      "273": {
+        "title": "El francés médico",
+        "description": "Terminología médica común."
+      },
+      "274": {
+        "title": "El francés diplomático avanzado",
+        "description": "Nota diplomática. Negociación multilateral."
+      },
+      "275": {
+        "title": "La sociolingüística",
+        "description": "Variaciones sociales, lengua y poder."
+      },
+      "276": {
+        "title": "El francés de los medios especializados",
+        "description": "Podcast económico, científico o jurídico."
+      },
+      "277": {
+        "title": "Redactar un artículo de investigación",
+        "description": "Introducción + metodología (formato académico)."
+      },
+      "278": {
+        "title": "Interpretar y reformular",
+        "description": "Escuchar un discurso complejo → reformular."
+      },
+      "279": {
+        "title": "Revisión C2.3",
+        "description": "Examen experto."
+      },
+      "280": {
+        "title": "Examen C2.3",
+        "description": "Insignia \"Especialista\" desbloqueada."
+      },
+      "281": {
+        "title": "La francofonía política",
+        "description": "La OIF, la política lingüística francesa."
+      },
+      "282": {
+        "title": "Literatura francófona contemporánea",
+        "description": "Autores africanos, caribeños, magrebíes."
+      },
+      "283": {
+        "title": "Los desafíos geopolíticos",
+        "description": "Francia y Europa, las relaciones internacionales."
+      },
+      "284": {
+        "title": "La economía francesa",
+        "description": "CAC 40, start-up, French Tech."
+      },
+      "285": {
+        "title": "El francés y la inteligencia artificial",
+        "description": "El futuro de la lengua francesa en la era digital."
+      },
+      "286": {
+        "title": "Escribir para influir",
+        "description": "Escritura persuasiva, storytelling."
+      },
+      "287": {
+        "title": "La diplomacia cultural",
+        "description": "Alliance Française, Institut Français."
+      },
+      "288": {
+        "title": "Simulación DALF C2",
+        "description": "Prueba blanca completa formato DALF C2."
+      },
+      "289": {
+        "title": "Revisión C2.4",
+        "description": "Examen experto."
+      },
+      "290": {
+        "title": "Examen C2.4",
+        "description": "Insignia \"Diplomático\" desbloqueada."
+      },
+      "291": {
+        "title": "Las trampas definitivas de la lengua",
+        "description": "Barbarismos, solecismos, pleonasmos."
+      },
+      "292": {
+        "title": "El arte de la conversación francesa",
+        "description": "Small talk, arte de la mesa, justa verbal."
+      },
+      "293": {
+        "title": "Escribir como un nativo",
+        "description": "Redactar un texto indiscernible de un nativo culto."
+      },
+      "294": {
+        "title": "Comprender el implícito absoluto",
+        "description": "Ironía, sobreentendidos, referencias culturales."
+      },
+      "295": {
+        "title": "La lengua francesa: historia y evolución",
+        "description": "Del latín al francés moderno."
+      },
+      "296": {
+        "title": "Masterclass de redacción",
+        "description": "500 palabras de calidad publicable."
+      },
+      "297": {
+        "title": "Masterclass de elocuencia",
+        "description": "Discurso de 10 minutos filmado y autoevaluado."
+      },
+      "298": {
+        "title": "Balance final C2",
+        "description": "Prueba global definitiva."
+      },
+      "299": {
+        "title": "Revisión final C2",
+        "description": "Examen completo (60 preguntas)."
+      },
+      "300": {
+        "title": "EXAMEN FINAL C2",
+        "description": "Prueba certificativa. Insignia \"Maestro de Francés\" + certificado."
+      }
+    },
+    "title": "Mi trayecto",
+    "unit_label": "Unidad",
+    "module": "Módulo",
+    "coming_soon": "Próximamente",
+    "bubble_start_unit": "¡Empieza esta unidad, vamos!",
+    "bubble_continue": "¡Solo queda un módulo para terminar la unidad!",
+    "bubble_keep_going": "¡Un módulo más por completar!",
+    "bubble_keep_going_plural": "¡Quedan {{count}} módulos por completar!",
+    "unit_complete_toast": "¡Bravo! Unidad {{level}} completada 🎉",
     "state": {
-      "locked": "verrouillé",
+      "locked": "bloqueado",
       "available": "disponible",
-      "current": "en cours",
-      "completed": "complété"
+      "current": "en curso",
+      "completed": "completado"
     },
     "drawer": {
-      "lessons": "leçons",
-      "minutes": "minutes",
-      "progress": "Ta progression",
-      "start_cta": "Commencer",
-      "continue_cta": "Continuer",
-      "completed_cta": "Refaire le module",
-      "locked_cta": "Verrouillé",
-      "simulate_complete": "Simular finalización (demo)",
-      "close": "Fermer"
+      "close": "Cerrar",
+      "completed_badge": "Completado",
+      "completed_cta": "Revisar el módulo",
+      "continue_cta": "Continuar",
+      "lessons_done": "{{done}} / {{total}} lecciones",
+      "lessons_list": "Lecciones del módulo",
+      "locked_cta": "Bloqueado",
+      "next_lesson": "Próxima",
+      "start_cta": "Empezar"
     }
   },
   "glossary": {

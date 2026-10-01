@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { LastLessonView } from '@/hooks/useLastLessonOpened';
 import { readCoursePlayerProgress } from '@/lib/courseProgress';
+import { useCurriculumI18n } from '@/lib/curriculumI18n';
 
 interface Props {
   lastLesson: LastLessonView | null;
@@ -18,6 +19,7 @@ const TAP = { scale: 0.98 };
 
 export function ResumeCard({ lastLesson }: Props) {
   const { t } = useTranslation();
+  const ci = useCurriculumI18n();
   const reduced = useReducedMotion();
   const hoverProps = reduced ? {} : { whileHover: HOVER, whileTap: TAP };
 
@@ -67,6 +69,14 @@ export function ResumeCard({ lastLesson }: Props) {
 
   const Icon = lastLesson.completed ? RotateCcw : Play;
 
+  const lessonNumericId = (() => {
+    const m = lastLesson.courseId?.match(/lesson-(\d+)/);
+    return m ? Number(m[1]) : undefined;
+  })();
+  const translatedTitle = lessonNumericId
+    ? ci.lessonTitle(lessonNumericId, lastLesson.title)
+    : lastLesson.title;
+
   return (
     <motion.div {...hoverProps} transition={{ type: 'spring', stiffness: 300, damping: 24 }}>
       <Card className="shadow-elev-lg p-7 md:p-8 h-full flex flex-col gap-4">
@@ -83,7 +93,7 @@ export function ResumeCard({ lastLesson }: Props) {
 
         <div className="flex-1">
           <h2 className="font-display font-extrabold text-xl md:text-2xl leading-snug">
-            {lastLesson.title}
+            {translatedTitle}
           </h2>
           {lastLesson.moduleId && (
             <p className="mt-1 text-sm text-muted-foreground">

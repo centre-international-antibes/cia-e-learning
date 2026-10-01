@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   priceId: string;
   returnUrl: string;
+  onComplete?: () => void;
 }
 
-export function StripeEmbeddedCheckout({ priceId, returnUrl }: Props) {
+export function StripeEmbeddedCheckout({ priceId, returnUrl, onComplete }: Props) {
   const options = useMemo(
     () => ({
       fetchClientSecret: async (): Promise<string> => {
@@ -20,8 +21,9 @@ export function StripeEmbeddedCheckout({ priceId, returnUrl }: Props) {
         }
         return data.clientSecret as string;
       },
+      onComplete,
     }),
-    [priceId, returnUrl],
+    [priceId, returnUrl, onComplete],
   );
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -32,7 +32,6 @@ function nextMondayParis(): Date {
   const next = new Date(paris);
   next.setHours(0, 0, 0, 0);
   next.setDate(paris.getDate() + daysUntilNext);
-  // Convert back from Paris-local to a real Date approximation
   const offsetDiff = next.getTime() - paris.getTime();
   return new Date(now.getTime() + offsetDiff);
 }
@@ -44,40 +43,56 @@ export function useLeague(viewedLeague?: League) {
   const [members, setMembers] = useState<LeagueMember[]>([]);
   const [lastResult, setLastResult] = useState<LeagueHistoryRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchCount = useRef(0);
 
   const fetchAll = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
     }
-    const { data: me } = await supabase
-      .from('profiles')
-      .select('league, weekly_xp')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    
+    const currentFetchId = ++fetchCount.current;
+    
+    try {
+      const { data: me } = await supabase
+        .from('profiles')
+        .select('league, weekly_xp')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    const currentLeague: League = (me?.league as League) || 'bronze';
-    setMyLeague(currentLeague);
-    setMyWeeklyXP(me?.weekly_xp || 0);
+      if (currentFetchId !== fetchCount.current) return;
 
-    const target = viewedLeague || currentLeague;
-    const { data: list } = await supabase
-      .from('leaderboard')
-      .select('user_id, first_name, last_name, avatar_url, weekly_xp, cecr_level, league')
-      .eq('league', target)
-      .order('weekly_xp', { ascending: false })
-      .limit(50);
-    setMembers((list as LeagueMember[]) || []);
+      const currentLeague: League = (me?.league as League) || 'bronze';
+      setMyLeague(currentLeague);
+      setMyWeeklyXP(me?.weekly_xp || 0);
 
-    const { data: hist } = await supabase
-      .from('league_history')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('week_start', { ascending: false })
-      .limit(1);
-    setLastResult((hist?.[0] as LeagueHistoryRow) || null);
+      const target = viewedLeague || currentLeague;
+      const { data: list } = await supabase
+        .from('leaderboard')
+        .select('user_id, first_name, last_name, avatar_url, weekly_xp, cecr_level, league')
+        .eq('league', target)
+        .order('weekly_xp', { ascending: false })
+        .limit(50);
 
-    setLoading(false);
+      if (currentFetchId !== fetchCount.current) return;
+      setMembers((list as LeagueMember[]) || []);
+
+      const { data: hist } = await supabase
+        .from('league_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('week_start', { ascending: false })
+        .limit(1);
+
+      if (currentFetchId !== fetchCount.current) return;
+      setLastResult((hist?.[0] as LeagueHistoryRow) || null);
+    } catch (err) {
+      console.error('[useLeague] fetchAll error', err);
+    } finally {
+      if (currentFetchId === fetchCount.current) {
+        setLoading(false);
+      }
+    }
   }, [user, viewedLeague]);
 
   useEffect(() => {

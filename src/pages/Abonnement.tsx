@@ -59,6 +59,10 @@ export default function Abonnement() {
 
   useEffect(() => { void syncWithStripe(); }, [syncWithStripe]);
 
+  useEffect(() => {
+    if (!user) navigate("/connexion?redirect=/abonnement", { replace: true });
+  }, [user, navigate]);
+
   const openPortal = async () => {
     if (!isPaymentsConfigured()) {
       toast.error("Les paiements ne sont pas encore configurés.");
@@ -82,8 +86,11 @@ export default function Abonnement() {
   };
 
   if (!user) {
-    navigate("/connexion?redirect=/abonnement", { replace: true });
-    return null;
+    return (
+      <div className="flex min-h-[60vh] w-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   const returnUrl = `${window.location.origin}/abonnement?success=1&session_id={CHECKOUT_SESSION_ID}`;
@@ -175,7 +182,18 @@ export default function Abonnement() {
             </CardHeader>
             <CardContent>
               {isPaymentsConfigured() ? (
-                <StripeEmbeddedCheckout priceId={PRICE_ID} returnUrl={returnUrl} />
+                <StripeEmbeddedCheckout
+                  priceId={PRICE_ID}
+                  returnUrl={returnUrl}
+                  onComplete={() => {
+                    toast.success("Paiement validé ! Bienvenue dans Premium 🎉");
+                    setShowCheckout(false);
+                    void syncWithStripe();
+                    setTimeout(() => { void syncWithStripe(); }, 2500);
+                    setTimeout(() => { void syncWithStripe(); }, 6000);
+                    setTimeout(() => { void syncWithStripe(); }, 12000);
+                  }}
+                />
               ) : (
                 <div className="text-sm text-muted-foreground">
                   Les paiements ne sont pas encore configurés.
