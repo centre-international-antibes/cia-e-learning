@@ -530,11 +530,11 @@ export function CoursePlayer({ content, courseTitle, onExit, onComplete }: Props
                 >
                   <CompletionScreen
                     courseTitle={courseTitle}
-                    score={finalResult.score}
                     totalSteps={totalSteps}
                     durationSeconds={durationSeconds}
                     correctCount={finalResult.correct}
                     totalQuestions={finalResult.questionCount}
+                    bestCombo={finalResult.bestCombo}
                     onContinue={() => onComplete(finalResult)}
                     onExit={onExit}
                   />
@@ -572,27 +572,33 @@ function ReplayInterstitial({ count }: { count: number }) {
     </div>
   );
 }
-function CompletionScreen({
+export function CompletionScreen({
   courseTitle,
-  score,
   totalSteps,
   durationSeconds,
   correctCount,
   totalQuestions,
+  bestCombo,
   onContinue,
   onExit,
 }: {
   courseTitle: string;
-  score: number;
   totalSteps: number;
   durationSeconds: number;
   correctCount: number;
   totalQuestions: number;
+  bestCombo: number;
   onContinue: () => void;
   onExit: () => void;
 }) {
   const { t } = useTranslation();
-  const xpEarned = Math.max(5, Math.round(score * 5));
+  // Même barème que l'aperçu du header et que `complete_lesson` côté serveur :
+  // un seul calcul, trois endroits qui l'affichent.
+  const xpEarned = computeLessonXp({
+    correct: correctCount,
+    questionCount: totalQuestions,
+    bestCombo,
+  }).total;
   const minutes = Math.floor(durationSeconds / 60);
   const seconds = durationSeconds % 60;
   const formattedTime = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
@@ -626,7 +632,10 @@ function CompletionScreen({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="p-4 rounded-2xl bg-card border border-ink-100 shadow-elev-lg">
-          <p className="font-display font-extrabold text-2xl tabular-nums text-cia-blue-700">
+          <p
+            className="font-display font-extrabold text-2xl tabular-nums text-cia-blue-700"
+            data-testid="completion-xp"
+          >
             +{xpEarned}
           </p>
           <p className="text-[10px] uppercase tracking-[.2em] text-muted-foreground mt-1 font-mono">
