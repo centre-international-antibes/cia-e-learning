@@ -267,7 +267,22 @@
     "xpEarned": "Получено XP",
     "bubbleCorrect": "Молодец, +5 XP!",
     "bubbleWrong": "Почти! Продолжаем.",
-    "generating": "Генерация аудио..."
+    "generating": "Генерация аудио...",
+    "praise": {
+      "excellent": "Отлично!",
+      "perfect": "Идеально!",
+      "wellDone": "Молодец!",
+      "spotOn": "В точку!",
+      "bravo": "Браво!",
+      "keepGoing": "Так держать!"
+    },
+    "notQuite": "Не совсем",
+    "correctAnswerIs": "Правильный ответ: {{solution}}",
+    "checkHint": "Выберите ответ, затем проверьте.",
+    "replayTitle": "Разберём ошибки",
+    "replayIntro": "Вы повторяете {{count}} вопрос(ов) с ошибкой. Эта вторая попытка не меняет счёт — она для повторения.",
+    "replayBadge": "Повторение",
+    "livesLeft": "Осталось жизней: {{count}}"
   },
   "indicators": {
     "xp_tooltip": "Всего {{count}} XP",

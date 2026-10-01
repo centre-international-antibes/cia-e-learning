@@ -267,7 +267,22 @@
     "xpEarned": "XP guadagnati",
     "bubbleCorrect": "Bravo, +5 XP!",
     "bubbleWrong": "Quasi! Continuiamo.",
-    "generating": "Generazione audio..."
+    "generating": "Generazione audio...",
+    "praise": {
+      "excellent": "Eccellente!",
+      "perfect": "Perfetto!",
+      "wellDone": "Ben fatto!",
+      "spotOn": "Esatto!",
+      "bravo": "Bravo!",
+      "keepGoing": "Continua così!"
+    },
+    "notQuite": "Non proprio",
+    "correctAnswerIs": "Risposta corretta: {{solution}}",
+    "checkHint": "Scegli la tua risposta, poi verifica.",
+    "replayTitle": "Rivediamo i tuoi errori",
+    "replayIntro": "Stai rifacendo {{count}} domanda/e sbagliata/e. Questo secondo tentativo non cambia il punteggio: serve per rivedere.",
+    "replayBadge": "Ripasso",
+    "livesLeft": "{{count}} vita/e rimasta/e"
   },
   "indicators": {
     "xp_tooltip": "{{count}} XP totali",

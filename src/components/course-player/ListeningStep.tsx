@@ -1,29 +1,40 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Headphones, Play, CheckCircle2, XCircle, Volume2, Loader2, ArrowRight } from 'lucide-react';
+import { Headphones, Play, Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ListeningStep as ListeningStepType } from '@/data/course-content';
 import { SparkBubble } from './SparkBubble';
-import { StepFeedback } from './StepFeedback';
+import { StepOption } from './StepOption';
+import { useDeclareAnswer, useOptionShortcut, useStepController } from './step-controller';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   step: ListeningStepType;
-  onNext: (correct: boolean) => void;
+  onSelect?: () => void;
 }
 
-export function ListeningStep({ step, onNext }: Props) {
+export function ListeningStep({ step, onSelect }: Props) {
   const { t } = useTranslation();
+  const { phase } = useStepController();
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasListened, setHasListened] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
-  const [answered, setAnswered] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioBlobUrlRef = useRef<string | null>(null);
-  const isCorrect = selected === step.correctIndex;
+  const revealed = phase === 'revealed';
+
+  useDeclareAnswer(selected !== null, () => ({
+    correct: selected === step.correctIndex,
+    solution: step.options[step.correctIndex],
+  }));
+
+  useOptionShortcut((index) => {
+    if (revealed || !hasListened || index >= step.options.length) return;
+    setSelected(index);
+    onSelect?.();
+  });
 
   const handlePlay = useCallback(async () => {
     if (playing || loading) return;
@@ -33,8 +44,14 @@ export function ListeningStep({ step, onNext }: Props) {
       const audio = new Audio(audioBlobUrlRef.current);
       audioRef.current = audio;
       audio.onplay = () => setPlaying(true);
-      audio.onended = () => { setPlaying(false); setHasListened(true); };
-      audio.onerror = () => { setPlaying(false); setHasListened(true); };
+      audio.onended = () => {
+        setPlaying(false);
+        setHasListened(true);
+      };
+      audio.onerror = () => {
+        setPlaying(false);
+        setHasListened(true);
+      };
       await audio.play();
       return;
     }
@@ -42,7 +59,8 @@ export function ListeningStep({ step, onNext }: Props) {
     setLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const accessToken =
+        sessionData.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
         {
@@ -57,7 +75,7 @@ export function ListeningStep({ step, onNext }: Props) {
             // voiceId/voiceSettings are omitted: the elevenlabs-tts edge
             // function falls back to its configured default voice.
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -71,8 +89,14 @@ export function ListeningStep({ step, onNext }: Props) {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
       audio.onplay = () => setPlaying(true);
-      audio.onended = () => { setPlaying(false); setHasListened(true); };
-      audio.onerror = () => { setPlaying(false); setHasListened(true); };
+      audio.onended = () => {
+        setPlaying(false);
+        setHasListened(true);
+      };
+      audio.onerror = () => {
+        setPlaying(false);
+        setHasListened(true);
+      };
 
       setLoading(false);
       await audio.play();
@@ -83,12 +107,6 @@ export function ListeningStep({ step, onNext }: Props) {
     }
   }, [playing, loading, step.text]);
 
-  const handleSelect = (index: number) => {
-    if (answered) return;
-    setSelected(index);
-    setAnswered(true);
-  };
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-2">
@@ -98,9 +116,7 @@ export function ListeningStep({ step, onNext }: Props) {
         <h2 className="text-xl font-bold font-display">{step.title}</h2>
       </div>
       {/* Narrative bubble (Spark) */}
-      {step.characterMessage && (
-        <SparkBubble message={step.characterMessage} />
-      )}
+      {step.characterMessage && <SparkBubble message={step.characterMessage} />}
 
       {/* Audio player */}
       <Card className="border-2 bg-gradient-to-br from-cia-blue-50 to-card">
@@ -128,14 +144,18 @@ export function ListeningStep({ step, onNext }: Props) {
             </button>
             {playing && (
               <div className="flex items-end gap-1 h-6">
-                {[1,2,3,4,5].map((n) => (
-                  <span key={n} className="w-1 bg-cia-blue-500 rounded-full animate-pulse" style={{ height: `${30 + (n%3)*30}%`, animationDelay: `${n*80}ms` }} />
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <span
+                    key={n}
+                    className="w-1 bg-cia-blue-500 rounded-full animate-pulse"
+                    style={{ height: `${30 + (n % 3) * 30}%`, animationDelay: `${n * 80}ms` }}
+                  />
                 ))}
               </div>
             )}
             <p className="text-sm text-muted-foreground">
               {loading
-                ? t('player.generating', 'Génération de l\'audio...')
+                ? t('player.generating', "Génération de l'audio...")
                 : playing
                   ? t('player.listening')
                   : hasListened
@@ -150,40 +170,26 @@ export function ListeningStep({ step, onNext }: Props) {
       {hasListened && (
         <Card className="border-2">
           <CardContent className="p-6">
-            <p className="text-lg font-medium mb-4">{step.question}</p>
-            <div className="grid gap-3">
+            <p className="mb-4 text-lg font-medium">{step.question}</p>
+            <div className="grid gap-3" role="radiogroup" aria-label={step.question}>
               {step.options.map((opt, i) => (
-                <button
+                <StepOption
                   key={i}
-                  onClick={() => handleSelect(i)}
-                  disabled={answered}
-                  className={cn(
-                    'w-full text-left p-3 rounded-xl border-2 transition-all duration-200 font-medium text-sm',
-                    !answered && 'hover:border-primary hover:bg-primary/5 cursor-pointer',
-                    answered && i === step.correctIndex && 'border-success bg-success/10 text-success',
-                    answered && selected === i && i !== step.correctIndex && 'border-destructive bg-destructive/10',
-                    answered && i !== step.correctIndex && selected !== i && 'opacity-50',
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span>{opt}</span>
-                    {answered && i === step.correctIndex && <CheckCircle2 className="h-4 w-4 text-success ml-auto" />}
-                    {answered && selected === i && i !== step.correctIndex && <XCircle className="h-4 w-4 text-destructive ml-auto" />}
-                  </div>
-                </button>
+                  label={opt}
+                  marker={String(i + 1)}
+                  selected={selected === i}
+                  revealed={revealed}
+                  isCorrect={i === step.correctIndex}
+                  onSelect={() => {
+                    if (revealed) return;
+                    setSelected(i);
+                    onSelect?.();
+                  }}
+                />
               ))}
             </div>
           </CardContent>
         </Card>
-      )}
-
-      <StepFeedback status={answered ? (isCorrect ? 'correct' : 'incorrect') : 'idle'} />
-
-      {answered && (
-        <Button variant="default" size="cta" className="w-full gap-2" onClick={() => onNext(isCorrect)}>
-          {t('player.continue')} <ArrowRight className="h-4 w-4" />
-        </Button>
       )}
     </div>
   );

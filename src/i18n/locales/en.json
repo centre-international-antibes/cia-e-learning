@@ -240,7 +240,22 @@
     "xpEarned": "XP earned",
     "bubbleCorrect": "Nice, +5 XP!",
     "bubbleWrong": "Almost — keep going.",
-    "generating": "Generating audio..."
+    "generating": "Generating audio...",
+    "praise": {
+      "excellent": "Excellent!",
+      "perfect": "Perfect!",
+      "wellDone": "Well done!",
+      "spotOn": "Spot on!",
+      "bravo": "Bravo!",
+      "keepGoing": "Keep it up!"
+    },
+    "notQuite": "Not quite",
+    "correctAnswerIs": "Correct answer: {{solution}}",
+    "checkHint": "Pick your answer, then check.",
+    "replayTitle": "Let's review your mistakes",
+    "replayIntro": "You are retrying {{count}} missed question(s). This second attempt does not change your score — it is for review.",
+    "replayBadge": "Review",
+    "livesLeft": "{{count}} life/lives left"
   },
   "indicators": {
     "xp_tooltip": "{{count}} total XP earned",

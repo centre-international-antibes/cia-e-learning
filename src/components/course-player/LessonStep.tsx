@@ -1,17 +1,16 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Lightbulb } from 'lucide-react';
 import type { LessonStep as LessonStepType } from '@/data/course-content';
 import { StepCharacterBubble } from './StepCharacterBubble';
+import { useDeclareAnswer } from './step-controller';
 
 interface Props {
   step: LessonStepType;
-  onNext: () => void;
 }
 
-export function LessonStep({ step, onNext }: Props) {
-  const { t } = useTranslation();
+export function LessonStep({ step }: Props) {
+  // Étape libre : « Continuer » est actif d'emblée dans la CheckBar.
+  useDeclareAnswer(true, () => ({ correct: true }));
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
@@ -45,10 +44,6 @@ export function LessonStep({ step, onNext }: Props) {
           <p className="text-sm text-foreground">{step.tip}</p>
         </div>
       )}
-
-      <Button size="lg" className="w-full" onClick={onNext}>
-        {t('player.continue')}
-      </Button>
     </div>
   );
 }
