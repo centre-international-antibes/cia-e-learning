@@ -233,7 +233,24 @@
       "correct": "Correct",
       "next_course": "Next course",
       "back_catalogue": "Back to catalog",
-      "retry": "Retry"
+      "retry": "Retry",
+      "titleDone": "Lesson complete!",
+      "titlePerfect": "Perfect lesson!",
+      "xpLabel": "XP earned",
+      "accuracy": "Accuracy",
+      "bestCombo": "Best streak",
+      "durationLine": "Finished in {{time}}",
+      "totalXp": "Total XP",
+      "xpPending": "Calculating XP…",
+      "xpTooFast": "Lesson finished too fast to earn XP.",
+      "xpReplayCap": "XP already earned 3 times today on this lesson.",
+      "xpOffline": "XP syncing.",
+      "breakdown": {
+        "lesson": "+{{xp}} lesson",
+        "correct": "+{{xp}} answers",
+        "combo": "+{{xp}} streak",
+        "perfect": "+{{xp}} perfect"
+      }
     },
     "step": "Step",
     "sparkLabel": "Spark",

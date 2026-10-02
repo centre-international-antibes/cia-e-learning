@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -41,7 +41,18 @@ import { notify } from '@/lib/notify';
 import { supabase } from '@/integrations/supabase/client';
 import { computeLessonXp } from '@/lib/xp/lessonXp';
 import { useRewards } from '@/features/rewards';
-import type { LessonResult } from '@/components/course-player/CoursePlayer';
+import type {
+  LessonResult,
+  LessonSubmitResult,
+  LessonXpParts,
+} from '@/components/course-player/lesson-result';
+
+/** Un seul retour en arrière sur échec réseau, à 1,5 s. */
+const SUBMIT_RETRY_DELAY = 1500;
+
+/** La tentative est déjà close côté serveur : la leçon a bien été comptée. */
+const isAttemptInvalid = (error: { message?: string } | null): boolean =>
+  (error?.message ?? '').includes('attempt_invalid');
 
 /** Réponse de la RPC `complete_lesson`. */
 interface CompleteLessonResult {
@@ -99,10 +110,14 @@ export default function CourseDetail() {
   const [playing, setPlaying] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { cecrLevel, applyServerXp, addLocalXP, setLevel } = useUserProgress();
+  const { cecrLevel, totalXP, applyServerXp, addLocalXP, setLevel } = useUserProgress();
   const { enqueue } = useRewards();
   // Tentative ouverte côté serveur : c'est elle qui porte la durée et l'XP.
   const [attemptId, setAttemptId] = useState<string | null>(null);
+  // Une leçon ne se soumet qu'une fois : on mémorise la promesse, pas un
+  // booléen, pour qu'un second appel (StrictMode, remontage) reçoive le même
+  // résultat au lieu de rejouer `complete_lesson`.
+  const submitOnceRef = useRef<Promise<LessonSubmitResult> | null>(null);
   const { markDoneToday } = useDailyChallenge();
   const { user, isLoading: authLoading } = useAuth();
 
@@ -143,132 +158,175 @@ export default function CourseDetail() {
 
   const locked = !isDailyChallenge && !isLevelAccessible(displayCourse.level, cecrLevel);
 
+  /**
+   * Soumission de la leçon — tout ce qui s'écrit et tout ce qui se célèbre.
+   *
+   * Appelée par l'écran de fin dès son montage, pendant que la chorégraphie
+   * joue. Le Reward Director est encore tenu par le player : les récompenses
+   * enfilées ici ne s'afficheront qu'une fois la chorégraphie terminée.
+   */
+  const runSubmit = async (result: LessonResult): Promise<LessonSubmitResult> => {
+    const { score, correct, questionCount, bestCombo } = result;
+    setFinalScore(score);
+
+    // Le barème local sert de repli : anonyme, hors ligne, tentative déjà close.
+    const preview = computeLessonXp({ correct, questionCount, bestCombo });
+    const localParts: LessonXpParts = {
+      base: preview.base,
+      correct: preview.correct,
+      combo: preview.combo,
+      perfect: preview.perfect,
+    };
+
+    // Persist progress to Lovable Cloud (lesson_progress) and refresh the
+    // local cache so every consumer (parcours, drawer, resume card, etc.)
+    // sees the completion immediately.
+    await upsertLessonProgress({
+      userId: user?.id ?? '',
+      lessonId: displayCourse.id,
+      score,
+      courseId: displayCourse.id,
+      level: displayCourse.level,
+      completed: true,
+    });
+
+    // ── XP ──────────────────────────────────────────────────────────────
+    // Sur un compte, le barème est appliqué par le serveur à partir des seuls
+    // résultats ; le client n'envoie aucun montant. En anonyme, on calcule
+    // localement avec le même barème.
+    let submitted: LessonSubmitResult;
+    if (!user) {
+      addLocalXP(preview.total);
+      submitted = {
+        status: 'anonymous',
+        xpAwarded: preview.total,
+        breakdown: localParts,
+        xpBefore: totalXP,
+        xpAfter: totalXP + preview.total,
+      };
+    } else if (!attemptId) {
+      // `start_lesson` n'a pas abouti : rien à clore côté serveur.
+      submitted = { status: 'offline', xpAwarded: preview.total, breakdown: localParts };
+    } else {
+      submitted = await completeLessonOnServer(attemptId, correct, bestCombo, localParts, preview.total);
+      setAttemptId(null);
+    }
+
+    // Daily challenge bonus :
+    // - soit la leçon ouverte EST la leçon du jour pour son niveau (entrée naturelle depuis le programme),
+    // - soit elle a été lancée explicitement via le défi du jour (?daily=1), peu importe le niveau choisi.
+    const daily = getDailyLesson(displayCourse.level);
+    const isDailyMatch = daily && daily.lessonId === displayCourse.id;
+    if (isDailyChallenge || isDailyMatch) {
+      const res = await markDoneToday();
+      if (res.awarded) {
+        enqueue({
+          kind: 'streak',
+          id: `${res.newStreak}-${new Date().toDateString()}`,
+          days: res.newStreak,
+          xp: res.xp,
+        });
+      } else if (isDailyChallenge) {
+        toast(t('courseDetail.dailyAlreadyDone'), { duration: 4000 });
+      }
+    }
+
+    // Check if a module was just completed and unlock notifications
+    if (curriculumData) {
+      const mod = curriculumData.module;
+      if (isModuleComplete(mod)) {
+        enqueue({ kind: 'badge', id: mod.id, label: mod.badge, emoji: mod.badgeEmoji });
+
+        for (const u of getNewlyUnlockedModules(mod.id)) {
+          enqueue({
+            kind: 'unlock',
+            id: u.id,
+            label: `${u.id} — ${u.title}`,
+            emoji: u.badgeEmoji,
+          });
+        }
+
+        // Le niveau CECR suit la progression pédagogique — jamais l'XP.
+        const newComputedLevel = computeLevelFromProgress();
+        if (newComputedLevel !== cecrLevel) {
+          await setLevel(newComputedLevel);
+          enqueue({
+            kind: 'levelUp',
+            id: newComputedLevel,
+            level: newComputedLevel,
+            previousLevel: cecrLevel,
+          });
+        }
+      }
+    }
+
+    return submitted;
+  };
+
+  /** Clôture la tentative côté serveur, avec un seul retour en arrière. */
+  const completeLessonOnServer = async (
+    attempt: string,
+    correct: number,
+    bestCombo: number,
+    localParts: LessonXpParts,
+    localTotal: number,
+  ): Promise<LessonSubmitResult> => {
+    const call = () =>
+      supabase.rpc('complete_lesson', {
+        _attempt_id: attempt,
+        _correct: correct,
+        _best_combo: bestCombo,
+      });
+
+    let { data, error } = await call();
+    if (error && !isAttemptInvalid(error)) {
+      // Un seul retry : si le premier appel avait abouti sans que la réponse
+      // nous revienne, le second répond `attempt_invalid` — et c'est une bonne
+      // nouvelle, traitée juste en dessous.
+      await new Promise((r) => setTimeout(r, SUBMIT_RETRY_DELAY));
+      ({ data, error } = await call());
+    }
+
+    if (error) {
+      console.error('[complete_lesson]', error);
+      if (isAttemptInvalid(error)) {
+        // Tentative déjà close : la leçon a bien été comptée côté serveur, on
+        // affiche l'aperçu sans crier à l'erreur.
+        return { status: 'rewarded', xpAwarded: localTotal, breakdown: localParts };
+      }
+      return { status: 'offline', xpAwarded: localTotal, breakdown: localParts };
+    }
+
+    const res = data as CompleteLessonResult | null;
+    if (!res) return { status: 'offline', xpAwarded: localTotal, breakdown: localParts };
+    applyServerXp(res);
+    return {
+      status: res.outcome,
+      xpAwarded: res.xp_awarded,
+      breakdown: res.breakdown,
+      // Le total d'avant se déduit de la réponse, plus fiable qu'un état local.
+      xpBefore: Math.max(0, res.xp_after - res.xp_awarded),
+      xpAfter: res.xp_after,
+    };
+  };
+
   if (playing && content && !locked) {
     return (
       <CoursePlayer
         content={content}
         courseTitle={displayCourse.title}
         onExit={() => setPlaying(false)}
-        onComplete={async (result: LessonResult) => {
-          const { score, correct, questionCount, bestCombo } = result;
-          setFinalScore(score);
+        onSubmit={(result) => {
+          if (!submitOnceRef.current) submitOnceRef.current = runSubmit(result);
+          return submitOnceRef.current;
+        }}
+        onFinish={() => {
+          // Navigation immédiate, au clic : plus aucun `setTimeout` qui
+          // emporterait l'écran de fin et ses célébrations.
           setPlaying(false);
-
-          // Persist progress to Lovable Cloud (lesson_progress) and refresh the
-          // local cache so every consumer (parcours, drawer, resume card, etc.)
-          // sees the completion immediately.
-          await upsertLessonProgress({
-            userId: user?.id ?? '',
-            lessonId: displayCourse.id,
-            score,
-            courseId: displayCourse.id,
-            level: displayCourse.level,
-            completed: true,
-          });
-
-          // ── XP ──────────────────────────────────────────────────────────
-          // Sur un compte, le barème est appliqué par le serveur à partir des
-          // seuls résultats ; le client n'envoie aucun montant. En anonyme, on
-          // calcule localement avec le même barème.
-          if (user && attemptId) {
-            const { data, error } = await supabase.rpc('complete_lesson', {
-              _attempt_id: attemptId,
-              _correct: correct,
-              _best_combo: bestCombo,
-            });
-            setAttemptId(null);
-            if (error) {
-              // Tentative déjà close, ou résultats refusés : la leçon reste
-              // terminée, seule l'XP est perdue. Pas d'erreur rouge.
-              console.error('[complete_lesson]', error);
-              notify.info(t('courseDetail.completedTitle'));
-            } else {
-              const res = data as CompleteLessonResult | null;
-              applyServerXp(res);
-              if (res?.outcome === 'rewarded' && res.xp_awarded > 0) {
-                enqueue({
-                  kind: 'xp',
-                  id: `${displayCourse.id}-${res.xp_awarded}-${Date.now()}`,
-                  amount: res.xp_awarded,
-                  label: t('courseDetail.completedToast'),
-                });
-              } else if (res?.outcome === 'too_fast') {
-                notify.info(t('courseDetail.xpTooFast'));
-              } else if (res?.outcome === 'replay_cap') {
-                notify.info(t('courseDetail.xpReplayCap'));
-              }
-            }
-          } else if (!user) {
-            const local = computeLessonXp({ correct, questionCount, bestCombo });
-            addLocalXP(local.total);
-            enqueue({
-              kind: 'xp',
-              id: `${displayCourse.id}-local-${Date.now()}`,
-              amount: local.total,
-              label: t('courseDetail.completedToast'),
-            });
-          }
-
-          // Daily challenge bonus :
-          // - soit la leçon ouverte EST la leçon du jour pour son niveau (entrée naturelle depuis le programme),
-          // - soit elle a été lancée explicitement via le défi du jour (?daily=1), peu importe le niveau choisi.
-          const daily = getDailyLesson(displayCourse.level);
-          const isDailyMatch = daily && daily.lessonId === displayCourse.id;
-          if (isDailyChallenge || isDailyMatch) {
-            const res = await markDoneToday();
-            if (res.awarded) {
-              enqueue({
-                kind: 'streak',
-                id: `${res.newStreak}-${new Date().toDateString()}`,
-                days: res.newStreak,
-                xp: res.xp,
-              });
-            } else if (isDailyChallenge) {
-              setTimeout(() => {
-                toast(t('courseDetail.dailyAlreadyDone'), { duration: 4000 });
-              }, 600);
-            }
-          }
-
-          // Check if a module was just completed and unlock notifications
-          if (curriculumData) {
-            const mod = curriculumData.module;
-            if (isModuleComplete(mod)) {
-              enqueue({ kind: 'badge', id: mod.id, label: mod.badge, emoji: mod.badgeEmoji });
-
-              for (const u of getNewlyUnlockedModules(mod.id)) {
-                enqueue({
-                  kind: 'unlock',
-                  id: u.id,
-                  label: `${u.id} — ${u.title}`,
-                  emoji: u.badgeEmoji,
-                });
-              }
-
-              // Le niveau CECR suit la progression pédagogique — jamais l'XP.
-              const newComputedLevel = computeLevelFromProgress();
-              if (newComputedLevel !== cecrLevel) {
-                await setLevel(newComputedLevel);
-                enqueue({
-                  kind: 'levelUp',
-                  id: newComputedLevel,
-                  level: newComputedLevel,
-                  previousLevel: cecrLevel,
-                });
-              }
-            }
-          }
-
-          // Redirect after completion : retour au défi du jour si on y vient,
-          // sinon retour au programme/module concerné.
           const moduleId = curriculumData?.module?.id;
-          setTimeout(() => {
-            if (isDailyChallenge) {
-              navigate('/defi-du-jour');
-            } else {
-              navigate(moduleId ? `/programme?module=${moduleId}` : '/programme');
-            }
-          }, 1500);
+          if (isDailyChallenge) navigate('/defi-du-jour');
+          else navigate(moduleId ? `/programme?module=${moduleId}` : '/programme');
         }}
       />
     );
