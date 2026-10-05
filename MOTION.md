@@ -201,6 +201,38 @@ Le plus rare et le plus fort. La carte de niveau arrive de loin, pivote et se
 pose (`hero`). C'est le seul moment où l'inclinaison 3D au doigt est permise.
 Jamais déclenché par l'XP — uniquement par la progression pédagogique.
 
+**En place** (`features/parcours/LevelCompleteMoment.tsx`, derrière `?redesign=1`).
+Anticipation : la carte part à −180 pt, échelle 0,55, pivotée de 8°. Impact :
+pose en `hero`, arrivée mesurée à **560 ms**, et c'est là que le son `levelUp`
+tombe. Suivi : halo qui pulse sur le médaillon, **10 éclats d'or** en couronne
+(720 ms), puis le chiffre géant, puis Spark, puis le CTA.
+
+Deux points de méthode qui valent pour tous les moments :
+
+- **la pose est datée par une minuterie, pas par `onAnimationComplete`.** Aucun
+  état final ne dépend de la fin d'une animation (§ 3) : une carte interrompue
+  garderait sinon son chiffre à zéro et son CTA invisible.
+- **une récompense à l'écran ne se fait plus couper.** La file rangeait les
+  meso devant les macro *y compris une macro déjà affichée* : un succès
+  débloqué entre-temps coupait le passage de niveau en deux, puis le laissait
+  reprendre à zéro. La file retient désormais ce qui est vu (`markShown`).
+
+Reste : l'avance automatique du Director est de **5 s** pour une macro, 2,5 s
+sous `prefers-reduced-motion`. C'est court pour un moment de ce poids — à juger
+au Réglage.
+
+### 3 bis. Chemin qui se dessine, au retour d'une leçon
+
+Le tracé d'une unité est en deux couches : le chemin complet en `ink-200`, et
+le chemin parcouru à la teinte CECR, découpé par `pathLength`. Le ratio suit la
+**longueur réelle** du zigzag, pas l'index des nœuds — les segments n'ont pas
+tous la même longueur, et le tracé tombait à côté du nœud.
+
+Au retour d'une leçon (`/programme?module=<id>`), il repart du nœud quitté et
+se dessine jusqu'à la position atteinte en `slow`, **puis** Spark saute
+(`hero`, 350 ms de retard). Ailleurs, il est déjà en place : on ne redessine
+pas le chemin à chaque visite.
+
 ### 5. Palier de série
 
 La flamme grossit, le chiffre encaisse. Ton toujours positif : **une série

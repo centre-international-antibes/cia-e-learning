@@ -2518,6 +2518,15 @@
     "start": "Starten",
     "resume": "Fortsetzen",
     "close": "Schließen",
-    "chest": "XP-Truhe"
+    "chest": "XP-Truhe",
+    "dailyGoal": "Tagesziel",
+    "startHere": "Hier starten",
+    "levelDone": {
+      "eyebrow": "Einheit abgeschlossen",
+      "title": "Niveau {{level}} abgeschlossen",
+      "recap": "{{modules}} Module, {{lessons}} Lektionen",
+      "continue": "Weiter mit {{level}}",
+      "back": "Zurück zum Lernpfad"
+    }
   }
 }

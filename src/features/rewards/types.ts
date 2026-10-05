@@ -70,6 +70,12 @@ export interface LevelUpReward extends BaseReward {
   kind: 'levelUp';
   level: string;
   previousLevel?: string;
+  /**
+   * Ce qui a été fait dans l'unité qu'on vient de terminer. Renseigné par le
+   * parcours, qui est le seul à le savoir ; le moment de fin de niveau de la
+   * refonte s'en sert pour son chiffre géant, et s'en passe sinon.
+   */
+  unit?: { tint: string; modules: number; lessons: number };
 }
 
 export interface StreakMilestoneReward extends BaseReward {

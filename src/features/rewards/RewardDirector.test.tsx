@@ -43,9 +43,13 @@ describe('RewardDirector', () => {
         <Probe />
       </RewardDirectorProvider>,
     );
+    // La file est retenue pendant qu'on l'alimente — c'est ce que fait le
+    // player jusqu'à l'écran de fin. Rien n'est à l'écran, donc tout se range.
+    click('hold');
     click('level');
     click('xp');
     click('badge');
+    click('release');
 
     expect(screen.getByTestId('pending').textContent).toBe('3');
     expect(current()).toBe('xp:a');
@@ -55,6 +59,21 @@ describe('RewardDirector', () => {
     expect(current()).toBe('levelUp:A2');
     click('skip');
     expect(current()).toBe('none');
+  });
+
+  it("ne remplace pas la récompense déjà à l'écran par une meso tardive", () => {
+    render(
+      <RewardDirectorProvider>
+        <Probe />
+      </RewardDirectorProvider>,
+    );
+    click('level');
+    expect(current()).toBe('levelUp:A2');
+    // Un succès débloqué pendant le moment de niveau : il attend son tour.
+    click('badge');
+    expect(current()).toBe('levelUp:A2');
+    click('skip');
+    expect(current()).toBe('badge:b');
   });
 
   it('hold() retient la file, release() la relâche', () => {

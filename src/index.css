@@ -222,6 +222,15 @@
     --shadow-xl:  0 20px 60px hsl(var(--ink-900) / 0.14);
     --shadow-glow: 0 0 24px hsl(var(--cia-gold-500) / 0.40);
 
+    /* Plans — un seul endroit où se décide qui passe devant qui (DESIGN.md § 6).
+       Toute valeur en dur (`z-[200]` et consorts) se remplace par ces tokens. */
+    --z-base:        0;    /* contenu */
+    --z-sticky:      10;   /* en-têtes collants */
+    --z-bar:         30;   /* CheckBar, barre d'onglets */
+    --z-player:      100;  /* portal du player */
+    --z-overlay:     200;  /* voile des célébrations */
+    --z-celebration: 210;  /* célébrations macro, toasts */
+
     /* Easings */
     --ease-out-expo:    cubic-bezier(0.16, 1, 0.3, 1);
     --ease-out-back:    cubic-bezier(0.34, 1.56, 0.64, 1);

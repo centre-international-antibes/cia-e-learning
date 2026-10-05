@@ -2522,6 +2522,15 @@
     "start": "Commencer",
     "resume": "Reprendre",
     "close": "Fermer",
-    "chest": "Coffre à XP"
+    "chest": "Coffre à XP",
+    "dailyGoal": "Objectif du jour",
+    "startHere": "Commence ici",
+    "levelDone": {
+      "eyebrow": "Unité terminée",
+      "title": "Niveau {{level}} terminé",
+      "recap": "{{modules}} modules, {{lessons}} leçons",
+      "continue": "Continuer en {{level}}",
+      "back": "Revenir au parcours"
+    }
   }
 }

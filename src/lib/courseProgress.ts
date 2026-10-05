@@ -2,6 +2,7 @@ const ACTIVE_USER_STORAGE_KEY = 'cia-active-user-id';
 const COURSE_PROGRESS_KEY = 'course-progress';
 const COURSE_PLAYER_PROGRESS_PREFIX = 'course-player-progress';
 const LAST_LESSON_OPENED_KEY = 'cia-last-lesson-opened';
+const UNITS_CELEBRATED_KEY = 'cia-units-celebrated';
 
 export interface LastLessonOpened {
   courseId: string;
@@ -99,6 +100,42 @@ export function setLastLessonOpened(payload: Omit<LastLessonOpened, 'openedAt'>)
     window.localStorage.setItem(getScopedKey(LAST_LESSON_OPENED_KEY), JSON.stringify(entry));
   } catch {
     /* noop */
+  }
+}
+
+/**
+ * Unités dont la fin a déjà été célébrée.
+ *
+ * Le moment plein écran de fin de niveau se joue **à l'instant où le dernier
+ * module tombe**, pas à chaque visite du parcours. On retient donc les niveaux
+ * déjà fêtés, à côté de la progression et avec le même découpage par compte.
+ */
+function readCelebratedUnits(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(getScopedKey(UNITS_CELEBRATED_KEY));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function wasUnitCelebrated(level: string): boolean {
+  return readCelebratedUnits().includes(level);
+}
+
+export function markUnitCelebrated(level: string) {
+  if (typeof window === 'undefined') return;
+  const units = readCelebratedUnits();
+  if (units.includes(level)) return;
+  try {
+    window.localStorage.setItem(
+      getScopedKey(UNITS_CELEBRATED_KEY),
+      JSON.stringify([...units, level]),
+    );
+  } catch {
+    // Stockage bloqué : la célébration pourra se rejouer. Mieux que de la perdre.
   }
 }
 

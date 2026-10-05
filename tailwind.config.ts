@@ -15,6 +15,15 @@ export default {
       screens: { xs: "480px" },
       minHeight: { touch: "44px" },
       minWidth:  { touch: "44px" },
+      /* Plans — tokens de DESIGN.md § 6. Plus aucun z-index en dur. */
+      zIndex: {
+        base:        "var(--z-base)",
+        sticky:      "var(--z-sticky)",
+        bar:         "var(--z-bar)",
+        player:      "var(--z-player)",
+        overlay:     "var(--z-overlay)",
+        celebration: "var(--z-celebration)",
+      },
       spacing: {
         "safe-top":    "env(safe-area-inset-top)",
         "safe-bottom": "env(safe-area-inset-bottom)",

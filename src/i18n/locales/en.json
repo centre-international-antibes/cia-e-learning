@@ -2518,6 +2518,15 @@
     "start": "Start",
     "resume": "Resume",
     "close": "Close",
-    "chest": "XP chest"
+    "chest": "XP chest",
+    "dailyGoal": "Today's goal",
+    "startHere": "Start here",
+    "levelDone": {
+      "eyebrow": "Unit complete",
+      "title": "Level {{level}} complete",
+      "recap": "{{modules}} modules, {{lessons}} lessons",
+      "continue": "Continue to {{level}}",
+      "back": "Back to the path"
+    }
   }
 }

@@ -27,7 +27,11 @@ export type NodeKind = 'module' | 'chest' | 'trophy';
 
 export const NODE_SIZE = 67;
 export const NODE_SIZE_CURRENT = 84;
+/** Premier contact : le nœud d'entrée est le seul objet de l'écran qui compte. */
+export const NODE_SIZE_FIRST = 110;
 const EDGE = 6;
+/** « Tranche de 4 à 8 pt selon la taille » (DESIGN.md § 4) — 8 pour le gros nœud. */
+const EDGE_FIRST = 8;
 const PRESSED_EDGE = 2;
 const RING = 5;
 
@@ -47,6 +51,13 @@ export interface PathNodeProps {
   stamped?: boolean;
   /** Le nœud vient de se déverrouiller. */
   unlocking?: boolean;
+  /**
+   * `first` : nœud d'entrée du premier contact — 110 pt, tranche de 8.
+   * Il n'y en a qu'un par parcours, et seulement tant que rien n'est commencé.
+   */
+  emphasis?: 'normal' | 'first';
+  /** Nœud en retrait : il existe, il se tape, mais il n'appelle pas le regard. */
+  dimmed?: boolean;
   onClick?: () => void;
   ariaLabel: string;
 }
@@ -62,6 +73,8 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
     callToAction,
     stamped,
     unlocking,
+    emphasis = 'normal',
+    dimmed,
     onClick,
     ariaLabel,
   },
@@ -73,14 +86,16 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
   const done = state === 'completed';
   const current = state === 'current';
 
-  const size = current ? NODE_SIZE_CURRENT : NODE_SIZE;
+  const first = emphasis === 'first';
+  const size = first ? NODE_SIZE_FIRST : current ? NODE_SIZE_CURRENT : NODE_SIZE;
+  const restEdge = first ? EDGE_FIRST : EDGE;
   const face = locked
     ? 'hsl(var(--ink-200))'
     : state === 'available'
       ? `color-mix(in srgb, ${tint} 78%, white)`
       : tint;
   const edgeColor = locked ? 'hsl(var(--ink-300))' : `color-mix(in srgb, ${tint} 70%, black)`;
-  const depth = pressed && !locked ? PRESSED_EDGE : EDGE;
+  const depth = pressed && !locked ? PRESSED_EDGE : restEdge;
 
   // Anneau de progression du nœud courant : un cercle tracé, pas une barre.
   const ratio = progress && progress.total > 0 ? progress.done / progress.total : 0;
@@ -91,7 +106,10 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
     kind === 'chest' ? 'chest' : kind === 'trophy' ? 'trophy' : locked ? 'lock' : object;
 
   return (
-    <div className="relative flex flex-col items-center gap-1.5">
+    <div
+      className="relative flex flex-col items-center gap-1.5"
+      style={dimmed ? { opacity: 0.6 } : undefined}
+    >
       {current && callToAction && (
         <motion.span
           className="pointer-events-none absolute -top-9 whitespace-nowrap rounded-xl border-2 border-ink-100 bg-card px-3 py-1 font-display text-xs font-extrabold text-cia-blue-700 shadow-elev-lg"
@@ -112,7 +130,9 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
       )}
 
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-        {current && progress && progress.total > 0 && (
+        {/* Pas d'anneau au premier contact : à 0 %, un cercle vide autour du
+            nœud d'entrée ne dit rien et brouille le seul objet de l'écran. */}
+        {current && !first && progress && progress.total > 0 && (
           <svg
             className="pointer-events-none absolute"
             width={ringR * 2 + RING}
@@ -168,7 +188,7 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
                 ? 'rgba(255,255,255,.95)'
                 : 'rgba(255,255,255,.35)',
             boxShadow: `0 ${depth}px 0 0 ${edgeColor}`,
-            transform: `translateY(${EDGE - depth}px)`,
+            transform: `translateY(${restEdge - depth}px)`,
             transition: reduced ? 'none' : 'box-shadow 90ms ease-out, transform 90ms ease-out',
           }}
           animate={unlocking && !reduced ? { scale: [1, 1.12, 1] } : {}}

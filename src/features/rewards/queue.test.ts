@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { emptyQueue, enqueueReward, dequeueReward } from '@/features/rewards/queue';
+import { emptyQueue, enqueueReward, dequeueReward, markShown } from '@/features/rewards/queue';
 import { DEDUPE_WINDOW_MS, type Reward } from '@/features/rewards/types';
 
 const xp = (id: string, amount = 50): Reward => ({ kind: 'xp', id, amount });
@@ -73,5 +73,28 @@ describe('file des récompenses', () => {
     s = enqueueReward(s, levelUp('A2'), 1002);
     s = enqueueReward(s, { kind: 'unlock', id: 'A1.2', label: 'A1.2' }, 1003);
     expect(kinds(s)).toEqual(['xp', 'streak', 'unlock', 'levelUp']);
+  });
+
+  it("ne coupe pas la récompense à l'écran : une meso tardive passe derrière", () => {
+    let s = emptyQueue();
+    s = enqueueReward(s, levelUp('A2'), 1000);
+    s = markShown(s); // la macro est passée à l'écran
+    s = enqueueReward(s, { kind: 'unlock', id: 'A1.2', label: 'A1.2' }, 1500);
+    expect(kinds(s)).toEqual(['levelUp', 'unlock']);
+  });
+
+  it('range les meso devant une macro qui attend encore son tour', () => {
+    let s = emptyQueue();
+    s = enqueueReward(s, levelUp('A2'), 1000);
+    s = enqueueReward(s, { kind: 'badge', id: 'b', label: 'b' }, 1002);
+    expect(kinds(s)).toEqual(['badge', 'levelUp']);
+  });
+
+  it('le verrou part avec la récompense qui sort', () => {
+    let s = emptyQueue();
+    s = enqueueReward(s, levelUp('A2'), 1000);
+    s = markShown(s);
+    s = dequeueReward(s);
+    expect(s.shown).toBeUndefined();
   });
 });

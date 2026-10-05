@@ -2518,6 +2518,15 @@
     "start": "Inizia",
     "resume": "Riprendi",
     "close": "Chiudi",
-    "chest": "Forziere XP"
+    "chest": "Forziere XP",
+    "dailyGoal": "Obiettivo di oggi",
+    "startHere": "Inizia qui",
+    "levelDone": {
+      "eyebrow": "Unità completata",
+      "title": "Livello {{level}} completato",
+      "recap": "{{modules}} moduli, {{lessons}} lezioni",
+      "continue": "Continua con {{level}}",
+      "back": "Torna al percorso"
+    }
   }
 }

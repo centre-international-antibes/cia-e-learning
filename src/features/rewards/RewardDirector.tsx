@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useReducedMotionConfig } from 'framer-motion';
 
 import { feedback } from '@/lib/feedback';
-import { emptyQueue, enqueueReward, dequeueReward, type QueueState } from './queue';
+import { isRedesign } from '@/lib/redesign';
+import { emptyQueue, enqueueReward, dequeueReward, markShown, type QueueState } from './queue';
 import { REWARD_DURATION, rewardScale, type Reward } from './types';
 
 /**
@@ -39,7 +40,10 @@ const RewardsContext = React.createContext<RewardsApi | null>(null);
 function playFeedback(reward: Reward) {
   switch (reward.kind) {
     case 'levelUp':
-      feedback.levelUp();
+      // Sous la refonte, le moment de fin de niveau joue son son **à la pose de
+      // la carte** et pas à son départ (MOTION.md § 6) : il s'en charge
+      // lui-même, sinon le son précéderait de 560 ms ce qu'on voit.
+      if (!isRedesign()) feedback.levelUp();
       break;
     case 'unlock':
       feedback.chest();
@@ -80,10 +84,12 @@ export function RewardDirectorProvider({ children, stage: Stage }: RewardDirecto
   const hold = React.useCallback(() => setHolds((n) => n + 1), []);
   const release = React.useCallback(() => setHolds((n) => Math.max(0, n - 1)), []);
 
-  // Son et haptique au moment où la récompense devient visible.
+  // Son et haptique au moment où la récompense devient visible. C'est aussi là
+  // que la file apprend qu'elle est vue, et la verrouille contre les arrivées.
   React.useEffect(() => {
     if (!current) return;
     playFeedback(current);
+    setState(markShown);
   }, [current]);
 
   // Avance automatique. En reduced-motion, tout dure moitié moins longtemps :

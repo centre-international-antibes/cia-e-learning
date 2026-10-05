@@ -231,7 +231,11 @@ une ligne latine et une ligne cyrillique dans un même écran.
 | bannière d'unité, feuille | 20 pt |
 | nœud, pastille, coffre | cercle complet |
 
-**z-index — en tokens.** Les `z-[200]` / `z-[201]` posés en M4 disparaissent.
+**z-index — en tokens.** Les tokens existent désormais dans `src/index.css` et
+sont exposés par Tailwind (`z-overlay`, `z-celebration`…). Le moment de fin de
+niveau les utilise. **Les `z-[200]` / `z-[201]` posés en M4 sont encore là** dans
+`LevelUpCelebration`, `StreakMilestone`, `XPBurst` et `AchievementToast` : ils
+partiront avec la refonte de ces composants, pas avant.
 
 ```css
 --z-base: 0;        /* contenu */
@@ -272,6 +276,40 @@ simplement pas commandées maintenant. « Antibes plate » (6 scènes de lieux)
 reste la piste naturelle pour les bannières d'unité et les écrans vides ;
 « Spark en situation » reste celle des moments de célébration. On y reviendra
 quand le parcours tiendra debout.
+
+## 7 bis. États du parcours *(arbitrés)*
+
+Deux états que le parcours n'avait pas, et que `DESIGN.md` ne décrivait pas.
+
+### Premier contact — **chemin seul, nœud d'entrée surdimensionné**
+
+Rien n'a été commencé, nulle part. **Pas de panneau d'accueil** : c'est le
+chemin qui parle.
+
+| | |
+|---|---|
+| nœud 1 | **110 pt**, tranche de 8 pt, son objet, pas d'anneau de progression — à 0 % il ne dit rien |
+| Spark | taille habituelle (≈ 25 % de la largeur), posé à côté, du côté libre |
+| bulle | « Commence ici » au lieu de « Commencer » |
+| nœuds suivants | opacité 60 % — ils existent, ils se tapent, ils n'appellent pas le regard |
+
+Les deux autres pistes sont écartées : un panneau d'accueil au-dessus ajoutait
+un second objet là où la densité vise l'inverse ; une bannière d'unité agrandie
+faisait mentir la bannière des unités suivantes.
+
+Mesuré : **70,3 % de blanc** à 390 × 844, pour une cible de 70.
+
+### Fin de niveau — **moment plein écran**
+
+Le moment signature n° 4 de `MOTION.md`, et rien de persistant sur le chemin :
+la bannière d'unité dit déjà « 5 / 5 modules ». Il se joue **une seule fois**,
+à l'instant où le dernier module de l'unité tombe (`cia-units-celebrated` dans
+le stockage local), jamais à chaque visite, et jamais sur une hausse d'XP.
+
+Carte de 335 × 479 : bandeau à la teinte CECR du niveau terminé, médaillon
+trophée en or, chiffre géant des modules faits, réaction de Spark, une seule
+action — « Continuer en A2 ». Il passe par le Reward Director, comme tout le
+reste.
 
 ## 8. Ce qui change dans le code, une fois arbitré
 

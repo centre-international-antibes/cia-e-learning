@@ -2518,6 +2518,15 @@
     "start": "Начать",
     "resume": "Продолжить",
     "close": "Закрыть",
-    "chest": "Сундук с XP"
+    "chest": "Сундук с XP",
+    "dailyGoal": "Цель на сегодня",
+    "startHere": "Начните здесь",
+    "levelDone": {
+      "eyebrow": "Раздел пройден",
+      "title": "Уровень {{level}} пройден",
+      "recap": "Модулей: {{modules}} · Уроков: {{lessons}}",
+      "continue": "Перейти к {{level}}",
+      "back": "Вернуться к программе"
+    }
   }
 }

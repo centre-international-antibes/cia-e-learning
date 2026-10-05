@@ -9,6 +9,7 @@ import {
   PathNode,
   NODE_SIZE,
   NODE_SIZE_CURRENT,
+  NODE_SIZE_FIRST,
   type NodeState,
 } from '@/design-system/PathNode';
 import { UnitBanner } from '@/design-system/UnitBanner';
@@ -64,6 +65,16 @@ interface Props {
   unlockingId?: string | null;
   /** Nœud sur lequel Spark est posé. */
   currentModuleId?: string | null;
+  /**
+   * Premier contact : rien n'a encore été commencé. Le parcours se réduit à son
+   * nœud d'entrée — pas de panneau d'accueil, c'est le chemin qui parle.
+   */
+  firstContact?: boolean;
+  /**
+   * Module d'où l'on revient, après une leçon. Le chemin se dessine depuis ce
+   * nœud jusqu'à la position atteinte, au lieu d'apparaître déjà rempli.
+   */
+  justCompletedModuleId?: string | null;
   onOpenModule: (module: ParcoursModule) => void;
   registerNode?: (id: string, el: HTMLElement | null) => void;
 }
@@ -76,8 +87,30 @@ const SWING = 88;
 const CHEST_EVERY = 3;
 /** Spark occupe environ un quart de la largeur de l'écran. */
 const SPARK_RATIO = 0.25;
+/** Blanc entre le bord du nœud et celui de Spark : il est posé à côté, pas dessus. */
+const SPARK_CLEARANCE = 10;
 
 const offsetAt = (i: number) => Math.round(Math.sin((i * Math.PI) / 2) * SWING);
+
+/**
+ * Ratio de chaque nœud le long du chemin, en longueur réelle.
+ *
+ * Les segments du zigzag n'ont pas la même longueur — l'aller-retour latéral
+ * en allonge un sur deux. Un ratio tiré de l'index ferait donc arriver le tracé
+ * à côté du nœud ; celui-ci tombe dessus.
+ */
+function nodeRatios(points: { x: number; y: number }[]): number[] {
+  const lengths = points.slice(1).map((p, i) => Math.hypot(p.x - points[i].x, p.y - points[i].y));
+  const total = lengths.reduce((a, b) => a + b, 0);
+  if (total === 0) return points.map(() => 0);
+  const ratios = [0];
+  let walked = 0;
+  for (const length of lengths) {
+    walked += length;
+    ratios.push(walked / total);
+  }
+  return ratios;
+}
 
 /** Largeur réelle du conteneur : le chemin se trace en pixels, pas en %. */
 function useWidth<T extends HTMLElement>() {
@@ -116,6 +149,18 @@ function buildChain(modules: ParcoursModule[]): ChainItem[] {
   return items;
 }
 
+/** Un item est franchi quand il ne reste rien à y faire. */
+const itemDone = (item: ChainItem) =>
+  item.kind === 'chest' ? item.unlocked : item.module.state === 'completed';
+
+/** Avancée à l'intérieur d'un item — les leçons faites du module en cours. */
+function itemPartial(item: ChainItem | undefined): number {
+  if (!item || item.kind !== 'module') return 0;
+  const { completedLessons, totalLessons } = item.module;
+  if (totalLessons <= 0) return 0;
+  return Math.min(1, completedLessons / totalLessons);
+}
+
 export function ParcoursRedesign({
   sections,
   tintFor,
@@ -125,6 +170,8 @@ export function ParcoursRedesign({
   stampedId,
   unlockingId,
   currentModuleId,
+  firstContact,
+  justCompletedModuleId,
   onOpenModule,
   registerNode,
 }: Props) {
@@ -158,7 +205,7 @@ export function ParcoursRedesign({
           </span>
 
           {dailyGoal && (
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5" aria-label={t('parcours.dailyGoal')}>
               <Target className="h-5 w-5 text-cia-blue-500" aria-hidden />
               <span className="font-display text-lg font-extrabold tabular-nums text-cia-blue-700">
                 {dailyGoal.done}/{dailyGoal.target}
@@ -198,6 +245,8 @@ export function ParcoursRedesign({
                 sparkTarget={sparkTarget}
                 stampedId={stampedId}
                 unlockingId={unlockingId}
+                firstContact={firstContact && si === 0}
+                justCompletedModuleId={justCompletedModuleId}
                 registerNode={registerNode}
                 onOpen={(m) => {
                   setSheetTint(tint);
@@ -230,6 +279,8 @@ function Chain({
   sparkTarget,
   stampedId,
   unlockingId,
+  firstContact,
+  justCompletedModuleId,
   registerNode,
   onOpen,
 }: {
@@ -239,6 +290,8 @@ function Chain({
   sparkTarget: string | null;
   stampedId?: string | null;
   unlockingId?: string | null;
+  firstContact?: boolean;
+  justCompletedModuleId?: string | null;
   registerNode?: (id: string, el: HTMLElement | null) => void;
   onOpen: (m: ParcoursModule) => void;
 }) {
@@ -247,6 +300,47 @@ function Chain({
 
   const sparkIndex = items.findIndex((it) => it.kind === 'module' && it.module.id === sparkTarget);
   const sparkSize = Math.round(Math.max(76, width * SPARK_RATIO * 1.1));
+  /** Le nœud que Spark côtoie n'a pas toujours la même taille : il s'en écarte d'autant. */
+  const sparkNodeSize =
+    firstContact && sparkIndex === 0 ? NODE_SIZE_FIRST : NODE_SIZE_CURRENT;
+  /**
+   * De quel côté Spark se pose.
+   *
+   * Un nœud décalé : vers l'intérieur, sinon Spark sort de l'écran. Un nœud au
+   * milieu du zigzag : à l'opposé du nœud voisin, sinon Spark atterrit dessus —
+   * c'est ce qui arrivait, un nœud sur deux.
+   */
+  const sparkSide = (() => {
+    const own = offsetAt(Math.max(sparkIndex, 0));
+    if (own !== 0) return own > 0 ? -1 : 1;
+    const neighbour = offsetAt(sparkIndex > 0 ? sparkIndex - 1 : sparkIndex + 1);
+    return neighbour > 0 ? -1 : 1;
+  })();
+
+  const points = items.map((_, i) => ({
+    x: width / 2 + offsetAt(i),
+    y: i * STEP + NODE_SIZE / 2,
+  }));
+  const trace = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join(' ');
+  const ratios = nodeRatios(points);
+
+  // Où en est l'apprenant sur ce chemin : le dernier nœud franchi, plus
+  // l'avancée dans le module en cours. Un module à moitié fait tire le tracé à
+  // mi-chemin du nœud suivant — la progression se voit sans ouvrir la feuille.
+  let reached = 0;
+  while (reached < items.length && itemDone(items[reached])) reached += 1;
+  const walked =
+    reached >= items.length - 1
+      ? 1
+      : ratios[reached] + (ratios[reached + 1] - ratios[reached]) * itemPartial(items[reached]);
+
+  // Retour de leçon : le tracé repart du nœud qu'on vient de quitter. Ailleurs
+  // il est déjà en place — on ne redessine pas le chemin à chaque visite.
+  const backIndex = items.findIndex(
+    (it) => it.kind === 'module' && it.module.id === justCompletedModuleId,
+  );
+  const drawFrom = backIndex >= 0 ? Math.min(ratios[backIndex], walked) : walked;
+  const drawing = backIndex >= 0 && walked > drawFrom;
 
   return (
     <div
@@ -257,19 +351,28 @@ function Chain({
       {width > 0 && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
           <path
-            d={items
-              .map((_, i) => {
-                const x = width / 2 + offsetAt(i);
-                const y = i * STEP + NODE_SIZE / 2;
-                return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
-              })
-              .join(' ')}
+            d={trace}
             fill="none"
             stroke="hsl(var(--ink-200))"
             strokeWidth={12}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+          {/* Le chemin parcouru, à la teinte de l'unité. Il se dessine au retour
+              d'une leçon et reste tel quel le reste du temps. */}
+          {walked > 0.001 && (
+            <motion.path
+              d={trace}
+              fill="none"
+              stroke={tint}
+              strokeWidth={12}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: drawFrom }}
+              animate={{ pathLength: walked }}
+              transition={reduced || !drawing ? { duration: 0 } : getSpring('slow')}
+            />
+          )}
         </svg>
       )}
 
@@ -283,10 +386,16 @@ function Chain({
             left:
               width / 2 +
               offsetAt(sparkIndex) +
-              (offsetAt(sparkIndex) > 0 ? -1 : 1) * (NODE_SIZE_CURRENT / 2 + sparkSize * 0.52),
+              sparkSide * (sparkNodeSize / 2 + sparkSize * 0.52 + SPARK_CLEARANCE),
             translateX: '-50%',
           }}
-          transition={reduced ? { duration: 0 } : getSpring('hero')}
+          transition={
+            reduced
+              ? { duration: 0 }
+              : // Le chemin se dessine d'abord, Spark saute ensuite : trois temps
+                // nets plutôt que deux mouvements simultanés (MOTION.md § 7.3).
+                { ...getSpring('hero'), delay: drawing ? 0.35 : 0 }
+          }
         >
           <motion.div
             animate={reduced ? {} : { y: [-4, -10, -4] }}
@@ -300,8 +409,20 @@ function Chain({
       {items.map((item, i) => (
         <motion.div
           key={item.kind === 'module' ? item.module.id : item.id}
-          className="absolute flex -translate-x-1/2 justify-center"
-          style={{ top: i * STEP, left: `calc(50% + ${offsetAt(i)}px)` }}
+          className="absolute flex justify-center"
+          style={{
+            // Le centrage passe par le transform de framer, pas par la classe
+            // Tailwind : framer écrit `transform` pour animer, ce qui effaçait
+            // `-translate-x-1/2` et décalait chaque nœud d'un demi-diamètre à
+            // droite du chemin.
+            translateX: '-50%',
+            // Le gros nœud du premier contact remonte de la moitié de ce qu'il
+            // gagne : son centre reste posé sur le chemin.
+            top:
+              i * STEP -
+              (firstContact && i === 0 ? (NODE_SIZE_FIRST - NODE_SIZE) / 2 : 0),
+            left: `calc(50% + ${offsetAt(i)}px)`,
+          }}
           initial={reduced ? false : { opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-40px' }}
@@ -312,6 +433,7 @@ function Chain({
               kind="chest"
               state={item.unlocked ? 'available' : 'locked'}
               tint="hsl(var(--cia-gold-500))"
+              dimmed={firstContact}
               ariaLabel={t('parcours.chest')}
             />
           ) : (
@@ -321,12 +443,18 @@ function Chain({
               tint={tint}
               object={objectForModule(item.module.id)}
               label={String(item.module.number).padStart(2, '0')}
+              emphasis={firstContact && i === 0 ? 'first' : 'normal'}
+              dimmed={firstContact && i > 0}
               progress={{
                 done: item.module.completedLessons,
                 total: item.module.totalLessons,
               }}
               callToAction={
-                item.module.completedLessons > 0 ? t('parcours.resume') : t('parcours.start')
+                firstContact && i === 0
+                  ? t('parcours.startHere')
+                  : item.module.completedLessons > 0
+                    ? t('parcours.resume')
+                    : t('parcours.start')
               }
               stamped={stampedId === item.module.id}
               unlocking={unlockingId === item.module.id}
