@@ -44,11 +44,11 @@ export function UnitBanner({
       }}
     >
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-5 py-4">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-white/75">
+        <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-white/80">
           {eyebrow}
         </p>
-        <h2 className="font-display text-xl font-extrabold leading-tight">{title}</h2>
-        <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/75">{meta}</p>
+        <h2 className="font-display text-2xl font-extrabold leading-tight">{title}</h2>
+        <p className="text-sm font-medium text-white/85">{meta}</p>
       </div>
 
       {onOpenIndex && (

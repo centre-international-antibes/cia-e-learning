@@ -4,7 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { Flame, Sparkles, Target } from 'lucide-react';
 
 import { RollingNumber } from '@/components/ui/rolling-number';
-import { PathNode, NODE_SIZE, type NodeState } from '@/design-system/PathNode';
+import { Spark } from '@/components/spark/Spark';
+import {
+  PathNode,
+  NODE_SIZE,
+  NODE_SIZE_CURRENT,
+  type NodeState,
+} from '@/design-system/PathNode';
 import { UnitBanner } from '@/design-system/UnitBanner';
 import { objectForModule } from '@/design-system/objects/objectForModule';
 import { getSpring } from '@/lib/motion/tuning';
@@ -20,8 +26,8 @@ import { LessonStartSheet, type LessonStartSheetModule } from './LessonStartShee
  *
  *   - **70 % de blanc** et **une seule couleur saturée** par unité ;
  *   - une **bannière pleine largeur** de 104 pt par section ;
- *   - des nœuds de **67 pt** à tranche de 6 pt, espacés de **84 pt** ;
- *   - un objet du quotidien par module, jamais une icône dans un cercle.
+ *   - des nœuds de **67 pt** à tranche de 6 pt, espacés de **80 pt** ;
+ *   - un objet du quotidien par module, jamais une icône tierce.
  *
  * Vit derrière `?redesign=1` : sans le drapeau, l'écran historique est rendu.
  */
@@ -63,11 +69,14 @@ interface Props {
 }
 
 /** Espacement vertical entre deux nœuds — mesuré entre 76 et 95 pt. */
-const STEP = 84;
-/** Amplitude du zig-zag. Le chemin se lit d'un coup d'œil, sans serpenter trop. */
-const SWING = 68;
+const STEP = 80;
+/** Amplitude du zigzag. Plus ample que la référence : nos nœuds sont moins nombreux. */
+const SWING = 88;
+/** Un coffre tous les trois modules, comme sur l'écran historique. */
+const CHEST_EVERY = 3;
+/** Spark occupe environ un quart de la largeur de l'écran. */
+const SPARK_RATIO = 0.25;
 
-/** Serpentine : un aller-retour complet tous les six nœuds, comme la référence. */
 const offsetAt = (i: number) => Math.round(Math.sin((i * Math.PI) / 2) * SWING);
 
 /** Largeur réelle du conteneur : le chemin se trace en pixels, pas en %. */
@@ -86,22 +95,25 @@ function useWidth<T extends HTMLElement>() {
   return [ref, width] as const;
 }
 
-/** Chaîne de nœuds d'une unité, chemin compris. */
-function NodeChain({ children, count, render }: {
-  children?: never;
-  count: number;
-  render: (width: number) => React.ReactNode;
-}) {
-  const [ref, width] = useWidth<HTMLDivElement>();
-  return (
-    <div
-      ref={ref}
-      className="relative mx-auto mt-20"
-      style={{ height: count * STEP + NODE_SIZE }}
-    >
-      {render(width)}
-    </div>
-  );
+type ChainItem =
+  | { kind: 'module'; module: ParcoursModule }
+  | { kind: 'chest'; id: string; unlocked: boolean };
+
+/** Modules et coffres sur la même ligne, dans l'ordre où on les rencontre. */
+function buildChain(modules: ParcoursModule[]): ChainItem[] {
+  const items: ChainItem[] = [];
+  modules.forEach((module, i) => {
+    items.push({ kind: 'module', module });
+    const last = i === modules.length - 1;
+    if (!last && (i + 1) % CHEST_EVERY === 0) {
+      items.push({
+        kind: 'chest',
+        id: `chest-${module.id}`,
+        unlocked: modules.slice(0, i + 1).every((m) => m.state === 'completed'),
+      });
+    }
+  });
+  return items;
 }
 
 export function ParcoursRedesign({
@@ -121,13 +133,11 @@ export function ParcoursRedesign({
   const [sheet, setSheet] = React.useState<LessonStartSheetModule | null>(null);
   const [sheetTint, setSheetTint] = React.useState('hsl(var(--cia-blue-500))');
 
-  const open = (m: ParcoursModule, tint: string) => {
-    setSheetTint(tint);
-    setSheet(m);
-  };
+  // Spark suit le nœud qui vient de se déverrouiller, sinon le nœud courant.
+  const sparkTarget = unlockingId ?? currentModuleId ?? null;
 
   return (
-    <div className="bg-background pb-24">
+    <div className="bg-background pb-20">
       {/* ── En-tête : série, XP, objectif du jour ── */}
       <header className="sticky top-14 z-30 border-b-2 border-ink-100 bg-background/95 backdrop-blur-sm sm:top-16">
         <div className="mx-auto flex max-w-md items-center justify-between gap-3 px-6 py-3">
@@ -162,9 +172,10 @@ export function ParcoursRedesign({
         {sections.map((section, si) => {
           const tint = tintFor(section.level);
           const done = section.modules.filter((m) => m.state === 'completed').length;
+          const chain = buildChain(section.modules);
 
           return (
-            <section key={section.level} className="pt-6">
+            <section key={section.level} className="pt-5">
               <motion.div
                 initial={reduced ? false : { opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -180,64 +191,18 @@ export function ParcoursRedesign({
                 />
               </motion.div>
 
-              {/* ── Chaîne de nœuds ── */}
-              <NodeChain
-                count={section.modules.length}
-                render={(width) => (
-                  <>
-                    {width > 0 && (
-                      <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-                        <path
-                          d={section.modules
-                            .map((_, i) => {
-                              const x = width / 2 + offsetAt(i);
-                              const y = i * STEP + NODE_SIZE / 2;
-                              return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
-                            })
-                            .join(' ')}
-                          fill="none"
-                          stroke="hsl(var(--ink-200))"
-                          strokeWidth={10}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-
-                    {section.modules.map((m, i) => (
-                      <motion.div
-                        key={m.id}
-                        className="absolute flex -translate-x-1/2 justify-center"
-                        style={{ top: i * STEP, left: `calc(50% + ${offsetAt(i)}px)` }}
-                        initial={reduced ? false : { opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: '-40px' }}
-                        transition={{ ...getSpring('gentle'), delay: Math.min(i, 6) * stagger.loose }}
-                      >
-                        <PathNode
-                          ref={(el) => registerNode?.(m.id, el)}
-                          state={m.state}
-                          tint={tint}
-                          object={objectForModule(m.id)}
-                          label={String(m.number).padStart(2, '0')}
-                          stars={
-                            m.state === 'completed'
-                              ? { done: m.completedLessons, total: m.totalLessons }
-                              : undefined
-                          }
-                          withSpark={m.id === (unlockingId ?? currentModuleId)}
-                          stamped={stampedId === m.id}
-                          unlocking={unlockingId === m.id}
-                          ariaLabel={t('parcours.moduleLabel', { number: m.number, title: m.title })}
-                          onClick={() => {
-                            if (m.state === 'locked') return;
-                            open(m, tint);
-                          }}
-                        />
-                      </motion.div>
-                    ))}
-                  </>
-                )}
+              <Chain
+                items={chain}
+                tint={tint}
+                reduced={reduced}
+                sparkTarget={sparkTarget}
+                stampedId={stampedId}
+                unlockingId={unlockingId}
+                registerNode={registerNode}
+                onOpen={(m) => {
+                  setSheetTint(tint);
+                  setSheet(m);
+                }}
               />
             </section>
           );
@@ -254,6 +219,129 @@ export function ParcoursRedesign({
           if (full) onOpenModule(full);
         }}
       />
+    </div>
+  );
+}
+
+function Chain({
+  items,
+  tint,
+  reduced,
+  sparkTarget,
+  stampedId,
+  unlockingId,
+  registerNode,
+  onOpen,
+}: {
+  items: ChainItem[];
+  tint: string;
+  reduced: boolean;
+  sparkTarget: string | null;
+  stampedId?: string | null;
+  unlockingId?: string | null;
+  registerNode?: (id: string, el: HTMLElement | null) => void;
+  onOpen: (m: ParcoursModule) => void;
+}) {
+  const { t } = useTranslation();
+  const [ref, width] = useWidth<HTMLDivElement>();
+
+  const sparkIndex = items.findIndex((it) => it.kind === 'module' && it.module.id === sparkTarget);
+  const sparkSize = Math.round(Math.max(76, width * SPARK_RATIO * 1.1));
+
+  return (
+    <div
+      ref={ref}
+      className="relative mx-auto mt-16"
+      style={{ height: (items.length - 1) * STEP + NODE_SIZE_CURRENT + 34 }}
+    >
+      {width > 0 && (
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          <path
+            d={items
+              .map((_, i) => {
+                const x = width / 2 + offsetAt(i);
+                const y = i * STEP + NODE_SIZE / 2;
+                return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
+              })
+              .join(' ')}
+            fill="none"
+            stroke="hsl(var(--ink-200))"
+            strokeWidth={12}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+
+      {/* Spark, posé **à côté** du nœud courant : une présence, pas une vignette. */}
+      {width > 0 && sparkIndex >= 0 && (
+        <motion.div
+          layoutId="parcours-spark"
+          className="pointer-events-none absolute z-10"
+          style={{
+            top: sparkIndex * STEP - sparkSize * 0.42,
+            left:
+              width / 2 +
+              offsetAt(sparkIndex) +
+              (offsetAt(sparkIndex) > 0 ? -1 : 1) * (NODE_SIZE_CURRENT / 2 + sparkSize * 0.52),
+            translateX: '-50%',
+          }}
+          transition={reduced ? { duration: 0 } : getSpring('hero')}
+        >
+          <motion.div
+            animate={reduced ? {} : { y: [-4, -10, -4] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <Spark mood="idle" size={sparkSize} halo />
+          </motion.div>
+        </motion.div>
+      )}
+
+      {items.map((item, i) => (
+        <motion.div
+          key={item.kind === 'module' ? item.module.id : item.id}
+          className="absolute flex -translate-x-1/2 justify-center"
+          style={{ top: i * STEP, left: `calc(50% + ${offsetAt(i)}px)` }}
+          initial={reduced ? false : { opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ ...getSpring('gentle'), delay: Math.min(i, 6) * stagger.loose }}
+        >
+          {item.kind === 'chest' ? (
+            <PathNode
+              kind="chest"
+              state={item.unlocked ? 'available' : 'locked'}
+              tint="hsl(var(--cia-gold-500))"
+              ariaLabel={t('parcours.chest')}
+            />
+          ) : (
+            <PathNode
+              ref={(el) => registerNode?.(item.module.id, el)}
+              state={item.module.state}
+              tint={tint}
+              object={objectForModule(item.module.id)}
+              label={String(item.module.number).padStart(2, '0')}
+              progress={{
+                done: item.module.completedLessons,
+                total: item.module.totalLessons,
+              }}
+              callToAction={
+                item.module.completedLessons > 0 ? t('parcours.resume') : t('parcours.start')
+              }
+              stamped={stampedId === item.module.id}
+              unlocking={unlockingId === item.module.id}
+              ariaLabel={t('parcours.moduleLabel', {
+                number: item.module.number,
+                title: item.module.title,
+              })}
+              onClick={() => {
+                if (item.module.state === 'locked') return;
+                onOpen(item.module);
+              }}
+            />
+          )}
+        </motion.div>
+      ))}
     </div>
   );
 }

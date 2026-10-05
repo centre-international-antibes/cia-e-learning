@@ -15,6 +15,10 @@ import * as React from 'react';
  */
 
 export type ModuleObjectName =
+  | 'chest'
+  | 'lock'
+  | 'check'
+  | 'trophy'
   | 'croissant'
   | 'ticket'
   | 'postcard'
@@ -35,6 +39,35 @@ const STROKE = 2.2;
 
 /** Aplats par objet, exprimés en variables CIA pour rester dans la palette. */
 const SHAPES: Record<ModuleObjectName, (fill: string) => React.ReactNode> = {
+  /* ── Pictos de système : même tracé que les objets, jamais une icône tierce ── */
+  chest: (fill) => (
+    <>
+      <path d="M8 22h32v15a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" fill={fill} />
+      <path d="M8 22l3-7a2 2 0 0 1 2-1h22a2 2 0 0 1 2 1l3 7" fill={fill} />
+      <path d="M8 27h32" />
+      <path d="M21 27h6v6h-6z" fill="none" />
+    </>
+  ),
+  lock: (fill) => (
+    <>
+      <rect x="12" y="22" width="24" height="17" rx="4" fill={fill} />
+      <path d="M17 22v-4a7 7 0 0 1 14 0v4" fill="none" />
+      <circle cx="24" cy="30" r="2.4" fill="none" />
+    </>
+  ),
+  check: (fill) => (
+    <>
+      <circle cx="24" cy="24" r="16" fill={fill} />
+      <path d="M16 24.5l5.5 5.5L32 19" strokeWidth={3.4} />
+    </>
+  ),
+  trophy: (fill) => (
+    <>
+      <path d="M15 10h18v9a9 9 0 0 1-18 0z" fill={fill} />
+      <path d="M15 13h-5a5 5 0 0 0 5 5M33 13h5a5 5 0 0 1-5 5" fill="none" />
+      <path d="M24 28v6M17 38h14l-1-4H18z" />
+    </>
+  ),
   croissant: (fill) => (
     <>
       <path

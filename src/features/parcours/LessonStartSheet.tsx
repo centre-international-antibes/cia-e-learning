@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/drawer';
 import { Pressable } from '@/components/ui/pressable';
 import { ModuleObject } from '@/design-system/objects/ModuleObject';
+import { getCourseContent } from '@/data/course-content';
+import { countQuestions } from '@/lib/lessonSpec';
+import { computeLessonXp } from '@/lib/xp/lessonXp';
 import { objectForModule } from '@/design-system/objects/objectForModule';
 
 /**
@@ -24,6 +27,30 @@ import { objectForModule } from '@/design-system/objects/objectForModule';
  * légèrement derrière elle.
  */
 
+/**
+ * XP restante à gagner sur le module, au **barème du serveur**.
+ *
+ * On additionne, pour chaque leçon non faite, ce que `complete_lesson`
+ * accorderait sur un sans-faute : base + bonnes réponses + série + parfait.
+ * Une leçon dont le contenu n'est pas encore en ligne ne compte pas — mieux
+ * vaut annoncer moins que promettre une XP qui n'existe pas.
+ */
+function remainingXp(lessons: { completed: boolean; href?: string }[]): number {
+  let total = 0;
+  for (const lesson of lessons) {
+    if (lesson.completed || !lesson.href) continue;
+    const content = getCourseContent(lesson.href.replace('/cours/', ''));
+    if (!content) continue;
+    const questions = countQuestions(content.steps);
+    total += computeLessonXp({
+      correct: questions,
+      questionCount: questions,
+      bestCombo: questions,
+    }).total;
+  }
+  return total;
+}
+
 export interface LessonStartSheetModule {
   id: string;
   number: number;
@@ -33,6 +60,7 @@ export interface LessonStartSheetModule {
   completedLessons: number;
   durationMinutes: number;
   xpReward: number;
+  lessons: { id: number; completed: boolean; href?: string }[];
 }
 
 interface Props {
@@ -47,6 +75,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
   if (!module) return null;
 
   const resumed = module.completedLessons > 0;
+  const xp = remainingXp(module.lessons);
 
   return (
     <Drawer open onOpenChange={onOpenChange}>
@@ -65,7 +94,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
               fill="rgba(255,255,255,.28)"
             />
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-[.2em] text-muted-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-muted-foreground">
             {t('parcours.moduleShort')} {String(module.number).padStart(2, '0')}
           </p>
           <DrawerTitle className="font-display text-2xl font-extrabold">
@@ -80,7 +109,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
           {[
             [Star, `${module.completedLessons}/${module.totalLessons}`, t('parcours.lessons')],
             [Clock, `${module.durationMinutes} min`, t('parcours.duration')],
-            [Sparkles, `+${module.xpReward}`, 'XP'],
+            [Sparkles, xp > 0 ? `+${xp}` : '—', 'XP'],
           ].map(([Icon, value, label], i) => {
             const I = Icon as React.ElementType;
             return (
@@ -92,7 +121,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
                 <p className="font-display text-base font-extrabold tabular-nums">
                   {value as string}
                 </p>
-                <p className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">
+                <p className="text-[10px] font-medium uppercase tracking-[.1em] text-muted-foreground">
                   {label as string}
                 </p>
               </div>
@@ -113,7 +142,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
           <DrawerClose asChild>
             <button
               type="button"
-              className="py-2 font-mono text-[11px] uppercase tracking-[.18em] text-muted-foreground"
+              className="py-2 text-xs font-semibold uppercase tracking-[.12em] text-muted-foreground"
             >
               {t('parcours.close')}
             </button>

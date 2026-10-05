@@ -2517,6 +2517,7 @@
     "duration": "time",
     "start": "Start",
     "resume": "Resume",
-    "close": "Close"
+    "close": "Close",
+    "chest": "XP chest"
   }
 }

@@ -185,8 +185,12 @@ export default function Curriculum() {
         const progress: number =
           lessonsCount > 0 ? Math.round((completedLessons / lessonsCount) * 100) : 0;
 
+        // Toutes les leçons faites ⇒ module terminé. Sans ça, un module bouclé
+        // restait « courant » tant que la session ne l'avait pas vu se terminer.
+        const allLessonsDone = lessonsCount > 0 && completedFromMap >= lessonsCount;
+
         let state: ModuleNodeState;
-        if (isDemoCompleted) {
+        if (isDemoCompleted || allLessonsDone) {
           state = 'completed';
         } else if (levelIdx > userIdx + 1) {
           state = 'locked';

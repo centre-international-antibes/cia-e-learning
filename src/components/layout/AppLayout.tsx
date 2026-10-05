@@ -8,6 +8,14 @@ import { RewardEventBridge } from '@/features/rewards';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { useInterfaceLanguage } from '@/hooks/useInterfaceLanguage';
 
+/**
+ * Écrans de l'app, par opposition au site vitrine : ils n'ont pas de pied de
+ * page marketing. Le parcours et le défi sont des surfaces de jeu, pas des
+ * pages à parcourir jusqu'en bas.
+ */
+const APP_ROUTES = ['/programme', '/dashboard', '/defi-du-jour', '/cours/', '/test-vitesse/'];
+const isAppRoute = (pathname: string) => APP_ROUTES.some((r) => pathname.startsWith(r));
+
 function OutletFallback() {
   return (
     <div
@@ -39,6 +47,8 @@ export function AppLayout() {
          * with an enter animation only; `Suspense` always shows a visible
          * fallback while the next chunk loads.
          */}
+        {/* Le footer vit **dans** la frontière de Suspense : pendant le
+            chargement d'une route, il ne s'affiche pas sous le spinner. */}
         <Suspense fallback={<OutletFallback />}>
           <motion.div
             key={location.pathname}
@@ -56,9 +66,9 @@ export function AppLayout() {
           >
             <Outlet />
           </motion.div>
+          {!isAppRoute(location.pathname) && <Footer />}
         </Suspense>
       </main>
-      <Footer />
       {/* Convertit les anciens events window en entrées de la file du Director. */}
       <RewardEventBridge />
       <OnboardingFlow />

@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { motion, useReducedMotionConfig } from 'framer-motion';
-import { Check, Gift, Lock, Star, Trophy } from 'lucide-react';
 
-import { Spark } from '@/components/spark/Spark';
 import { getSpring } from '@/lib/motion/tuning';
 import { cn } from '@/lib/utils';
 import { ModuleObject, type ModuleObjectName } from './objects/ModuleObject';
@@ -15,16 +13,23 @@ import { ModuleObject, type ModuleObjectName } from './objects/ModuleObject';
  * `Pressable` — translation et tranche qui s'écrase, jamais de scale — étendu
  * au parcours, qui en était jusqu'ici dépourvu.
  *
- * Un nœud n'est pas une icône dans un cercle : c'est un **objet** (cf. la
- * direction d'illustration arbitrée), et la couleur vient du niveau CECR.
+ * Trois états, trois lectures immédiates :
+ *   - **terminé** : couleur pleine, coche dessinée, trois étoiles ;
+ *   - **courant** : plus grand, anneau de progression, bulle « Commencer » ;
+ *   - **à venir** : gris, cadenas.
+ *
+ * Aucune icône tierce : cadenas, coche, coffre et trophée sont dessinés dans le
+ * même tracé que les objets du quotidien.
  */
 
 export type NodeState = 'locked' | 'available' | 'current' | 'completed';
 export type NodeKind = 'module' | 'chest' | 'trophy';
 
 export const NODE_SIZE = 67;
+export const NODE_SIZE_CURRENT = 84;
 const EDGE = 6;
 const PRESSED_EDGE = 2;
+const RING = 5;
 
 export interface PathNodeProps {
   kind?: NodeKind;
@@ -34,10 +39,10 @@ export interface PathNodeProps {
   object?: ModuleObjectName;
   /** Numéro affiché sous le nœud. */
   label?: string;
-  /** Leçons réussies sur le total — dessine les étoiles sous le nœud. */
-  stars?: { done: number; total: number };
-  /** Spark est posé sur ce nœud. */
-  withSpark?: boolean;
+  /** Leçons réussies sur le total — anneau de progression et étoiles. */
+  progress?: { done: number; total: number };
+  /** Libellé de la bulle flottante du nœud courant. */
+  callToAction?: string;
   /** Le nœud vient d'être validé : il encaisse le tampon. */
   stamped?: boolean;
   /** Le nœud vient de se déverrouiller. */
@@ -53,8 +58,8 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
     tint,
     object,
     label,
-    stars,
-    withSpark,
+    progress,
+    callToAction,
     stamped,
     unlocking,
     onClick,
@@ -66,116 +71,162 @@ export const PathNode = React.forwardRef<HTMLButtonElement, PathNodeProps>(funct
   const [pressed, setPressed] = React.useState(false);
   const locked = state === 'locked';
   const done = state === 'completed';
+  const current = state === 'current';
 
-  // Un module encore à faire est légèrement en retrait du module courant :
-  // la hiérarchie se lit sans ajouter une seconde couleur.
+  const size = current ? NODE_SIZE_CURRENT : NODE_SIZE;
   const face = locked
     ? 'hsl(var(--ink-200))'
     : state === 'available'
       ? `color-mix(in srgb, ${tint} 78%, white)`
       : tint;
-  const edgeColor = locked ? 'hsl(var(--ink-300))' : 'color-mix(in srgb, ' + tint + ' 70%, black)';
+  const edgeColor = locked ? 'hsl(var(--ink-300))' : `color-mix(in srgb, ${tint} 70%, black)`;
   const depth = pressed && !locked ? PRESSED_EDGE : EDGE;
+
+  // Anneau de progression du nœud courant : un cercle tracé, pas une barre.
+  const ratio = progress && progress.total > 0 ? progress.done / progress.total : 0;
+  const ringR = (size + RING * 2 + 6) / 2;
+  const circumference = 2 * Math.PI * ringR;
+
+  const picto: ModuleObjectName | undefined =
+    kind === 'chest' ? 'chest' : kind === 'trophy' ? 'trophy' : locked ? 'lock' : object;
 
   return (
     <div className="relative flex flex-col items-center gap-1.5">
-      {withSpark && (
-        <motion.div
-          // `layoutId` partagé : quand Spark change de nœud, framer-motion
-          // l'anime d'une position à l'autre — il saute, il ne se téléporte pas.
-          // Le flottement vit à l'intérieur : sinon la projection de layout se
-          // remesure à chaque frame, et plus rien n'est jamais « stable ».
-          layoutId="parcours-spark"
-          className="pointer-events-none absolute -top-12 z-10"
-          transition={reduced ? { duration: 0 } : getSpring('hero')}
+      {current && callToAction && (
+        <motion.span
+          className="pointer-events-none absolute -top-9 whitespace-nowrap rounded-xl border-2 border-ink-100 bg-card px-3 py-1 font-display text-xs font-extrabold text-cia-blue-700 shadow-elev-lg"
+          initial={reduced ? false : { y: 2, opacity: 0 }}
+          animate={reduced ? { opacity: 1 } : { y: [-2, -6, -2], opacity: 1 }}
+          transition={
+            reduced
+              ? { duration: 0 }
+              : { y: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.2 } }
+          }
         >
-          <motion.div
-            animate={reduced ? {} : { y: [-5, -11, -5] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <Spark mood={done ? 'celebrating' : 'idle'} size={44} halo />
-          </motion.div>
-        </motion.div>
+          {callToAction}
+          <span
+            className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b-2 border-r-2 border-ink-100 bg-card"
+            aria-hidden
+          />
+        </motion.span>
       )}
 
-      <motion.button
-        ref={ref}
-        type="button"
-        disabled={locked}
-        aria-label={ariaLabel}
-        onClick={onClick}
-        onPointerDown={() => setPressed(true)}
-        onPointerUp={() => setPressed(false)}
-        onPointerLeave={() => setPressed(false)}
-        className={cn(
-          'relative flex items-center justify-center rounded-full border-[3px] outline-none',
-          'focus-visible:ring-4 focus-visible:ring-cia-spark-mid/30',
-          locked ? 'cursor-default text-ink-400' : 'text-white',
-        )}
-        style={{
-          width: NODE_SIZE,
-          height: NODE_SIZE,
-          background: face,
-          borderColor: locked
-            ? 'hsl(var(--ink-300))'
-            : state === 'current'
-              ? 'rgba(255,255,255,.95)'
-              : 'rgba(255,255,255,.35)',
-          boxShadow: `0 ${depth}px 0 0 ${edgeColor}`,
-          transform: `translateY(${EDGE - depth}px)`,
-          transition: reduced ? 'none' : 'box-shadow 90ms ease-out, transform 90ms ease-out',
-        }}
-        animate={unlocking && !reduced ? { scale: [1, 1.12, 1] } : {}}
-        transition={getSpring('bouncy')}
-      >
-        {kind === 'chest' ? (
-          <Gift className="h-8 w-8" aria-hidden />
-        ) : kind === 'trophy' ? (
-          <Trophy className="h-8 w-8" aria-hidden />
-        ) : locked ? (
-          <Lock className="h-6 w-6" aria-hidden />
-        ) : object ? (
-          <ModuleObject name={object} size={38} fill="rgba(255,255,255,.28)" />
-        ) : (
-          <Star className="h-8 w-8 fill-current" aria-hidden />
+      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+        {current && progress && progress.total > 0 && (
+          <svg
+            className="pointer-events-none absolute"
+            width={ringR * 2 + RING}
+            height={ringR * 2 + RING}
+            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(-90deg)' }}
+            aria-hidden
+          >
+            <circle
+              cx={ringR + RING / 2}
+              cy={ringR + RING / 2}
+              r={ringR}
+              fill="none"
+              stroke="hsl(var(--ink-100))"
+              strokeWidth={RING}
+            />
+            <motion.circle
+              cx={ringR + RING / 2}
+              cy={ringR + RING / 2}
+              r={ringR}
+              fill="none"
+              stroke={tint}
+              strokeWidth={RING}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: circumference * (1 - ratio) }}
+              transition={reduced ? { duration: 0 } : getSpring('gentle')}
+            />
+          </svg>
         )}
 
-        {/* Le tampon frappe par-dessus l'objet, il ne le remplace pas. */}
-        {stamped && (
-          <motion.span
-            className="absolute inset-0 flex items-center justify-center rounded-full bg-success-500/90"
-            initial={reduced ? { opacity: 1 } : { opacity: 0, scale: 1.7, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: -10 }}
-            transition={getSpring('stamp')}
-          >
-            <Check className="h-9 w-9 text-white" strokeWidth={3.5} aria-hidden />
-          </motion.span>
-        )}
-      </motion.button>
+        <motion.button
+          ref={ref}
+          type="button"
+          disabled={locked}
+          aria-label={ariaLabel}
+          onClick={onClick}
+          onPointerDown={() => setPressed(true)}
+          onPointerUp={() => setPressed(false)}
+          onPointerLeave={() => setPressed(false)}
+          className={cn(
+            'relative flex items-center justify-center rounded-full border-[3px] outline-none',
+            'focus-visible:ring-4 focus-visible:ring-cia-spark-mid/30',
+            locked ? 'cursor-default text-ink-400' : 'text-white',
+          )}
+          style={{
+            width: size,
+            height: size,
+            background: face,
+            borderColor: locked
+              ? 'hsl(var(--ink-300))'
+              : current
+                ? 'rgba(255,255,255,.95)'
+                : 'rgba(255,255,255,.35)',
+            boxShadow: `0 ${depth}px 0 0 ${edgeColor}`,
+            transform: `translateY(${EDGE - depth}px)`,
+            transition: reduced ? 'none' : 'box-shadow 90ms ease-out, transform 90ms ease-out',
+          }}
+          animate={unlocking && !reduced ? { scale: [1, 1.12, 1] } : {}}
+          transition={getSpring('bouncy')}
+        >
+          {picto && (
+            <ModuleObject
+              name={picto}
+              size={Math.round(size * 0.56)}
+              fill={locked ? 'hsl(var(--ink-300))' : 'rgba(255,255,255,.28)'}
+            />
+          )}
+
+          {/* Le tampon frappe par-dessus l'objet, il ne le remplace pas. */}
+          {stamped && (
+            <motion.span
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-success-500/90 text-white"
+              initial={reduced ? { opacity: 1 } : { opacity: 0, scale: 1.7, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: -10 }}
+              transition={getSpring('stamp')}
+            >
+              <ModuleObject name="check" size={Math.round(size * 0.62)} fill="transparent" />
+            </motion.span>
+          )}
+
+          {/* Terminé : la coche reste, discrète, en pastille. */}
+          {done && !stamped && (
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-success-500 text-white ring-2 ring-background">
+              <ModuleObject name="check" size={18} fill="transparent" />
+            </span>
+          )}
+        </motion.button>
+      </div>
 
       {label && (
         <span
           className={cn(
-            'font-mono text-[10px] font-bold tabular-nums tracking-[.18em]',
-            locked ? 'text-ink-300' : 'text-ink-500',
+            'font-display text-sm font-extrabold tabular-nums',
+            locked ? 'text-ink-300' : current ? 'text-cia-blue-700' : 'text-ink-500',
           )}
         >
           {label}
         </span>
       )}
 
-      {stars && stars.total > 0 && (
+      {done && progress && progress.total > 0 && (
         <span className="flex gap-0.5" aria-hidden>
-          {Array.from({ length: Math.min(3, stars.total) }).map((_, i) => (
-            <Star
-              key={i}
-              className={cn(
-                'h-3 w-3',
-                i < Math.round((stars.done / stars.total) * 3)
-                  ? 'fill-cia-gold-400 text-cia-gold-400'
-                  : 'fill-ink-200 text-ink-200',
-              )}
-            />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <svg key={i} width="11" height="11" viewBox="0 0 24 24">
+              <path
+                d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z"
+                fill={
+                  i < Math.round((progress.done / progress.total) * 3)
+                    ? 'hsl(var(--cia-gold-400))'
+                    : 'hsl(var(--ink-200))'
+                }
+              />
+            </svg>
           ))}
         </span>
       )}
