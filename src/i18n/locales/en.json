@@ -2505,5 +2505,18 @@
         "desc": "Grammar reference"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Streak",
+    "eyebrow": "Section {{level}} · Unit {{unit}}",
+    "modulesCount": "{{done}} / {{total}} modules",
+    "openIndex": "View lessons",
+    "moduleLabel": "Module {{number}} — {{title}}",
+    "moduleShort": "Module",
+    "lessons": "lessons",
+    "duration": "time",
+    "start": "Start",
+    "resume": "Resume",
+    "close": "Close"
   }
 }

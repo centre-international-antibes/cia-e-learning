@@ -29,6 +29,9 @@ import { useSfx } from '@/hooks/useSfx';
 import type { CECRLevel } from '@/data/demo-courses';
 import { Sparkles } from 'lucide-react';
 import { readCourseProgressMap } from '@/lib/courseProgress';
+import { useNavigate } from 'react-router-dom';
+import { useRedesign } from '@/lib/redesign';
+import { ParcoursRedesign } from '@/features/parcours/ParcoursRedesign';
 import { hasLessonContent } from '@/data/contentRegistry';
 
 /**
@@ -95,6 +98,8 @@ export default function Curriculum() {
   const reduced = useReducedMotion();
   const translatedCurriculum = useTranslatedCurriculum();
 
+  const navigate = useNavigate();
+  const redesign = useRedesign();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   /** Modules « complétés à la volée » dans cette session (démo,
    *  ne touche pas la BDD — sprint 4). */
@@ -364,6 +369,35 @@ export default function Curriculum() {
           transition: { type: 'spring' as const, stiffness: 220, damping: 24 },
         },
       };
+
+  /* ===== Pilote de la refonte — même données, direction artistique nouvelle ===== */
+  if (redesign) {
+    const currentModuleId =
+      sections.flatMap((s) => s.modules).find((m) => m.state === 'current')?.id ?? null;
+    return (
+      <>
+        <ParcoursRedesign
+          sections={sections}
+          tintFor={(level) => CECR_PATH_TINT[level as CECRLevel] ?? 'hsl(var(--cia-blue-500))'}
+          streak={streak}
+          totalXP={totalXP}
+          stampedId={stampedId}
+          unlockingId={unlockingId}
+          currentModuleId={currentModuleId}
+          registerNode={(id, el) => {
+            if (el) nodeRefs.current.set(id, el);
+            else nodeRefs.current.delete(id);
+          }}
+          onOpenModule={(m) => {
+            // Le pilote ouvre directement la leçon : la feuille a déjà joué le
+            // rôle de présentation que tenait le tiroir.
+            const next = m.lessons.find((l) => !l.completed) ?? m.lessons[0];
+            if (next?.href) navigate(next.href);
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="relative pb-20">

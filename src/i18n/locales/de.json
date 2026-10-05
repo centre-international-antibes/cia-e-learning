@@ -2505,5 +2505,18 @@
         "desc": "Lexique grammatical"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Serie",
+    "eyebrow": "Abschnitt {{level}} · Einheit {{unit}}",
+    "modulesCount": "{{done}} / {{total}} Module",
+    "openIndex": "Lektionen ansehen",
+    "moduleLabel": "Modul {{number}} — {{title}}",
+    "moduleShort": "Modul",
+    "lessons": "Lektionen",
+    "duration": "Dauer",
+    "start": "Starten",
+    "resume": "Fortsetzen",
+    "close": "Schließen"
   }
 }

@@ -2505,5 +2505,18 @@
         "desc": "Lexique grammatical"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Серия",
+    "eyebrow": "Раздел {{level}} · Блок {{unit}}",
+    "modulesCount": "{{done}} / {{total}} модулей",
+    "openIndex": "Посмотреть уроки",
+    "moduleLabel": "Модуль {{number}} — {{title}}",
+    "moduleShort": "Модуль",
+    "lessons": "уроки",
+    "duration": "время",
+    "start": "Начать",
+    "resume": "Продолжить",
+    "close": "Закрыть"
   }
 }
