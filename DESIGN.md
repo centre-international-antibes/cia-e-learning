@@ -4,8 +4,9 @@
 > d'être appliquée. Une consigne qui contredit ce fichier doit être signalée
 > avant d'être suivie.
 >
-> État : **étape 3 — en attente d'arbitrages.** Les sections marquées
-> **À ARBITRER** proposent trois options et ne sont pas tranchées.
+> État : **étape 3 close.** Les trois arbitrages sont tranchés (typographie,
+> surfaces, illustration) et inscrits ci-dessous. Reste à appliquer, avec le
+> parcours pilote de l'étape 4.
 
 ---
 
@@ -120,25 +121,21 @@ parcours, les cartes tapables et les coffres parlent la même langue.
 
 Jamais de noir pur dans une ombre : toujours `hsl(var(--ink-900) / α)`.
 
-### **À ARBITRER — trois déclinaisons de surfaces et d'états**
+### Surfaces et états — **A, « Papier »** *(arbitré)*
 
-Même palette, trois façons de construire les fonds de carte, les survols et les états désactivés.
+| | |
+|---|---|
+| fond de page | blanc pur |
+| carte | blanc, bordure `ink-200` de 2 px |
+| survol | la bordure passe à `cia-blue-200` |
+| actif / sélectionné | fond `cia-blue-50`, bordure `cia-blue-500` |
+| désactivé | opacité 45 %, **tranche supprimée** — un objet sans tranche n'a pas l'air tapable |
 
-| | **A — Papier** | **B — Teinté** | **C — Encre** |
-|---|---|---|---|
-| fond de page | blanc pur | `ink-50` (gris très clair) | blanc pur |
-| carte | blanc, bordure `ink-200` 2 px | blanc, **pas de bordure**, tranche `ink-edge` | `ink-50`, bordure `ink-300` 2 px |
-| survol | bordure → `cia-blue-200` | la carte monte de 2 pt | fond → blanc |
-| actif / sélectionné | fond `cia-blue-50`, bordure `cia-blue-500` | fond `cia-blue-50`, tranche `cia-blue-edge` | fond `cia-blue-500`, texte blanc |
-| désactivé | opacité 45 %, tranche supprimée | niveaux de gris, tranche conservée | opacité 45 % |
-| effet | le plus proche des références : beaucoup de blanc, structure par les contours | le plus « jouet » : tout a une tranche, tout a l'air tapable | le plus sobre : contraste par le fond, peu de contours |
-| risque | peut paraître sec sans illustration | peut devenir bruyant si tout semble tapable | s'éloigne du « 70 % de blanc » |
-
-Recommandation : **A**, parce que c'est elle qui atteint les 70 % de blanc
-mesurés tout en laissant la tranche faire la différence entre tapable et pas
-tapable. **B** si on veut assumer le ton jeu.
-
----
+C'est la déclinaison qui atteint les 70 % de blanc mesurés, en laissant la
+**tranche** faire seule la différence entre ce qui se tape et ce qui ne se tape
+pas. Les deux autres pistes (fond teinté `ink-50` avec tranche partout, ou
+cartes `ink-50` sur fond blanc) sont écartées : la première rend tout tapable à
+l'œil, la seconde s'éloigne de la cible de blanc.
 
 ## 5. Tokens — typographie
 
@@ -151,15 +148,51 @@ Fonts dans `index.html`), en `woff2`, sous-réglées latin + cyrillique.
 **Vérification obligatoire avant arbitrage** : rendu en russe (cyrillique), en
 allemand (mots longs), et des chiffres tabulaires lisibles à 48 px.
 
-### **À ARBITRER — trois couples**
+### Couple retenu — **Baloo 2 + Figtree, avec renfort cyrillique** *(arbitré)*
 
-| | affichage | texte | licence | pourquoi |
-|---|---|---|---|---|
-| **1 — Continuité** | **Plus Jakarta Sans** 800 *(déjà la police de titre de la charte)* | **Source Sans 3** | OFL | Le moins de rupture : la charte CIA garde sa voix. Source Sans 3 remplace Inter sans changer la couleur de page, et couvre le cyrillique. |
-| **2 — Rondeur** | **Nunito** 900 | **Nunito Sans** | OFL | Le plus proche du langage de référence : terminaisons arrondies, chiffres très larges, parfait pour les gros scores. Une seule famille à deux graisses, donc cohérence garantie et poids minimal. |
-| **3 — Caractère** | **Baloo 2** 800 | **Figtree** | OFL | Le plus marqué : Baloo 2 est une display ronde avec du caractère, Figtree reste neutre dessous. Couvre le latin étendu ; **le cyrillique est à vérifier sur Baloo 2** avant de choisir cette option. |
+| rôle | fr · en · de · es · it | ru |
+|---|---|---|
+| affichage (titres, chiffres) | **Baloo 2** 800 | **Comfortaa** 700 |
+| texte | **Figtree** 400 / 600 | **Golos Text** 400 / 600 |
+| étiquettes mono | JetBrains Mono 500 | idem |
 
-Toutes sont hors liste noire. Aucune n'est Inter.
+Toutes en OFL, toutes hors liste noire, toutes auto-hébergées.
+
+**Pourquoi un renfort.** Vérification faite sur les fichiers eux-mêmes :
+**Baloo 2 et Figtree n'ont aucun glyphe cyrillique — 0 sur 256 pour les deux.**
+Sans renfort, toute l'interface russe bascule sur une serif système, ce qui est
+hors charte et casse l'invariant i18n. Comfortaa (176/256) et Golos Text
+(170/256) couvrent le russe en entier, et sont les plus proches en esprit.
+
+**Conséquence assumée : l'interface russe a une voix un peu différente** —
+Comfortaa est plus léger et plus géométrique que Baloo 2. C'est le prix du
+couple choisi ; il est connu et accepté.
+
+**Mise en œuvre.** Quatre familles variables, servies par `unicode-range` : un
+lecteur francophone ne télécharge jamais les fichiers cyrilliques, et
+réciproquement.
+
+```css
+/* latin + latin étendu */
+@font-face { font-family: 'CIA Display'; src: url('/fonts/baloo2-latin.woff2') format('woff2');
+             font-weight: 400 800; unicode-range: U+0000-024F, U+2000-206F, U+20A0-20BF; font-display: swap; }
+@font-face { font-family: 'CIA Text';    src: url('/fonts/figtree-latin.woff2') format('woff2');
+             font-weight: 300 700; unicode-range: U+0000-024F, U+2000-206F, U+20A0-20BF; font-display: swap; }
+/* cyrillique — même nom de famille, plage disjointe */
+@font-face { font-family: 'CIA Display'; src: url('/fonts/comfortaa-cyrillic.woff2') format('woff2');
+             font-weight: 400 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
+@font-face { font-family: 'CIA Text';    src: url('/fonts/golostext-cyrillic.woff2') format('woff2');
+             font-weight: 300 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
+```
+
+Les polices du logo et du slogan (`Sacramento`, `Better Together`) sont
+**également à auto-héberger** : elles viennent aujourd'hui du même `<link>`
+Google Fonts, et l'invariant RGPD vaut pour elles aussi. Leur dessin ne change
+pas.
+
+À vérifier au moment d'appliquer : le rendu de Baloo 2 en allemand (mots longs),
+les chiffres tabulaires de Figtree à 48 px, et l'absence de saut visible entre
+une ligne latine et une ligne cyrillique dans un même écran.
 
 ### Échelle
 
@@ -207,29 +240,31 @@ overlays, modales et feuilles passent en portail.
 
 ---
 
-## 7. **À ARBITRER — trois directions d'illustration**
+## 7. Illustration — **II, « Objets du quotidien »** *(arbitré)*
 
-Les écrans clés ne doivent plus être « texte + icône Lucide ». Trois directions,
-toutes réalisables en SVG plat et compatibles avec Spark.
+Croissant, ticket de bus, carte postale, clé d'hôtel, menu : les objets qu'on
+rencontre en vivant la langue, un par module.
 
-| | **I — Antibes plate** | **II — Objets du quotidien** | **III — Spark en situation** |
-|---|---|---|---|
-| sujet | lieux : remparts, port, marché, cap, Fort Carré | objets : croissant, ticket de bus, carte postale, clé d'hôtel, menu | Spark mis en scène dans la situation de la leçon |
-| traitement | formes plates, 3 à 4 couleurs par scène, aucun dégradé, ombre portée unique | contour de 2 px, aplats, légère ombre basse | pas de contour, volumes pleins, le halo de Spark comme seule lumière |
-| où ça vit | bannières d'unité, écrans vides, fin de module | nœuds du parcours, cartes de leçon, coffres | fin de leçon, célébrations, onboarding |
-| production | 6 scènes couvrent les 6 niveaux CECR | ~30 objets, un par module | 8 à 10 poses de Spark |
-| force | ancre l'école dans sa ville, différencie immédiatement | passe à l'échelle, chaque module a son objet | un seul personnage à produire, cohérence maximale |
-| risque | 6 scènes ne suffisent pas à 30 modules | demande un vrai illustrateur pour rester cohérent sur 30 objets | tout repose sur Spark, qui plafonne sans animateur |
+| | |
+|---|---|
+| traitement | contour de 2 px, aplats, légère ombre basse — le même langage que la tranche des objets tapables |
+| palette | 3 à 4 couleurs par objet, tirées de la palette CIA |
+| où ça vit | **nœuds du parcours**, cartes de leçon, coffres |
+| volume | ~30 objets, un par module |
+| priorité | les nœuds du parcours pilote en ont besoin dès l'étape 4 |
 
-Elles sont **combinables** : I pour les bannières, II pour les nœuds, III pour
-les moments. C'est la combinaison que je recommande, en commençant par II
-(le parcours pilote en a besoin tout de suite).
+Les écrans clés ne sont plus « texte + icône Lucide » : c'est l'objet qui
+identifie le module.
 
----
+Les deux autres directions ne sont pas écartées définitivement — elles ne sont
+simplement pas commandées maintenant. « Antibes plate » (6 scènes de lieux)
+reste la piste naturelle pour les bannières d'unité et les écrans vides ;
+« Spark en situation » reste celle des moments de célébration. On y reviendra
+quand le parcours tiendra debout.
 
 ## 8. Ce qui change dans le code, une fois arbitré
 
-1. `public/fonts/` + `@font-face`, suppression du `<link>` Google Fonts de `index.html`, mise à jour de `fontFamily` dans `tailwind.config.ts`.
+1. `public/fonts/` : Baloo 2 et Figtree sous-réglés latin, Comfortaa et Golos Text sous-réglés cyrillique, plus Sacramento et Better Together ; `@font-face` avec `unicode-range` dans `index.css` ; suppression du `<link>` Google Fonts de `index.html` ; `fontFamily` de `tailwind.config.ts` pointé sur `CIA Display` / `CIA Text`.
 2. Tokens `-edge`, élévations, rayons par taille et z-index dans `src/index.css` et la config Tailwind.
 3. Suppression de la variante `glass` de `Button`.
 4. `LevelUpCelebration` et `StreakMilestone` : ajout d'un `DialogTitle` (avertissement console constaté en M4).
