@@ -51,7 +51,7 @@ export const PRESETS = {
   /** Pop d'un badge, d'un check, d'un combo. Dépassement assumé. */
   bouncy: {
     visualDuration: 0.245,
-    bounce: 0.59,
+    bounce: 0.3,
     usage: 'pop de badge, check, combo',
     band: 'micro',
     inUse: true,

@@ -39,7 +39,7 @@ export const spring = {
 export const fade = { fast: 0.12, base: 0.2, slow: 0.35 } as const;
 
 /** Décalages d'entrée en cascade, en secondes. */
-export const stagger = { tight: 0.04, base: 0.08, loose: 0.12 } as const;
+export const stagger = { tight: 0.03, base: 0.05, loose: 0.07 } as const;
 
 export type SpringToken = keyof typeof spring;
 export type FadeToken = keyof typeof fade;

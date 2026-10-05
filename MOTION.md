@@ -48,34 +48,39 @@ justification tombe. Elle reste possible plus tard, pour d'autres raisons.
 |---|---|---|---|---|---|
 | `press` | 0,110 s | 0 | 140 ms / 0 % / 160 ms | enfoncement d'un `Pressable` | micro ✅ |
 | `snappy` | 0,205 s | 0,17 | 170 ms / 0,9 % / 365 ms | appui, bascule, sélection | micro ✅ |
-| `bouncy` | 0,245 s | 0,59 | 105 ms / **24,2 %** / 630 ms | pop de badge, check, combo | micro ⚠️ |
+| `bouncy` | 0,245 s | **0,30** | 150 ms / 4,6 % / 398 ms | pop de badge, check, combo | micro ✅ |
 | `gentle` | 0,350 s | 0,09 | 355 ms / 0,1 % / 460 ms | panneau, feuille, mise en page | transition ✅ |
 | `sheet` | 0,515 s | 0,25 | 350 ms / 2,8 % / 825 ms | ouverture de feuille | transition ✅ |
 | `stamp` | 0,520 s | 0,44 | 260 ms / 12 % / 1 055 ms | tampon qui frappe | transition ⚠️ |
 | `slow` | 0,450 s | 0 | 575 ms / 0 % / 735 ms | macro | moment ✅ |
 | `hero` | 0,880 s | 0,28 | 560 ms / 3,8 % / 1 340 ms | moment signature | moment ✅ |
 
-`snappy`, `bouncy`, `gentle` et `slow` **reproduisent exactement** le
-comportement de leurs versions M1 : l'expression change, le mouvement de l'app
-ne bouge pas. Les quatre autres sont introduits par la refonte et ne sont pas
+`snappy`, `gentle` et `slow` **reproduisent exactement** le comportement de
+leurs versions M1 : l'expression change, le mouvement de l'app ne bouge pas.
+`bouncy` est le seul dont le comportement change (cf. ci-dessous). Les quatre autres sont introduits par la refonte et ne sont pas
 encore utilisés en production.
 
-### Les deux hors norme, à trancher au Réglage
+### `bouncy`, ramené dans la norme *(arbitré)*
 
-- **`bouncy` dépasse de 24 %**, là où les standards tiennent le rebond sous 30 %
-  d'amplitude de ressort (0,1–0,3 ; nous sommes à 0,59). C'est notre pop de
-  badge et de combo depuis M1. Soit on assume — c'est un moment joueur —, soit
-  on le ramène vers 0,30, ce qui donnerait ~8 % de dépassement. **Mon avis :
-  le ramener à 0,30.** 24 % se voit comme un défaut, pas comme une intention.
-- **`stamp` se stabilise en 1 055 ms.** C'est long, mais le tampon est fait pour
-  être regardé. À juger à l'œil.
+Le rebond passe de **0,59 à 0,30**, ce qui ramène le preset dans la plage micro :
+arrivée à 150 ms au lieu de 102, dépassement à **4,6 %** au lieu de 24,2, et
+stabilisation à 398 ms au lieu de 636. C'est le seul preset de M1 dont le
+comportement change.
+
+Rectification de ce que j'avais annoncé : j'avais écrit qu'un rebond de 0,30
+donnerait « ~8 % de dépassement ». C'est faux — il en donne **4,6 %**. Pour
+8 %, il faudrait **0,37**. La valeur appliquée est bien 0,30 comme demandé ;
+le curseur du Réglage permet de monter à 0,37 si 4,6 % paraît trop sage.
+
+**`stamp` se stabilise en 1 055 ms.** C'est long, mais le tampon est fait pour
+être regardé. À juger à l'œil au Réglage.
 
 ### `stagger`
 
-`tight` 40 ms · `base` 80 ms · `loose` **120 ms**. Les standards tiennent la
-cascade entre 30 et 80 ms : **`loose` est au-dessus**. Il est utilisé par
-l'écran de fin M4 (les trois tuiles). À regarder au Réglage en même temps que
-les presets — la cascade de M4 est peut-être trop lente.
+`tight` **30 ms** · `base` **50 ms** · `loose` **70 ms** *(arbitré)*. La cascade
+rentre dans la plage de 30 à 80 ms des standards. `loose` passe de 120 à 70 ms :
+la cascade des trois tuiles de l'écran de fin M4 s'en trouve resserrée de 240 à
+140 ms au total.
 
 ### `fade`
 

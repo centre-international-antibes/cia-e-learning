@@ -152,7 +152,7 @@ allemand (mots longs), et des chiffres tabulaires lisibles à 48 px.
 
 | rôle | fr · en · de · es · it | ru |
 |---|---|---|
-| affichage (titres, chiffres) | **Baloo 2** 800 | **Comfortaa** 700 |
+| affichage (titres, chiffres) | **Baloo 2** 800 | **Nunito** 800–900 |
 | texte | **Figtree** 400 / 600 | **Golos Text** 400 / 600 |
 | étiquettes mono | JetBrains Mono 500 | idem |
 
@@ -161,12 +161,18 @@ Toutes en OFL, toutes hors liste noire, toutes auto-hébergées.
 **Pourquoi un renfort.** Vérification faite sur les fichiers eux-mêmes :
 **Baloo 2 et Figtree n'ont aucun glyphe cyrillique — 0 sur 256 pour les deux.**
 Sans renfort, toute l'interface russe bascule sur une serif système, ce qui est
-hors charte et casse l'invariant i18n. Comfortaa (176/256) et Golos Text
-(170/256) couvrent le russe en entier, et sont les plus proches en esprit.
+hors charte et casse l'invariant i18n. Nunito (220/256) et Golos Text
+(170/256) couvrent le russe en entier. Nunito a été préféré à Comfortaa pour
+l'affichage : sa rondeur et son épaisseur en 800–900 sont bien plus proches de
+Baloo 2, là où Comfortaa reste géométrique et léger même en gras.
 
-**Conséquence assumée : l'interface russe a une voix un peu différente** —
-Comfortaa est plus léger et plus géométrique que Baloo 2. C'est le prix du
-couple choisi ; il est connu et accepté.
+**Conséquence assumée : l'interface russe n'a pas exactement la même voix.**
+L'écart est réduit par le choix de Nunito, il n'est pas nul. Il est connu et
+accepté.
+
+À noter : **Plus Jakarta Sans n'a pas non plus de cyrillique.** Les titres russes
+basculent donc déjà aujourd'hui sur Inter. La refonte ne crée pas ce mécanisme,
+elle le rend explicite et lui donne une police choisie plutôt que subie.
 
 **Mise en œuvre.** Quatre familles variables, servies par `unicode-range` : un
 lecteur francophone ne télécharge jamais les fichiers cyrilliques, et
@@ -179,16 +185,21 @@ réciproquement.
 @font-face { font-family: 'CIA Text';    src: url('/fonts/figtree-latin.woff2') format('woff2');
              font-weight: 300 700; unicode-range: U+0000-024F, U+2000-206F, U+20A0-20BF; font-display: swap; }
 /* cyrillique — même nom de famille, plage disjointe */
-@font-face { font-family: 'CIA Display'; src: url('/fonts/comfortaa-cyrillic.woff2') format('woff2');
-             font-weight: 400 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
+@font-face { font-family: 'CIA Display'; src: url('/fonts/nunito-cyrillic.woff2') format('woff2');
+             font-weight: 400 900; unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; font-display: swap; }
 @font-face { font-family: 'CIA Text';    src: url('/fonts/golostext-cyrillic.woff2') format('woff2');
              font-weight: 300 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
 ```
 
-Les polices du logo et du slogan (`Sacramento`, `Better Together`) sont
-**également à auto-héberger** : elles viennent aujourd'hui du même `<link>`
-Google Fonts, et l'invariant RGPD vaut pour elles aussi. Leur dessin ne change
-pas.
+`Sacramento` est auto-hébergée avec les autres. **`Better Together` ne peut pas
+l'être : cette famille n'existe pas sur Google Fonts** — la requête renvoie
+« 400: Font family not found ». Le slogan de `AuthShell` tombe donc sur le
+`cursive` du navigateur depuis le départ, et ce n'est pas la refonte qui l'a
+changé. À arbitrer séparément : garder ce comportement, ou poser une vraie
+police de slogan.
+
+Le `<link>` Google Fonts a disparu d'`index.html`, préconnexions comprises :
+**plus aucune ressource tierce au chargement.**
 
 À vérifier au moment d'appliquer : le rendu de Baloo 2 en allemand (mots longs),
 les chiffres tabulaires de Figtree à 48 px, et l'absence de saut visible entre

@@ -22,9 +22,11 @@ export default {
         "safe-right":  "env(safe-area-inset-right)",
       },
       fontFamily: {
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        body:    ['Inter', 'system-ui', 'sans-serif'],
+        // Les familles viennent de `--font-display` / `--font-text` : le drapeau
+        // de refonte les bascule sans toucher à une seule classe.
+        sans:    ['var(--font-text)'],
+        display: ['var(--font-display)'],
+        body:    ['var(--font-text)'],
         mono:    ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
