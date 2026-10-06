@@ -80,6 +80,22 @@ Captures : `design/audit/parcours-fin/`, rejouables par
 5. **Durée d'un moment macro** → fermeture à la main, pas de minuterie, et
    `prefers-reduced-motion` ne raccourcit plus les durées.
 
+## Deux correctifs du 6/10
+
+- **Logo de la page de connexion.** `AuthShell` le tirait de
+  `picto-cia.png.asset.json`, qui pointe vers `/__l5e/assets-v1/…` — une URL que
+  seule la couche d'hébergement de Lovable résout. Hors de chez elle, la page de
+  connexion s'affichait **sans logo**. Il pointe maintenant sur `/picto.png`,
+  déjà dans le dépôt, au même octet près. Vérifié chargé (1 182 px de large) en
+  préversion locale. Les deux `*.asset.json` restent en place, inutilisés :
+  ce sont des manifestes Lovable, et Lovable est en pause — on ne les retire pas
+  pendant ce temps-là.
+- **Emoji 👋 de l'accueil.** Remplacé par Spark (`idle`, 96 pt) : l'écran
+  d'accueil est un écran clé, la liste noire exclut l'emoji en guise d'icône, et
+  le texte dit déjà « Je vais te guider » — c'est la mascotte qui parle.
+  Restent deux emojis ailleurs, dans des phrases et non en guise d'icône :
+  `DashboardHero` (« Bonjour, X 👋 ») et `AdminDashboard`. À trancher à part.
+
 ## Ce qui est urgent, et qui n'est pas du design
 
 **Trois modules A1 sur cinq n'ont aucune leçon jouable** — A1.3, A1.4, A1.5,
