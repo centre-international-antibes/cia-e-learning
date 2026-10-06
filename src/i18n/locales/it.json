@@ -2505,5 +2505,29 @@
         "desc": "Lexique grammatical"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Serie",
+    "eyebrow": "Sezione {{level}} · Unità {{unit}}",
+    "modulesCount": "{{done}} / {{total}} moduli",
+    "openIndex": "Vedi le lezioni",
+    "moduleLabel": "Modulo {{number}} — {{title}}",
+    "moduleShort": "Modulo",
+    "lessons": "lezioni",
+    "duration": "durata",
+    "start": "Inizia",
+    "resume": "Riprendi",
+    "close": "Chiudi",
+    "chest": "Forziere XP",
+    "dailyGoal": "Obiettivo di oggi",
+    "startHere": "Inizia qui",
+    "notReady": "Le lezioni di questo modulo arrivano presto.",
+    "levelDone": {
+      "eyebrow": "Unità completata",
+      "title": "Livello {{level}} completato",
+      "recap": "{{modules}} moduli, {{lessons}} lezioni",
+      "continue": "Continua con {{level}}",
+      "back": "Torna al percorso"
+    }
   }
 }

@@ -10,10 +10,12 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { spring } from '@/lib/motion';
+import { PRESETS } from '@/lib/motion/presets';
 import { feedback, MAX_COMBO_STEP, playSound, type SoundName } from '@/lib/feedback';
 import { useOptionalRewards } from '@/features/rewards';
 import { PlayerLabPanel } from './PlayerLabPanel';
 import { CompletionLabPanel } from './CompletionLabPanel';
+import { MotionTuningPanel } from './MotionTuningPanel';
 
 /**
  * Motion Lab — banc d'essai des primitives M1.
@@ -55,7 +57,7 @@ function SpringDemo({ name }: { name: (typeof SPRING_NAMES)[number] }) {
       <div className="flex items-baseline justify-between">
         <span className="font-display text-sm font-semibold">{name}</span>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {token.stiffness} / {token.damping} / {token.mass}
+          {PRESETS[name].visualDuration} s · rebond {PRESETS[name].bounce}
         </span>
       </div>
       <div className="relative h-20 overflow-hidden rounded-lg bg-muted/40">
@@ -213,6 +215,13 @@ export default function MotionLab() {
             </div>
           </div>
         </AdminSectionCard>
+        <AdminSectionCard
+          title="Réglage"
+          description="Les presets au doigt, les moments signature rejoués à côté. Ce qui est validé ici devient la référence de MOTION.md."
+        >
+          <MotionTuningPanel />
+        </AdminSectionCard>
+
         <AdminSectionCard
           title="Player"
           description="Mini-leçon jouable : CheckBar, sélection avant validation, combo, rejeu des erreurs."

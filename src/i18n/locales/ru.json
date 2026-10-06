@@ -2505,5 +2505,29 @@
         "desc": "Lexique grammatical"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Серия",
+    "eyebrow": "Раздел {{level}} · Блок {{unit}}",
+    "modulesCount": "{{done}} / {{total}} модулей",
+    "openIndex": "Посмотреть уроки",
+    "moduleLabel": "Модуль {{number}} — {{title}}",
+    "moduleShort": "Модуль",
+    "lessons": "уроки",
+    "duration": "время",
+    "start": "Начать",
+    "resume": "Продолжить",
+    "close": "Закрыть",
+    "chest": "Сундук с XP",
+    "dailyGoal": "Цель на сегодня",
+    "startHere": "Начните здесь",
+    "notReady": "Уроки этого модуля скоро появятся.",
+    "levelDone": {
+      "eyebrow": "Раздел пройден",
+      "title": "Уровень {{level}} пройден",
+      "recap": "Модулей: {{modules}} · Уроков: {{lessons}}",
+      "continue": "Перейти к {{level}}",
+      "back": "Вернуться к программе"
+    }
   }
 }

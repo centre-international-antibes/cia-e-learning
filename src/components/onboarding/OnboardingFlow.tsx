@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Map, Users, GraduationCap, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Spark } from '@/components/spark/Spark';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { CoachmarkTour } from './CoachmarkTour';
@@ -87,7 +88,13 @@ export function OnboardingFlow() {
 
           {phase === 'welcome' && (
             <div className="text-center space-y-5">
-              <div className="text-6xl animate-bounce-in">👋</div>
+              {/* Spark accueille, pas un emoji : l'écran d'accueil est un écran
+                  clé, et la liste noire de DESIGN.md exclut l'emoji en guise
+                  d'icône. `idle` et pas `celebrating` — rien n'a encore été
+                  accompli, la machine à états de MOTION.md § 8 le dit. */}
+              <div className="flex justify-center animate-bounce-in">
+                <Spark mood="idle" size={96} halo />
+              </div>
               <h2 className="font-display text-2xl md:text-3xl">{t('onboarding.welcome.title')}</h2>
               <p className="text-muted-foreground">{t('onboarding.welcome.subtitle')}</p>
               <Button size="lg" className="btn-duo w-full gap-2" onClick={() => setPhase('profile')}>

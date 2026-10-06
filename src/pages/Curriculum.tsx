@@ -28,8 +28,18 @@ import { useCompletionSequence } from '@/lib/parcoursSequencer';
 import { useSfx } from '@/hooks/useSfx';
 import type { CECRLevel } from '@/data/demo-courses';
 import { Sparkles } from 'lucide-react';
-import { readCourseProgressMap } from '@/lib/courseProgress';
+import {
+  markUnitCelebrated,
+  readCourseProgressMap,
+  wasUnitCelebrated,
+} from '@/lib/courseProgress';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useRedesign } from '@/lib/redesign';
+import { ParcoursRedesign } from '@/features/parcours/ParcoursRedesign';
 import { hasLessonContent } from '@/data/contentRegistry';
+import { DAILY_GOAL_TARGET, lessonsDoneToday } from '@/lib/dailyGoal';
+import { LESSON_PROGRESS_EVENT } from '@/lib/lessonProgressSync';
+import { useOptionalRewards } from '@/features/rewards';
 
 /**
  * Item du parcours — un module, un coffre (palier bonus tous les 3 modules)
@@ -95,6 +105,10 @@ export default function Curriculum() {
   const reduced = useReducedMotion();
   const translatedCurriculum = useTranslatedCurriculum();
 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redesign = useRedesign();
+  const rewards = useOptionalRewards();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   /** Modules « complétés à la volée » dans cette session (démo,
    *  ne touche pas la BDD — sprint 4). */
@@ -180,8 +194,12 @@ export default function Curriculum() {
         const progress: number =
           lessonsCount > 0 ? Math.round((completedLessons / lessonsCount) * 100) : 0;
 
+        // Toutes les leçons faites ⇒ module terminé. Sans ça, un module bouclé
+        // restait « courant » tant que la session ne l'avait pas vu se terminer.
+        const allLessonsDone = lessonsCount > 0 && completedFromMap >= lessonsCount;
+
         let state: ModuleNodeState;
-        if (isDemoCompleted) {
+        if (isDemoCompleted || allLessonsDone) {
           state = 'completed';
         } else if (levelIdx > userIdx + 1) {
           state = 'locked';
@@ -353,6 +371,68 @@ export default function Curriculum() {
     [sections, sequence],
   );
 
+  /* ===== Refonte : objectif du jour, retour de leçon, fin de niveau ===== */
+
+  /** Leçons faites aujourd'hui — relu à chaque remontée de progression. */
+  const [doneToday, setDoneToday] = useState(() => lessonsDoneToday());
+  useEffect(() => {
+    const refresh = () => setDoneToday(lessonsDoneToday());
+    refresh();
+    window.addEventListener(LESSON_PROGRESS_EVENT, refresh);
+    return () => window.removeEventListener(LESSON_PROGRESS_EVENT, refresh);
+  }, []);
+
+  /** Module d'où l'on revient : l'écran de fin renvoie `/programme?module=<id>`. */
+  const returningFromModule = searchParams.get('module');
+
+  /** Premier contact : rien n'a encore été commencé, nulle part. */
+  const firstContact = useMemo(
+    () =>
+      sections.every((s) =>
+        s.modules.every((m) => m.state !== 'completed' && m.completedLessons === 0),
+      ),
+    [sections],
+  );
+
+  /** Retour de leçon : on va chercher le nœud quitté, pas le haut de la page. */
+  useEffect(() => {
+    if (!redesign || !returningFromModule) return;
+    const el = nodeRefs.current.get(returningFromModule);
+    if (!el) return;
+    const id = window.setTimeout(
+      () => el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }),
+      120,
+    );
+    return () => window.clearTimeout(id);
+  }, [redesign, returningFromModule, reduced]);
+
+  /**
+   * Fin de niveau — le moment plein écran se joue **une fois**, à l'instant où
+   * le dernier module de l'unité tombe. Il passe par le Reward Director : pas
+   * de célébration appelée à la main, et jamais deux à l'écran en même temps.
+   */
+  useEffect(() => {
+    if (!redesign || !returningFromModule || !rewards) return;
+    const section = sections.find((s) => s.modules.some((m) => m.id === returningFromModule));
+    if (!section || section.modules.length === 0) return;
+    if (!section.modules.every((m) => m.state === 'completed')) return;
+    if (wasUnitCelebrated(section.level)) return;
+    markUnitCelebrated(section.level);
+    const idx = LEVELS.indexOf(section.level);
+    const nextLevel = idx >= 0 ? LEVELS[idx + 1] : undefined;
+    rewards.enqueue({
+      kind: 'levelUp',
+      id: section.level,
+      level: nextLevel ?? section.level,
+      previousLevel: section.level,
+      unit: {
+        tint: CECR_PATH_TINT[section.level] ?? 'hsl(var(--cia-blue-500))',
+        modules: section.modules.length,
+        lessons: section.modules.reduce((acc, m) => acc + m.totalLessons, 0),
+      },
+    });
+  }, [redesign, returningFromModule, sections, rewards]);
+
   /* ===== Reveal premium : sub-header + sections en stagger ===== */
   const sectionItem = reduced
     ? { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.2 } } }
@@ -364,6 +444,43 @@ export default function Curriculum() {
           transition: { type: 'spring' as const, stiffness: 220, damping: 24 },
         },
       };
+
+  /* ===== Pilote de la refonte — même données, direction artistique nouvelle ===== */
+  if (redesign) {
+    const currentModuleId =
+      sections.flatMap((s) => s.modules).find((m) => m.state === 'current')?.id ?? null;
+    return (
+      <>
+        <ParcoursRedesign
+          sections={sections}
+          tintFor={(level) => CECR_PATH_TINT[level as CECRLevel] ?? 'hsl(var(--cia-blue-500))'}
+          streak={streak}
+          totalXP={totalXP}
+          // Plafonné : l'objectif se remplit, il ne se dépasse pas. « 25 / 3 »
+          // annoncerait une dette là où il n'y a qu'une journée bien remplie.
+          dailyGoal={{
+            done: Math.min(doneToday, DAILY_GOAL_TARGET),
+            target: DAILY_GOAL_TARGET,
+          }}
+          stampedId={stampedId}
+          unlockingId={unlockingId}
+          currentModuleId={currentModuleId}
+          firstContact={firstContact}
+          justCompletedModuleId={returningFromModule}
+          registerNode={(id, el) => {
+            if (el) nodeRefs.current.set(id, el);
+            else nodeRefs.current.delete(id);
+          }}
+          onOpenModule={(m) => {
+            // Le pilote ouvre directement la leçon : la feuille a déjà joué le
+            // rôle de présentation que tenait le tiroir.
+            const next = m.lessons.find((l) => !l.completed) ?? m.lessons[0];
+            if (next?.href) navigate(next.href);
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="relative pb-20">

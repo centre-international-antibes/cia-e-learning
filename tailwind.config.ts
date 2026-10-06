@@ -15,6 +15,15 @@ export default {
       screens: { xs: "480px" },
       minHeight: { touch: "44px" },
       minWidth:  { touch: "44px" },
+      /* Plans — tokens de DESIGN.md § 6. Plus aucun z-index en dur. */
+      zIndex: {
+        base:        "var(--z-base)",
+        sticky:      "var(--z-sticky)",
+        bar:         "var(--z-bar)",
+        player:      "var(--z-player)",
+        overlay:     "var(--z-overlay)",
+        celebration: "var(--z-celebration)",
+      },
       spacing: {
         "safe-top":    "env(safe-area-inset-top)",
         "safe-bottom": "env(safe-area-inset-bottom)",
@@ -22,10 +31,13 @@ export default {
         "safe-right":  "env(safe-area-inset-right)",
       },
       fontFamily: {
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        body:    ['Inter', 'system-ui', 'sans-serif'],
+        // Les familles viennent de `--font-display` / `--font-text` : le drapeau
+        // de refonte les bascule sans toucher à une seule classe.
+        sans:    ['var(--font-text)'],
+        display: ['var(--font-display)'],
+        body:    ['var(--font-text)'],
         mono:    ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        slogan:  ['var(--font-slogan)'],
       },
       colors: {
         border: "hsl(var(--border))",

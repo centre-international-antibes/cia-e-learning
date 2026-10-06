@@ -4,7 +4,9 @@ import { XPBurst } from '@/components/gamification/XPBurst';
 import { LevelUpCelebration } from '@/components/gamification/LevelUpCelebration';
 import { StreakMilestone } from '@/components/gamification/StreakMilestone';
 import { AchievementToast } from '@/components/gamification/AchievementToast';
+import { LevelCompleteMoment } from '@/features/parcours/LevelCompleteMoment';
 import { notify } from '@/lib/notify';
+import { useRedesign } from '@/lib/redesign';
 import { useRewards } from './RewardDirector';
 import type { Reward } from './types';
 
@@ -45,6 +47,7 @@ function fireToast(reward: Reward): boolean {
 
 export function RewardStage() {
   const { current, skip } = useRewards();
+  const redesign = useRedesign();
   const firedRef = React.useRef<Reward | null>(null);
 
   // Les toasts sont « tirés » une fois, à l'affichage de la récompense.
@@ -78,6 +81,25 @@ export function RewardStage() {
         />
       );
     case 'levelUp':
+      // La refonte remplace la modale historique par le moment signature n° 4 :
+      // carte qui arrive de loin, se pose, et inclinaison 3D au doigt.
+      if (redesign) {
+        return (
+          <LevelCompleteMoment
+            key={`${current.kind}-${current.id}`}
+            level={current.previousLevel ?? current.level}
+            nextLevel={
+              current.previousLevel && current.previousLevel !== current.level
+                ? current.level
+                : undefined
+            }
+            tint={current.unit?.tint ?? 'hsl(var(--cia-blue-500))'}
+            modules={current.unit?.modules ?? 0}
+            lessons={current.unit?.lessons ?? 0}
+            onClose={skip}
+          />
+        );
+      }
       return (
         <LevelUpCelebration
           key={`${current.kind}-${current.id}`}

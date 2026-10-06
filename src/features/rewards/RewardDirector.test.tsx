@@ -1,10 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Import direct (et non via l'index) : la scène tire les composants de
 // célébration, donc Lottie, que jsdom ne sait pas rendre. Ce test porte sur la
 // file et le hold, pas sur le rendu.
 import { RewardDirectorProvider, useRewards } from '@/features/rewards/RewardDirector';
+import { REWARD_DURATION } from '@/features/rewards/types';
+import { setRedesign } from '@/lib/redesign';
 
 /** Sonde : affiche l'état du Director et permet de le piloter. */
 function Probe() {
@@ -43,9 +45,13 @@ describe('RewardDirector', () => {
         <Probe />
       </RewardDirectorProvider>,
     );
+    // La file est retenue pendant qu'on l'alimente — c'est ce que fait le
+    // player jusqu'à l'écran de fin. Rien n'est à l'écran, donc tout se range.
+    click('hold');
     click('level');
     click('xp');
     click('badge');
+    click('release');
 
     expect(screen.getByTestId('pending').textContent).toBe('3');
     expect(current()).toBe('xp:a');
@@ -55,6 +61,21 @@ describe('RewardDirector', () => {
     expect(current()).toBe('levelUp:A2');
     click('skip');
     expect(current()).toBe('none');
+  });
+
+  it("ne remplace pas la récompense déjà à l'écran par une meso tardive", () => {
+    render(
+      <RewardDirectorProvider>
+        <Probe />
+      </RewardDirectorProvider>,
+    );
+    click('level');
+    expect(current()).toBe('levelUp:A2');
+    // Un succès débloqué pendant le moment de niveau : il attend son tour.
+    click('badge');
+    expect(current()).toBe('levelUp:A2');
+    click('skip');
+    expect(current()).toBe('badge:b');
   });
 
   it('hold() retient la file, release() la relâche', () => {
@@ -96,5 +117,40 @@ describe('RewardDirector', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(current()).toBe('none');
+  });
+
+  describe('avance automatique', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => {
+      vi.useRealTimers();
+      setRedesign(false);
+    });
+
+    it('passe une meso toute seule, sans raccourcir sous reduced-motion', () => {
+      render(
+        <RewardDirectorProvider>
+          <Probe />
+        </RewardDirectorProvider>,
+      );
+      click('xp');
+      act(() => void vi.advanceTimersByTime(REWARD_DURATION.meso - 1));
+      expect(current()).toBe('xp:a');
+      act(() => void vi.advanceTimersByTime(1));
+      expect(current()).toBe('none');
+    });
+
+    it('laisse en place un moment de fin de niveau : il se ferme à la main', () => {
+      setRedesign(true);
+      render(
+        <RewardDirectorProvider>
+          <Probe />
+        </RewardDirectorProvider>,
+      );
+      click('level');
+      act(() => void vi.advanceTimersByTime(REWARD_DURATION.macro * 4));
+      expect(current()).toBe('levelUp:A2');
+      click('skip');
+      expect(current()).toBe('none');
+    });
   });
 });

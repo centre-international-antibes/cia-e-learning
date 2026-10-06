@@ -1,12 +1,40 @@
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
-import logoCia from '@/assets/picto-cia.png.asset.json';
+
+/**
+ * Logo servi depuis `public/`, et non par le manifeste d'assets de Lovable.
+ *
+ * `picto-cia.png.asset.json` pointait vers `/__l5e/assets-v1/…`, une URL que
+ * seule la couche d'hébergement de Lovable sait résoudre : hors de chez elle —
+ * en préversion locale comme sur tout autre déploiement — la page de connexion
+ * s'affichait sans logo. Le fichier est pourtant déjà dans le dépôt, au même
+ * octet près (15 358).
+ */
+const LOGO_CIA = '/picto.png';
 
 interface AuthShellProps {
   title: string;
   subtitle?: string;
   children: ReactNode;
 }
+
+/**
+ * Slogan de marque — **volontairement hors i18n**, et en anglais partout.
+ *
+ * C'est la seule exception à la règle « toute chaîne passe par i18n » de
+ * `CLAUDE.md` : une signature de marque ne se traduit pas, elle se reconnaît.
+ * Un apprenant russe ou allemand voit la même ligne qu'un francophone, comme
+ * il voit le même logo. Si le CIA décide un jour de la décliner par langue,
+ * c'est six clés à ajouter et cette constante à retirer.
+ *
+ * Il était jusqu'ici composé en `'Better Together'`, une police commerciale de
+ * Katsia Jazwinska **jamais chargée** : absente de Google Fonts et jamais
+ * auto-hébergée, elle tombait sur le `cursive` du navigateur — Comic Sans sous
+ * Windows. Si le CIA détient une licence web de cette police, c'est elle qu'il
+ * faut auto-héberger : c'est la police d'origine de la marque. En attendant,
+ * Sacramento, déjà dans `public/fonts/`.
+ */
+const SLOGAN = "Don't learn French, live it";
 
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
@@ -19,7 +47,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
       >
         <div className="text-center mb-8">
           <motion.img
-            src={logoCia.url}
+            src={LOGO_CIA}
             alt="Centre International d'Antibes"
             className="h-48 md:h-56 w-auto mx-auto mb-2 drop-shadow-sm"
             initial={{ scale: 0.85, opacity: 0 }}
@@ -27,10 +55,9 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             transition={{ duration: 0.4, ease: 'backOut' }}
           />
           <p
-            className="text-3xl md:text-4xl lg:text-5xl leading-[1.05] -mt-10 md:-mt-14 mb-2 px-2"
-            style={{ fontFamily: "'Better Together', cursive", color: '#e64353' }}
+            className="font-slogan text-3xl md:text-4xl lg:text-5xl leading-[1.05] -mt-10 md:-mt-14 mb-2 px-2 text-cia-red-400"
           >
-            Don't learn French, live it
+            {SLOGAN}
           </p>
           <h1 className="font-display text-2xl font-bold text-primary mt-2">{title}</h1>
           {subtitle && (

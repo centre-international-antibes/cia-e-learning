@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./i18n";
+import { initRedesign } from "./lib/redesign";
 import "./index.css";
 
 const PREVIEW_RECOVERY_KEY = "__cia_preview_recovery__";
@@ -83,5 +84,8 @@ window.addEventListener("unhandledrejection", (event) => {
   event.preventDefault();
   recoverPreview("unhandledrejection");
 });
+
+// Le drapeau se pose avant le premier rendu : pas de bascule de police visible.
+initRedesign();
 
 createRoot(document.getElementById("root")!).render(<App />);

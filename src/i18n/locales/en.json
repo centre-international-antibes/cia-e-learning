@@ -2505,5 +2505,29 @@
         "desc": "Grammar reference"
       }
     }
+  },
+  "parcours": {
+    "streakLabel": "Streak",
+    "eyebrow": "Section {{level}} · Unit {{unit}}",
+    "modulesCount": "{{done}} / {{total}} modules",
+    "openIndex": "View lessons",
+    "moduleLabel": "Module {{number}} — {{title}}",
+    "moduleShort": "Module",
+    "lessons": "lessons",
+    "duration": "time",
+    "start": "Start",
+    "resume": "Resume",
+    "close": "Close",
+    "chest": "XP chest",
+    "dailyGoal": "Today's goal",
+    "startHere": "Start here",
+    "notReady": "The lessons in this module are coming soon.",
+    "levelDone": {
+      "eyebrow": "Unit complete",
+      "title": "Level {{level}} complete",
+      "recap": "{{modules}} modules, {{lessons}} lessons",
+      "continue": "Continue to {{level}}",
+      "back": "Back to the path"
+    }
   }
 }
