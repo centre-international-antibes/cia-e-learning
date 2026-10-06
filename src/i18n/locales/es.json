@@ -2521,6 +2521,7 @@
     "chest": "Cofre de XP",
     "dailyGoal": "Objetivo de hoy",
     "startHere": "Empieza aquí",
+    "notReady": "Las lecciones de este módulo llegarán pronto.",
     "levelDone": {
       "eyebrow": "Unidad completada",
       "title": "Nivel {{level}} completado",

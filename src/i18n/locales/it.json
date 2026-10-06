@@ -2521,6 +2521,7 @@
     "chest": "Forziere XP",
     "dailyGoal": "Obiettivo di oggi",
     "startHere": "Inizia qui",
+    "notReady": "Le lezioni di questo modulo arrivano presto.",
     "levelDone": {
       "eyebrow": "Unità completata",
       "title": "Livello {{level}} completato",

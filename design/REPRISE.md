@@ -57,15 +57,47 @@ Captures : `design/audit/parcours-fin/`, rejouables par
 2. player et écran de fin alignés sur la nouvelle direction ;
 3. lot d'illustration : 8 objets dessinés, affectés par hachage — pas les ~30 par module.
 
-## Décisions en attente
+## Décisions tranchées le 6/10
 
-1. **Slogan** : `Better Together` n'existe pas sur Google Fonts (400). Garder le `cursive` par défaut, poser `Sacramento` (déjà auto-hébergée), ou commander une police ?
-2. **`bouncy`** : 0,30 donne 4,6 % de dépassement. 0,37 donnerait les ~8 % annoncés. Lequel ?
-3. **XP de la feuille** (cf. point 6) : estimer ou afficher « — » ?
-4. **Routes sans footer** (cf. point 7) : la liste est-elle la bonne ?
-5. **Illustration** : commander les ~30 objets, ou en dessiner encore quelques-uns ?
-*(La durée d'un moment macro est tranchée : fermeture à la main, pas de
-minuterie, et `prefers-reduced-motion` ne raccourcit plus rien.)*
+1. **Slogan** → Sacramento, tout de suite. Couleur passée de `#e64353` en dur au
+   token `cia-red-400`, et le slogan reste **en anglais partout**, porté par une
+   constante, pas une clé i18n : une signature de marque ne se traduit pas.
+   **À vérifier côté CIA** : `Better Together` est une police **commerciale** de
+   Katsia Jazwinska (MyFonts, Creative Market), pas une police absente. Si la
+   charte graphique du CIA en détient une licence web, c'est elle qu'il faut
+   auto-héberger — c'est la police d'origine de la marque, et ça remplace
+   Sacramento sans rien redessiner. Les versions gratuites en circulation sont
+   des démos interdites d'usage commercial : à ne pas installer.
+2. **`bouncy`** → 0,30, figé. 0,37 sortirait de la plage des standards, et le
+   preset sert surtout aux cascades, là où l'animation se répète le plus.
+3. **XP de la feuille** → estimation à 105 XP par leçon sans contenu.
+   **Sans effet visible aujourd'hui** : aucun module n'est à moitié rempli —
+   17 le sont entièrement, 13 pas du tout, zéro entre les deux. La règle ne
+   servira que le jour où une leçon sera mise en ligne seule dans son module ;
+   `remainingXp.test.ts` est là pour ce jour-là.
+4. **Routes sans footer** → `/test-niveau` et `/classement` rejoignent la liste,
+   `/profil` garde le sien.
+5. **Durée d'un moment macro** → fermeture à la main, pas de minuterie, et
+   `prefers-reduced-motion` ne raccourcit plus les durées.
+
+## Ce qui est urgent, et qui n'est pas du design
+
+**Trois modules A1 sur cinq n'ont aucune leçon jouable** — A1.3, A1.4, A1.5,
+soit les leçons 21 à 50. C'est le niveau d'entrée : un débutant qui finit A1.2
+tombe dessus au bout de vingt leçons.
+
+Reproduit le 6/10 : le tap sur « Commencer » **ne faisait rien**. La feuille se
+fermait, l'URL ne bougeait pas, aucun message. Garde-fou posé — l'action est
+désactivée et la feuille dit « Les leçons de ce module arrivent bientôt » — mais
+ce n'est qu'un garde-fou : **il manque 130 leçons sur 300**, dont 30 en A1 et
+les 100 de C1 et C2.
+
+Ce qui reste à décider de ce côté : le nœud d'un module vide doit-il se
+distinguer sur le chemin ? Trois pistes — un état « bientôt » propre (gris
+teinté, pas de cadenas, puisque ce n'est pas verrouillé mais à paraître) ; le
+nœud inchangé et seule la feuille qui parle, l'état d'aujourd'hui ; ou les
+modules vides retirés du chemin tant qu'ils n'ont pas de contenu, ce qui
+raccourcit le parcours mais ment sur le programme.
 
 ## Comment reprendre
 

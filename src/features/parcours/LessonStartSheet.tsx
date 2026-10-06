@@ -13,10 +13,8 @@ import {
 } from '@/components/ui/drawer';
 import { Pressable } from '@/components/ui/pressable';
 import { ModuleObject } from '@/design-system/objects/ModuleObject';
-import { getCourseContent } from '@/data/course-content';
-import { countQuestions } from '@/lib/lessonSpec';
-import { computeLessonXp } from '@/lib/xp/lessonXp';
 import { objectForModule } from '@/design-system/objects/objectForModule';
+import { remainingXp } from './remainingXp';
 
 /**
  * Feuille de départ de leçon.
@@ -26,30 +24,6 @@ import { objectForModule } from '@/design-system/objects/objectForModule';
  * physique (vaul), elle se tire vers le bas, et l'écran du parcours recule
  * légèrement derrière elle.
  */
-
-/**
- * XP restante à gagner sur le module, au **barème du serveur**.
- *
- * On additionne, pour chaque leçon non faite, ce que `complete_lesson`
- * accorderait sur un sans-faute : base + bonnes réponses + série + parfait.
- * Une leçon dont le contenu n'est pas encore en ligne ne compte pas — mieux
- * vaut annoncer moins que promettre une XP qui n'existe pas.
- */
-function remainingXp(lessons: { completed: boolean; href?: string }[]): number {
-  let total = 0;
-  for (const lesson of lessons) {
-    if (lesson.completed || !lesson.href) continue;
-    const content = getCourseContent(lesson.href.replace('/cours/', ''));
-    if (!content) continue;
-    const questions = countQuestions(content.steps);
-    total += computeLessonXp({
-      correct: questions,
-      questionCount: questions,
-      bestCombo: questions,
-    }).total;
-  }
-  return total;
-}
 
 export interface LessonStartSheetModule {
   id: string;
@@ -76,6 +50,12 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
 
   const resumed = module.completedLessons > 0;
   const xp = remainingXp(module.lessons);
+  /**
+   * Un module dont **aucune** leçon n'est jouable. Trois modules A1 sur cinq
+   * sont dans ce cas : le tap sur « Commencer » ne faisait rien du tout, et la
+   * feuille promettait une XP que personne ne pouvait aller chercher.
+   */
+  const playable = module.lessons.some((l) => l.href);
 
   return (
     <Drawer open onOpenChange={onOpenChange}>
@@ -109,7 +89,7 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
           {[
             [Star, `${module.completedLessons}/${module.totalLessons}`, t('parcours.lessons')],
             [Clock, `${module.durationMinutes} min`, t('parcours.duration')],
-            [Sparkles, xp > 0 ? `+${xp}` : '—', 'XP'],
+            [Sparkles, playable && xp.total > 0 ? `${xp.estimated ? '≈' : '+'}${xp.total}` : '—', 'XP'],
           ].map(([Icon, value, label], i) => {
             const I = Icon as React.ElementType;
             return (
@@ -130,10 +110,16 @@ export function LessonStartSheet({ module, tint, onOpenChange, onStart }: Props)
         </div>
 
         <DrawerFooter className="gap-2">
+          {!playable && (
+            <p className="px-1 text-center text-sm text-muted-foreground">
+              {t('parcours.notReady')}
+            </p>
+          )}
           <Pressable
             tone="primary"
             depth="lg"
             scope="player"
+            disabled={!playable}
             className="h-14 w-full text-base"
             onClick={() => onStart(module)}
           >

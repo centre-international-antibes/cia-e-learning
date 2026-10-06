@@ -2525,6 +2525,7 @@
     "chest": "Coffre à XP",
     "dailyGoal": "Objectif du jour",
     "startHere": "Commence ici",
+    "notReady": "Les leçons de ce module arrivent bientôt.",
     "levelDone": {
       "eyebrow": "Unité terminée",
       "title": "Niveau {{level}} terminé",

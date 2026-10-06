@@ -191,12 +191,25 @@ réciproquement.
              font-weight: 300 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
 ```
 
-`Sacramento` est auto-hébergée avec les autres. **`Better Together` ne peut pas
-l'être : cette famille n'existe pas sur Google Fonts** — la requête renvoie
-« 400: Font family not found ». Le slogan de `AuthShell` tombe donc sur le
-`cursive` du navigateur depuis le départ, et ce n'est pas la refonte qui l'a
-changé. À arbitrer séparément : garder ce comportement, ou poser une vraie
-police de slogan.
+`Sacramento` est auto-hébergée avec les autres, et **c'est elle qui porte le
+slogan** *(arbitré)*. `Better Together` n'est pas sur Google Fonts — la requête
+renvoie « 400: Font family not found » — parce que c'est une **police
+commerciale** de Katsia Jazwinska, vendue sur MyFonts et Creative Market. Elle
+n'a donc jamais été chargée : le slogan d'`AuthShell` tombait sur le `cursive`
+du navigateur, c'est-à-dire Comic Sans sous Windows, depuis le départ.
+
+Si le CIA détient une licence web de cette police — elle vient probablement de
+la charte graphique de la marque —, **c'est elle qu'il faut auto-héberger** :
+ce serait la police d'origine du slogan. Les versions gratuites qui circulent
+sont des démos, explicitement interdites d'usage commercial : elles ne sont pas
+une option. En attendant, Sacramento, déjà dans `public/fonts/`, et la couleur
+passée de `#e64353` en dur au token `cia-red-400` (348 67 % 55 % contre
+354 77 % 58 % : une teinte à peine plus sourde, prise dans la palette).
+
+Le slogan reste **en anglais dans toutes les langues** *(arbitré)*, porté par
+une constante et non par une clé i18n : une signature de marque se reconnaît,
+elle ne se traduit pas. C'est la seule exception assumée à la règle « toute
+chaîne passe par i18n ».
 
 Le `<link>` Google Fonts a disparu d'`index.html`, préconnexions comprises :
 **plus aucune ressource tierce au chargement.**

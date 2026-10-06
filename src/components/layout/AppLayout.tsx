@@ -12,8 +12,21 @@ import { useInterfaceLanguage } from '@/hooks/useInterfaceLanguage';
  * Écrans de l'app, par opposition au site vitrine : ils n'ont pas de pied de
  * page marketing. Le parcours et le défi sont des surfaces de jeu, pas des
  * pages à parcourir jusqu'en bas.
+ *
+ * `/test-niveau` y entre pour la même raison que `/test-vitesse/` : les deux
+ * sont des tests, et un pied de page sous un test chronométré n'a aucun sens.
+ * `/classement` aussi — c'est une surface de jeu. `/profil` garde le sien : on
+ * y descend, c'est une page de compte.
  */
-const APP_ROUTES = ['/programme', '/dashboard', '/defi-du-jour', '/cours/', '/test-vitesse/'];
+const APP_ROUTES = [
+  '/programme',
+  '/dashboard',
+  '/defi-du-jour',
+  '/cours/',
+  '/test-niveau',
+  '/test-vitesse/',
+  '/classement',
+];
 const isAppRoute = (pathname: string) => APP_ROUTES.some((r) => pathname.startsWith(r));
 
 function OutletFallback() {

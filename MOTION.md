@@ -69,8 +69,13 @@ comportement change.
 
 Rectification de ce que j'avais annoncé : j'avais écrit qu'un rebond de 0,30
 donnerait « ~8 % de dépassement ». C'est faux — il en donne **4,6 %**. Pour
-8 %, il faudrait **0,37**. La valeur appliquée est bien 0,30 comme demandé ;
-le curseur du Réglage permet de monter à 0,37 si 4,6 % paraît trop sage.
+8 %, il faudrait 0,37.
+
+**0,30 est figé** *(arbitré)*. 0,37 sortirait de la plage de 0,1 à 0,3 des
+standards installés, et le preset sert surtout aux cascades — c'est là que
+l'animation se répète le plus, et là qu'un dépassement trop ample fatigue. Le
+curseur du Réglage reste là pour en rejuger à l'œil, il ne change pas la valeur
+par défaut.
 
 **`stamp` se stabilise en 1 055 ms.** C'est long, mais le tampon est fait pour
 être regardé. À juger à l'œil au Réglage.

@@ -2521,6 +2521,7 @@
     "chest": "XP chest",
     "dailyGoal": "Today's goal",
     "startHere": "Start here",
+    "notReady": "The lessons in this module are coming soon.",
     "levelDone": {
       "eyebrow": "Unit complete",
       "title": "Level {{level}} complete",

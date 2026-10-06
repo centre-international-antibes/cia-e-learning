@@ -37,6 +37,7 @@ export default {
         display: ['var(--font-display)'],
         body:    ['var(--font-text)'],
         mono:    ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        slogan:  ['var(--font-slogan)'],
       },
       colors: {
         border: "hsl(var(--border))",

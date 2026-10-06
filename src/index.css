@@ -87,6 +87,9 @@
     /* Familles actives — basculées par le drapeau de refonte, jamais en dur. */
     --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --font-text:    'Inter', system-ui, sans-serif;
+    /* Slogan de marque. Sacramento est auto-hébergée ; le `cursive` final n'est
+       qu'un filet de sécurité, plus le comportement par défaut. */
+    --font-slogan:  'Sacramento', cursive;
   }
 
   /* Le jeu de la refonte ne s'active que sous `?redesign=1`. */
