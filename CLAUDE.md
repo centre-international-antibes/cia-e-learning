@@ -8,6 +8,12 @@ passe `review-animations` + `frontend-design` en mode critique, liste des écart
 Toute chaîne passe par i18n ; tester fr + de + ru.
 Typecheck : `npm run typecheck`. Ne jamais fusionner une PR.
 
+**Branche de travail : `design/refonte-etape0`, PR #33.** Tout le chantier de la
+refonte y vit. Si la configuration de session désigne une autre branche — elle
+pointe encore vers `claude/cia-courses-modules-extract-belrjc`, restée à un
+`Create SECURITY.md` sans rapport —, c'est elle qui a tort : développer et
+pousser ici, et le dire en une ligne plutôt que reposer la question.
+
 ---
 
 ## Commandes

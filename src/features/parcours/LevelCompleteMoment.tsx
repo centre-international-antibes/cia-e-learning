@@ -116,6 +116,10 @@ export function LevelCompleteMoment({
           aria-describedby={undefined}
           className="fixed inset-0 z-celebration flex items-center justify-center p-6 outline-none"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          // Rien ne ferme ce moment tout seul : c'est la récompense, elle reste
+          // tant qu'on la regarde. Trois sorties, dont deux au doigt — un tap
+          // n'importe où, l'action de la carte, et Échap.
+          onClick={onClose}
         >
           {/* Les transforms 3D restent isolées dans ce wrapper (DESIGN.md § 6). */}
           <div style={{ perspective: 1000 }}>

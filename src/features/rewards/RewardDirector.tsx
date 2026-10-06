@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useReducedMotionConfig } from 'framer-motion';
 
 import { feedback } from '@/lib/feedback';
 import { isRedesign } from '@/lib/redesign';
@@ -58,6 +57,21 @@ function playFeedback(reward: Reward) {
   }
 }
 
+/**
+ * Récompenses qui attendent un geste plutôt qu'une minuterie.
+ *
+ * Le moment de fin de niveau n'arrive qu'une fois par unité : c'est la
+ * récompense elle-même, et la faire disparaître au bout de cinq secondes, c'est
+ * la retirer. Il porte sa propre fermeture — son action, un tap n'importe où,
+ * Échap — donc le Director le laisse en place.
+ *
+ * Les célébrations historiques, elles, n'ont aucune fermeture visible
+ * (`[&>button]:hidden`) : leur minuterie reste leur seule sortie sur mobile.
+ */
+function waitsForDismiss(reward: Reward): boolean {
+  return isRedesign() && reward.kind === 'levelUp';
+}
+
 export interface RewardDirectorProviderProps {
   children: React.ReactNode;
   /** Rendu des récompenses ; injectable pour les tests. */
@@ -67,7 +81,6 @@ export interface RewardDirectorProviderProps {
 export function RewardDirectorProvider({ children, stage: Stage }: RewardDirectorProviderProps) {
   const [state, setState] = React.useState<QueueState>(emptyQueue);
   const [holds, setHolds] = React.useState(0);
-  const reduced = useReducedMotionConfig() ?? false;
 
   const held = holds > 0;
   const currentEntry = held ? null : (state.queue[0] ?? null);
@@ -92,14 +105,16 @@ export function RewardDirectorProvider({ children, stage: Stage }: RewardDirecto
     setState(markShown);
   }, [current]);
 
-  // Avance automatique. En reduced-motion, tout dure moitié moins longtemps :
-  // la file reste la même, elle défile juste plus vite.
+  // Avance automatique — sauf pour celles qui attendent un geste.
+  //
+  // La durée ne change pas sous `prefers-reduced-motion` : réduire le mouvement
+  // ne veut pas dire réduire le temps de lecture. C'est même l'inverse — un
+  // écran qui n'anime pas se lit aussi longtemps, pas deux fois plus vite.
   React.useEffect(() => {
-    if (!current) return;
-    const base = REWARD_DURATION[rewardScale(current)];
-    const timer = window.setTimeout(skip, reduced ? base / 2 : base);
+    if (!current || waitsForDismiss(current)) return;
+    const timer = window.setTimeout(skip, REWARD_DURATION[rewardScale(current)]);
     return () => window.clearTimeout(timer);
-  }, [current, reduced, skip]);
+  }, [current, skip]);
 
   // Échap passe la récompense courante.
   React.useEffect(() => {

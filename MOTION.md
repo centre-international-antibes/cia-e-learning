@@ -207,7 +207,7 @@ pose en `hero`, arrivée mesurée à **560 ms**, et c'est là que le son `levelU
 tombe. Suivi : halo qui pulse sur le médaillon, **10 éclats d'or** en couronne
 (720 ms), puis le chiffre géant, puis Spark, puis le CTA.
 
-Deux points de méthode qui valent pour tous les moments :
+Quatre points de méthode qui valent pour tous les moments :
 
 - **la pose est datée par une minuterie, pas par `onAnimationComplete`.** Aucun
   état final ne dépend de la fin d'une animation (§ 3) : une carte interrompue
@@ -216,10 +216,15 @@ Deux points de méthode qui valent pour tous les moments :
   meso devant les macro *y compris une macro déjà affichée* : un succès
   débloqué entre-temps coupait le passage de niveau en deux, puis le laissait
   reprendre à zéro. La file retient désormais ce qui est vu (`markShown`).
-
-Reste : l'avance automatique du Director est de **5 s** pour une macro, 2,5 s
-sous `prefers-reduced-motion`. C'est court pour un moment de ce poids — à juger
-au Réglage.
+- **le moment ne se ferme pas tout seul** *(arbitré)*. Il n'arrive qu'une fois
+  par unité : lui donner 5 s, c'est le retirer. Trois sorties, dont deux au
+  doigt — l'action de la carte, un tap n'importe où, Échap. Les célébrations
+  historiques gardent leur minuterie : elles n'ont aucune fermeture visible
+  (`[&>button]:hidden`), c'est leur seule sortie sur mobile.
+- **`prefers-reduced-motion` ne raccourcit plus les durées** *(arbitré)*. Le
+  Director divisait tout par deux ; réduire le mouvement ne veut pas dire
+  réduire le temps de lecture — un écran qui n'anime pas se lit aussi
+  longtemps, pas deux fois plus vite.
 
 ### 3 bis. Chemin qui se dessine, au retour d'une leçon
 

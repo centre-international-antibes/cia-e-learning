@@ -21,7 +21,7 @@ l'application est exactement celle d'avant.
 | 3 | Pictos maison partout, coffres sur le chemin | **fait** — cadenas, coche, coffre et trophée dessinés dans le même tracé que les objets ; plus aucune icône tierce dans un nœud ; un coffre tous les trois modules |
 | 4 | Plus de monospace dans le parcours | **fait** — vérifié à 0 occurrence ; bannière et titres en Baloo 2, métadonnées en Figtree |
 | 5 | Densité, zigzag plus ample | **fait** — espacement 80 pt (cible 76–95), amplitude 88 pt, moins de blanc entre les unités |
-| 6 | « +500 XP » de la feuille | **fait à moitié** — le barème serveur remplace `50 × leçons`. Mais seules **10 leçons sur 300** ont du contenu en ligne, donc la feuille affiche « — » presque partout. L'XP sans faute mesurée sur ces 10 leçons : min 100, médiane 105, max 110. **Décision à prendre** : estimer les leçons sans contenu à ~105 XP, ou garder « — » |
+| 6 | « +500 XP » de la feuille | **fait à moitié** — le barème serveur remplace `50 × leçons`. **Correction du chiffre annoncé le 5/10 : ce n'est pas 10 leçons sur 300 qui ont du contenu, c'est 170.** Recompté sur `course-content.ts` : A1 20/50, A2 50/50, B1 50/50, B2 50/50, C1 et C2 0/50. XP sans faute sur ces 170 : min 75, médiane 105, moyenne 104, max 110. **Décision à prendre** : estimer les leçons sans contenu à ~105 XP, ou garder « — » |
 | 7 | Footer vitrine pendant le chargement | **fait** — le footer est passé dans la frontière de Suspense et masqué sur les routes de l'app (`/programme`, `/dashboard`, `/defi-du-jour`, `/cours/`, `/test-vitesse/`). Vérifié : absent pendant le chargement comme après. **La liste des routes est à arbitrer** |
 | 8 | Vidéo du parcours complet | **bloqué** — le player exige une connexion (`/cours/:id` redirige vers `/connexion` sans session). Sans compte de test, le trajet tap → leçon → fin → retour n'est pas enregistrable bout en bout. Il faut soit un compte, soit se contenter d'un montage Motion Lab |
 
@@ -64,9 +64,8 @@ Captures : `design/audit/parcours-fin/`, rejouables par
 3. **XP de la feuille** (cf. point 6) : estimer ou afficher « — » ?
 4. **Routes sans footer** (cf. point 7) : la liste est-elle la bonne ?
 5. **Illustration** : commander les ~30 objets, ou en dessiner encore quelques-uns ?
-6. **Durée d'un moment macro** : le Director passe à la suite au bout de 5 s
-   (2,5 s en reduced-motion). C'est court pour la carte de fin de niveau.
-   Allonger, ou laisser l'apprenant fermer lui-même ?
+*(La durée d'un moment macro est tranchée : fermeture à la main, pas de
+minuterie, et `prefers-reduced-motion` ne raccourcit plus rien.)*
 
 ## Comment reprendre
 
