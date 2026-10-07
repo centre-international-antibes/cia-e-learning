@@ -191,6 +191,21 @@ réciproquement.
              font-weight: 300 700; unicode-range: U+0400-04FF, U+0500-052F; font-display: swap; }
 ```
 
+### Ce qui vit sous le drapeau, et ce qui n'y vit pas
+
+**Le drapeau `?redesign=1` ne bascule que `--font-display` et `--font-text`.**
+Rien d'autre n'entre dans `:root[data-redesign]` : ce qui y entre n'existe plus
+quand le drapeau tombe. La palette, les neutres, la sémantique, les couleurs
+CECR, les mappings shadcn, les élévations et les plans vivent dans `:root`, sans
+condition.
+
+Ce n'est pas une préférence, c'est une panne vécue : l'étape 0 y avait enfermé
+toute la palette, et l'application sans drapeau s'est retrouvée sans une seule
+couleur définie — `--background`, `--primary` et `--card` vides, fond
+transparent, badges en aplats noirs. Le build passait, le typecheck passait, les
+tests passaient. `src/test/palette.test.ts` lit désormais le CSS compilé et
+échoue si la règle est enfreinte.
+
 `Sacramento` est auto-hébergée avec les autres, et **c'est elle qui porte le
 slogan** *(arbitré)*. `Better Together` n'est pas sur Google Fonts — la requête
 renvoie « 400: Font family not found » — parce que c'est une **police
@@ -205,6 +220,15 @@ sont des démos, explicitement interdites d'usage commercial : elles ne sont pas
 une option. En attendant, Sacramento, déjà dans `public/fonts/`, et la couleur
 passée de `#e64353` en dur au token `cia-red-400` (348 67 % 55 % contre
 354 77 % 58 % : une teinte à peine plus sourde, prise dans la palette).
+
+**Précision sur le `<link>` retiré.** `Better+Together` y figurait bien, dans la
+liste des familles demandées à Google Fonts. Mais Google ne l'a jamais servie :
+demandée seule, l'URL renvoie « 400 : Missing font family » ; demandée au milieu
+d'autres, elle est **silencieusement ignorée** et les autres arrivent
+normalement (vérifié le 7/10 : l'URL d'origine complète répond 200, la même
+réduite à `family=Better+Together` répond 400). Son retrait n'a donc rien cassé
+— il n'y avait rien à casser —, et il n'y a aucun fichier Google à rapatrier.
+Seule une licence commerciale permettrait de l'auto-héberger.
 
 Le slogan reste **en anglais dans toutes les langues** *(arbitré)*, porté par
 une constante et non par une clé i18n : une signature de marque se reconnaît,
