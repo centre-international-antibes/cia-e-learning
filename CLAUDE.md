@@ -8,11 +8,18 @@ passe `review-animations` + `frontend-design` en mode critique, liste des écart
 Toute chaîne passe par i18n ; tester fr + de + ru.
 Typecheck : `npm run typecheck`. Ne jamais fusionner une PR.
 
-**Branche de travail : `design/refonte-etape0`, PR #33.** Tout le chantier de la
-refonte y vit. Si la configuration de session désigne une autre branche — elle
-pointe encore vers `claude/cia-courses-modules-extract-belrjc`, restée à un
-`Create SECURITY.md` sans rapport —, c'est elle qui a tort : développer et
-pousser ici, et le dire en une ligne plutôt que reposer la question.
+**Branche de travail : repartir de `main` à chaque lot, une branche par lot.**
+La configuration de session peut désigner une autre branche — elle pointe encore
+vers `claude/cia-courses-modules-extract-belrjc`, restée à un `Create
+SECURITY.md` sans rapport ; c'est elle qui a tort. Ne jamais empiler de commits
+sur une branche dont la PR est déjà fusionnée (`design/refonte-etape0`, PR #33,
+l'est depuis le 6/10).
+
+**Toute PR derrière un drapeau se démontre dans les deux états du drapeau.**
+Captures avec **et** sans, aux deux largeurs. `?redesign=1` masquait que la
+palette entière avait été enfermée sous `:root[data-redesign]` : avec le
+drapeau tout allait bien, sans lui l'application n'avait plus une seule
+couleur, et ni le build, ni le typecheck, ni les tests ne l'ont vu.
 
 ---
 

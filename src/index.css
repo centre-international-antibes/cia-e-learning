@@ -83,6 +83,10 @@
 }
 
 @layer base {
+  /* Tout ce qui suit vaut **sans drapeau comme avec** : palette CIA, neutres,
+     sémantique, gamification, CECR, mappings shadcn, élévations et plans.
+     Les enfermer sous `:root[data-redesign]` laissait l'application sans
+     aucune couleur dès que le drapeau tombait. */
   :root {
     /* Familles actives — basculées par le drapeau de refonte, jamais en dur. */
     --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
@@ -90,12 +94,6 @@
     /* Slogan de marque. Sacramento est auto-hébergée ; le `cursive` final n'est
        qu'un filet de sécurité, plus le comportement par défaut. */
     --font-slogan:  'Sacramento', cursive;
-  }
-
-  /* Le jeu de la refonte ne s'active que sous `?redesign=1`. */
-  :root[data-redesign] {
-    --font-display: 'CIA Display', 'Plus Jakarta Sans', system-ui, sans-serif;
-    --font-text:    'CIA Text', 'Inter', system-ui, sans-serif;
 
     /* ============================================
      * CIA Palette — HSL (light mode)
@@ -257,6 +255,13 @@
     --league-bronze:   25 55% 45%;
     --league-silver:   220 10% 65%;
     --league-gold:     var(--cia-gold-500);
+  }
+
+  /* Le drapeau ne change que les familles de polices. Rien d'autre ne doit
+     entrer ici : ce qui y entre disparaît quand le drapeau tombe. */
+  :root[data-redesign] {
+    --font-display: 'CIA Display', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-text:    'CIA Text', 'Inter', system-ui, sans-serif;
   }
 
   .dark {
