@@ -172,6 +172,44 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_attempts: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          id: string
+          outcome: string | null
+          started_at: string
+          user_id: string
+          xp_awarded: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          id?: string
+          outcome?: string | null
+          started_at?: string
+          user_id: string
+          xp_awarded?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          id?: string
+          outcome?: string | null
+          started_at?: string
+          user_id?: string
+          xp_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_attempts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_xp_spec"
+            referencedColumns: ["course_id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           best_score: number
@@ -211,6 +249,27 @@ export type Database = {
           score?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      lesson_xp_spec: {
+        Row: {
+          course_id: string
+          level: string | null
+          question_count: number
+          step_count: number
+        }
+        Insert: {
+          course_id: string
+          level?: string | null
+          question_count: number
+          step_count: number
+        }
+        Update: {
+          course_id?: string
+          level?: string | null
+          question_count?: number
+          step_count?: number
         }
         Relationships: []
       }
@@ -286,6 +345,27 @@ export type Database = {
           user_id?: string
           weekly_period_start?: string | null
           weekly_xp?: number
+        }
+        Relationships: []
+      }
+      speed_test_best: {
+        Row: {
+          best_score: number
+          level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_score?: number
+          level: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_score?: number
+          level?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -590,6 +670,18 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      award_xp: {
+        Args: { _amount: number; _source: string; _source_ref?: string }
+        Returns: Json
+      }
+      complete_lesson: {
+        Args: { _attempt_id: string; _best_combo: number; _correct: number }
+        Returns: Json
+      }
+      complete_speed_test: {
+        Args: { _level: string; _score: number }
+        Returns: Json
+      }
       current_week_monday: { Args: never; Returns: string }
       get_my_profile: {
         Args: never
@@ -631,20 +723,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      complete_lesson: {
-        Args: { _attempt_id: string; _best_combo: number; _correct: number }
-        Returns: Json
-      }
-      complete_speed_test: {
-        Args: { _level: string; _score: number }
-        Returns: Json
-      }
       mark_daily_done: { Args: never; Returns: Json }
-      start_lesson: { Args: { _course_id: string }; Returns: string }
       mark_onboarding_done: { Args: never; Returns: Json }
       rotate_weekly_leagues: { Args: never; Returns: Json }
       set_cecr_level: { Args: { _level: string }; Returns: Json }
       set_placement_level: { Args: { _level: string }; Returns: Json }
+      start_lesson: { Args: { _course_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "manager" | "learner"
@@ -663,12 +747,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -692,11 +776,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -717,11 +801,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -742,11 +826,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -759,11 +843,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
