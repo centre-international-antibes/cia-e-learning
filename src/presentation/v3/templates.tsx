@@ -7,13 +7,14 @@ import React from 'react';
 import {Video} from '@remotion/media';
 import {CameraMotionBlur} from '@remotion/motion-blur';
 import {fitText} from '@remotion/layout-utils';
-import {AbsoluteFill, Img, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Easing, Img, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS, CROP, Clip, EASE, FONTS, GRADE, SOURCES30, TimedClip, V3, WEIGHTS, alpha} from '../config';
 import {DrawIcon, HandwrittenLive, LIVE_RATIO, formatNumber} from '../../shared/drawing';
 import {BrandLogo, CornerBug} from '../../shared/primitives';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const IO = EASE.inOut; // bezier(0.65, 0, 0.35, 1)
+const STEADY = Easing.bezier(0.33, 0.33, 0.66, 0.66); // constant-speed drift/zoom: never a frozen frame
 const SANS = `'${FONTS.sans}'`;
 export const M = {x: 140, top: 100, bottom: 130};
 const COL = (1920 - 2 * M.x - 11 * 24) / 12;
@@ -158,7 +159,7 @@ export const PhotoView: React.FC<{src: string; dur: number; zoom?: [number, numb
     <AbsoluteFill style={{overflow: 'hidden'}}>
       <Img
         src={staticFile(src)}
-        style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: position, scale: String(interpolate(f, [0, dur], zoom, {...clamp, easing: EASE.zoom})), filter: GRADE.filter}}
+        style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: position, scale: String(interpolate(f, [0, dur], zoom, {...clamp, easing: STEADY})), filter: GRADE.filter}}
       />
       <AbsoluteFill style={{background: GRADE.warmVeil, mixBlendMode: 'soft-light'}} />
     </AbsoluteFill>
@@ -295,7 +296,7 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
       <AbsoluteFill style={{clipPath: `inset(0 ${1920 - panelLeft}px 0 0)`}}>
-        <div style={{position: 'absolute', left: -(1920 - panelLeft) / 2, top: 0, width: 1920, height: 1080}}>
+        <div style={{position: 'absolute', left: -pw / 2, top: 0, width: 1920, height: 1080}}>
           <ClipChain clips={clips} />
           <Grade />
         </div>
@@ -408,8 +409,8 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
               background: COLORS.white,
               borderRadius: '0 8px 8px 0',
               boxShadow: `0 40px 80px -30px ${alpha('navy', 0.6)}`,
-              translate: `${drift - w * close}px 0`,
-              clipPath: `inset(0 ${100 - open * 100}% 0 0 round 0 8px 8px 0)`,
+              opacity: open * (1 - close),
+              translate: `${drift - 70 * (1 - open) - 70 * close}px 0`,
             }}
           >
             <div style={{position: 'absolute', left: M.x + 60, right: 64, top: 96, fontFamily: SANS, color: COLORS.navy}}>
@@ -526,7 +527,7 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
   const open = interpolate(f, [dur - 18, dur], [0, 1], {...clamp, easing: IO});
   const id = `t5-${Math.round(clip.in * 100)}`;
   const cy = baseline - size * 0.36;
-  const sc = 1 + 0.45 * open;
+  const sc = 1 + 0.3 * open;
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
       {/* full-frame footage fades in under the opening mask: the two images overlap, no hard swap */}
@@ -563,7 +564,7 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
 /** T6 · Picture in picture: photo card grows (24 f) to full frame and becomes the footage. */
 export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: number; text: string; kicker?: string}> = ({photo, photoDur, clip, dur, text, kicker}) => {
   const f = useCurrentFrame();
-  const g = interpolate(f, [photoDur - 24, photoDur], [0, 1], {...clamp, easing: IO});
+  const g = interpolate(f, [photoDur - 30, photoDur], [0, 1], {...clamp, easing: IO});
   const d = interpolate(f, [0, photoDur], [0, 1], clamp);
   const card = {x: 700 - 700 * g - 24 * d * (1 - g), y: 170 - 170 * g - 14 * d * (1 - g), w: 900 + 1020 * g, h: 600 + 480 * g};
   const videoIn = interpolate(f, [photoDur - 8, photoDur], [0, 1], {...clamp, easing: IO});
@@ -586,7 +587,7 @@ export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: num
           boxShadow: `0 30px 60px -25px ${alpha('navy', 0.55)}`,
         }}
       >
-        <PhotoView src={photo} dur={dur} />
+        <PhotoView src={photo} dur={photoDur} zoom={[1.0, 1.08]} />
         <Sequence from={photoDur - 10} layout="absolute-fill">
           <AbsoluteFill style={{opacity: videoIn}}>
             <ClipView clip={clip} dur={dur - photoDur} />
@@ -636,7 +637,8 @@ export const T8: React.FC<{panels: TimedClip[][]; dur: number; text: string; kic
 
 const PanelIn: React.FC<{children: React.ReactNode}> = ({children}) => {
   const f = useCurrentFrame();
-  return <AbsoluteFill style={{translate: `0 ${interpolate(f, [0, 15], [100, 0], {...clamp, easing: IO})}%`}}>{children}</AbsoluteFill>;
+  const p = interpolate(f, [0, 15], [0, 1], {...clamp, easing: IO});
+  return <AbsoluteFill style={{translate: `0 ${(1 - p) * 30}%`, opacity: p}}>{children}</AbsoluteFill>;
 };
 
 /** Full-frame media chain (photos and/or footage) with a two-line reading text */

@@ -13,12 +13,12 @@ import {BonjourSeg, CitiesSeg, EndCard, LineSeg, SunsetSeg, T1, T2, T3, T4, T5, 
 
 // ------------------------------------------------------------ whip pan --
 type WhipProps = Record<string, never>;
-const WHIP_SHIFT = 520; // px: peak speed stays ≤ 80 px/frame over 12 frames with the in-out curve
+const WHIP_SHIFT = 240; // px: peak speed stays ≤ 80 px/frame over 12 frames with the in-out curve
 const WhipComponent: React.FC<TransitionPresentationComponentProps<WhipProps>> = ({children, presentationDirection, presentationProgress}) => {
   const p = presentationProgress;
   const exiting = presentationDirection === 'exiting';
   const x = exiting ? -WHIP_SHIFT * p : WHIP_SHIFT * (1 - p);
-  const blur = 26 * Math.sin(Math.PI * p); // directional blur, strongest mid-transition
+  const blur = 18 * Math.sin(Math.PI * p); // directional blur, strongest mid-transition
   const opacity = exiting ? 1 : Math.min(1, p * 2.2);
   const id = `whip-${exiting ? 'o' : 'i'}`;
   return (

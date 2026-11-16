@@ -590,10 +590,10 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '3c', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 45.95), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false, onNavy: false},
   {id: '3d', sec: 3, dur: 75, tpl: 'video', clip: tv('cours', 48.2), text: 'accredited', textKind: 'line', bug: true},
   // 4 · 01 French courses (615–1155): T4 → classes → T3 Le Port → T6 Le Château
-  {id: '4a', sec: 4, dur: 180, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 28}, {...tv('cours', 8.55), dur: 15}]},
+  {id: '4a', sec: 4, dur: 180, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 28}, {...tv('cours', 29.0), dur: 15}]},
   {id: '4b', sec: 4, dur: 120, tpl: 'line', text: 'fcLine', bug: true, media: [{kind: 'video', ...tv('cours', 13.75), dur: 45}, {kind: 'video', ...tv('cours', 28.95), dur: 45}, {kind: 'video', ...tv('cours', 22.12), dur: 30}]},
   {id: '4c', sec: 4, dur: 135, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], bg: [{...tv('sr', 30.35), dur: 52}, {...tv('sr', 32.1), dur: 83}]},
-  {id: '4d', sec: 4, dur: 105, tpl: 'T6', text: 'leChateau', photo: 'photos/le-chateau-garden-a.jpg', photoDur: 47, clip: tv('cours', 5.45)},
+  {id: '4d', sec: 4, dur: 105, tpl: 'T6', text: 'leChateau', photo: 'photos/le-chateau-garden-a.jpg', photoDur: 96, clip: tv('cours', 7.46)},
   // 5 · 02 Juniors (1155–1677): T2 → burst → morning/afternoon → T6 Castel Arabel → T3 Astor
   {id: '5a', sec: 5, dur: 150, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], clips: [{...tv('jr', 30.8), dur: 66}, {...tv('jr', 16.82), dur: 41}, {...tv('jr', 12.55), dur: 32}, {...tv('jr', 13.62), dur: 11}]},
   {id: '5b', sec: 5, dur: 15, tpl: 'video', clip: tv('jr', 5.05, JRB3)},
