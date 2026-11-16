@@ -1,233 +1,131 @@
-# BRIEF V2 — Film de marque « Centre International d'Antibes » (60 s)
+# BRIEF V3 — Film de marque « Centre International d'Antibes » (90 s)
 
-> Branche **`video-presentation-cia`** du dépôt `centre-international-antibes/cia-e-learning`. Branche isolée : **ne jamais fusionner dans `main`**, commits sur cette branche uniquement.
-> **La v1 est refusée.** Ce brief la remplace entièrement. Garde l'infrastructure du projet Remotion (config, polices, logo, composants utiles) mais **refais le film** : structure, montage, musique, motion design.
-> Source de vérité visuelle : charte institutionnelle CIA (`assets-src/brand/charte-graphique-CIA.pdf`, résumée au §8). Jamais `CIA-charte-graphique.md` (app e-learning).
-
----
-
-## 0. CE QUI NE VA PAS DANS LA V1 (à ne pas reproduire)
-
-1. **C'est un diaporama, pas un film.** 47 s sur 60 sont des écrans graphiques (carte, compteurs sur fond blanc, cartes 3D, colonnes de programmes sur blanc). La vraie vidéo n'arrive qu'à 47 s.
-2. **Trop lent.** Plans de 4 à 8 s, transitions longues, musique piano à 100 BPM sans énergie.
-3. **Les 4 films pros sont presque inutilisés.** Ce sont la matière première du film.
-4. **Les programmes phares sont listés en texte au lieu d'être montrés** : cours de français, Juniors Juan-les-Pins Premium, Wine & Cooking, 50+.
-5. Ça ressemble aux petits clips cuisine. Ici, c'est **le film de marque** du CIA.
-
-**Règle d'or v2 : la vidéo occupe 100 % du temps à l'écran.** Le motion design se pose **sur** les images, il ne les remplace plus. Aucun écran blanc ou bleu plein cadre avant la carte de fin.
+> Branche **`video-presentation-cia`** du dépôt `centre-international-antibes/cia-e-learning`. Branche isolée : **jamais de fusion dans `main`**.
+> **V1 refusée** (diaporama : que du graphisme, trop lent). **Montage offline V2 refusé** (que de la vidéo, plans d'environ 1 s tous identiques, rien à lire, rythme monotone, photos inutilisées).
+> **V3 = l'entre-deux** : un **script lisible**, des **séquences vidéo** qui respirent, et du **motion design éditorial** construit avec les **photos et les vidéos**. Garde l'infrastructure existante (config, polices, logo, tracés de « Live it. », dérush, EDL, recadrages et filigranes) ; refais la structure et le montage.
+> **Musique : hors sujet pour l'instant.** Monte sur un métronome à 120 BPM (piste de clics, uniquement pour caler le rythme). On posera une piste sous licence plus tard.
+> Charte : `assets-src/brand/charte-graphique-CIA.pdf` (rappel au §7). Jamais `CIA-charte-graphique.md`.
 
 ---
 
-## 1. RÔLE & MÉTHODE DE TRAVAIL (comme en post-production)
+## 0. LES 5 RÈGLES QUI CORRIGENT V1 ET V2
 
-Tu es à la fois **vidéaste-monteur senior** (pubs de marque, films tourisme / lifestyle) et **motion designer senior**. Références de ton : films de marque Airbnb Experiences, Visit France / Atout France, campagnes EF Education First, Aesop pour la retenue typographique.
-
-Travaille dans cet ordre, avec **deux validations de ma part** :
-
-1. **Dérush.** Pour chaque film : planche contact 2 images/s, puis note les meilleurs plans (début/fin à 0,1 s près, cadrage, énergie, présence de visages, défauts). Les timecodes du §4 sont un point de départ à affiner, pas une contrainte.
-2. **Musique** (§5) : récupère la piste, détecte le tempo et les temps forts (`librosa.beat.beat_track` ou `aubio`), construis la grille de montage sur la vraie musique.
-3. **Montage offline (« animatic »)** : coupes franches calées sur la musique, textes provisoires bruts, **aucun motion design**. Rends en 960×540 et envoie-moi la vidéo + la planche contact 1 image/s. **⏸ Attends ma validation du montage.**
-4. **Motion design** sur le montage validé (§6).
-5. **Finition** : étalonnage commun, mixage, déclinaisons (§9). Contrôle §10, puis livraison dans la conversation.
+1. **On doit pouvoir tout lire.** Une phrase reste à l'écran **au minimum 1 s + 0,3 s par mot** (titre + légende comptés ensemble : 8 mots = 3,4 s), immobile au moins 1,5 s. Les **cartes programme** (T2, T4) restent **4,5 s minimum**. **6 mots maximum par ligne**, 2 lignes maximum. Taille **minimum 44 px** pour toute ligne qu'on doit lire, 26 px seulement pour les surtitres. Les labels de 18–24 px de la V1 étaient illisibles : interdits.
+2. **Le rythme varie.** On alterne **respirations** (plans de 2,5 à 4 s, avec texte) et **rafales** (4 à 6 plans de 0,4 à 0,8 s, sans texte). **Une seule rafale par chapitre, au maximum.** Jamais plus de 3 plans consécutifs de même durée.
+3. **Hybride vidéo / graphisme.** Environ **60 % de vidéo plein cadre, 40 % de mises en page graphiques** (§3) qui contiennent elles-mêmes des photos ou de la vidéo. **Jamais un écran de texte seul sur fond uni**, sauf la carte de fin.
+4. **Les photos sont utilisées.** Au moins **12 photos** du dossier, principalement pour les lieux (Le Château, Le Port, Castel Arabel, Astor, Cannes), la cuisine et la dégustation.
+5. **Une histoire claire en 4 temps** : *qui on est → où → ce qu'on propose (4 programmes) → pourquoi c'est unique*. Le spectateur doit pouvoir résumer le film après l'avoir vu.
 
 ---
 
-## 2. LE FILM
+## 1. RÔLE & MÉTHODE
 
-- **Idée : « Une journée sur la Riviera, une vie en français. »** On vit une journée au CIA, du matin à la mer jusqu'au coucher de soleil, et chaque moment de la journée est un programme phare. La baseline arrive en conclusion, sur le coucher de soleil.
-- **Message :** au CIA on n'apprend pas seulement le français, on le vit → **« Don't learn French. Live it. »**
-- **Durée :** **60 s** (1 800 frames à 30 fps). **Langue :** anglais, version FR via `LANG`.
-- **Rythme :** plan moyen **1 à 1,5 s**, 40 à 55 plans au total. Plans les plus courts : 8 frames (inserts). Plans les plus longs : 3 s (titre d'ouverture, coucher de soleil).
-- **Sans le son**, on comprend en 5 s : école de français + Côte d'Azur + des gens heureux.
+Tu es **directeur artistique motion designer senior** et **monteur senior** (films de marque tourisme / éducation, niveau studio). Références : films de marque Airbnb, Visit France / Atout France, EF Education First ; mises en page éditoriales type magazine (Monocle, Kinfolk) pour les écrans graphiques.
 
----
-
-## 3. STRUCTURE (sur une grille de 120 BPM : 1 temps = 15 f, 1 mesure = 60 f, 30 mesures)
-
-Si la musique réelle n'est pas à 120 BPM, **recale toutes les durées sur ses mesures**. La structure (proportions, temps forts) reste la même.
-
-| Acte | Temps | Mesures | Rôle | Musique |
-|---|---|---|---|---|
-| A · Cold open | 0–4 s | 1–2 | 6 plans éclair, une salutation par plan | intro / montée |
-| B · Titre | 4–10 s | 3–5 | Bonjour + titre sur le drone d'Antibes | **drop** à 4 s |
-| C · 01 French Courses | 10–20 s | 6–10 | Écoles, profs, classes, international | groove |
-| D · 02 Juniors Premium | 20–32 s | 11–16 | Juan-les-Pins Premium, Castel Arabel, mer | groove + énergie max |
-| E · 03 Wine & Cooking | 32–43 s | 17–21 | Atelier cuisine → Château de Crémat | **break** (filtre, plus aéré) |
-| F · 04 50+ & Culture | 43–50 s | 22–25 | Marché, vieil Antibes, culture | remontée |
-| G · Finale | 50–60 s | 26–30 | Sourires en rafale → coucher de soleil → baseline → fin | **drop final** à 50 s, coup final à 56 s |
+1. **Styleframes d'abord.** Rends **8 images fixes 1920×1080**, une par gabarit du §3, avec les vrais textes et les vraies photos. Planche unique `styleframes.png` + les 8 PNG.
+2. **Animatic V3 dans la foulée** : le film complet en 960×540, gabarits animés simplement, textes définitifs, métronome. Plus la planche contact (1 image/s).
+3. **Livre les deux ensemble dans la conversation et attends ma validation** avant la finition (motion fin, étalonnage, déclinaisons).
+4. Avant de livrer, **contrôle-toi** : regarde la planche contact image par image et vérifie les règles du §0 (temps de lecture calculés pour chaque texte, alternance du rythme). Liste tes vérifications dans ton message.
 
 ---
 
-## 4. LISTE DE MONTAGE (EDL) — point de départ
+## 2. LE SCRIPT (90 s = 2 700 f à 30 fps, en anglais ; version FR au §8)
 
-Sources (`assets-src/video/`) : **COURS** = cours de français (60 s) · **JR** = junior program (34,5 s, 23,976 fps) · **WC** = wine & cooking (80 s) · **SR** = senior program (81 s). Timecodes en `mm:ss`, durées en frames 30 fps.
-Mets l'EDL finale dans `config.ts` (`EDL: {src, in, out, dur, crop, text?}[]`), jamais en dur dans les scènes.
+Le texte à l'écran **est la narration** : pas de voix off, donc chaque ligne doit faire avancer l'histoire.
 
-### A · Cold open (0–4 s, ~120 f)
-| # | Source | In | Dur | Plan | Texte |
+| # | Temps | Section | Gabarit | Images | **Texte à l'écran** (durée de lecture) |
 |---|---|---|---|---|---|
-| A1 | JR | 00:00.3 | 22 f | Mer, voiliers, main au premier plan (POV) | `Hello` |
-| A2 | JR | 00:02.5 | 18 f | Bouée tractée, éclaboussures | `Hola` |
-| A3 | WC | 00:33.5 | 18 f | On trinque en cuisine | `Ciao` |
-| A4 | COURS | 00:15.2 | 18 f | Prof très expressive | `Hallo` |
-| A5 | SR | 00:09.3 | 18 f | Rires au marché | `Привет` |
-| A6 | JR | 00:04.2 | 26 f | Ado qui rit et pointe la caméra | `こんにちは` |
-Salutations en Avenir/Nunito Bold 140 px, blanc, centrées, **coupées net avec le plan** (pas de fondu).
+| 1 | 0–6 s | **Accroche** | rafale + T1 | 6 plans éclair (JR mer/voiliers, JR bouée, WC on trinque, COURS prof expressive, SR rires au marché, JR ado qui rit) 0,5–0,7 s chacun, salutations `Hello · Hola · Ciao · Hallo · Привет · こんにちは` (un mot par plan, 120 px) → drone SR 00:01 mer vers Antibes | `Bonjour.` (2 s, 160 px) |
+| 2 | 6–14 s | **Promesse** | T1 puis T7 | Drone Antibes (SR 00:02–00:05, puis WC 00:36) | `LEARN FRENCH` / **`ON THE FRENCH RIVIERA`** (4 s) → carte : `ANTIBES · JUAN-LES-PINS · CANNES` (3 s) |
+| 3 | 14–24 s | **Qui on est** | T5 ×3 | Vidéo **dans les chiffres** : arrivées sous les drapeaux (COURS 00:11), classe qui rit (COURS 00:21), terrasse internationale (COURS 00:47) | **`1985`** `Since` (2,5 s) → **`10,000`** `students a year` (3 s) → **`50+`** `nationalities` (3 s) → ligne `Accredited Qualité FLE & EAQUALS` (2 s) |
+| 4 | 24–40 s | **01 · French courses** | T4 → vidéo → T3 → T6 | T4 sur fond vidéo de classe floutée ; 3 plans classe (COURS 00:15, 00:18, 00:29) de 1,5 s ; T3 collage de 3 photos Le Port ; T6 Le Château (photo jardin + vidéo du mas COURS 00:05) | Carte programme : **`FRENCH COURSES`** · `All levels · All year` · `Max. 12 per class` · `Intensive · DELF · Business French` (4,5 s) → sur les plans de classe : `Small classes. Real conversations.` (3 s) → collage : **`LE PORT`** `Old Town, steps from the beach` (3,5 s) → **`LE CHÂTEAU`** `A Provençal mas, 22 classrooms` (3,5 s) |
+| 5 | 40–56 s | **02 · Juniors Premium** | T2 → rafale → T6 → T3 | T2 : vidéo plage (JR 00:31) + panneau bleu ; rafale activités (JR bouée 00:05, catamaran 00:07, accrobranche 00:11, plage 00:32, piscine 00:29) 0,6 s chacune ; T6 Castel Arabel (photo façade → vidéo piscine JR 00:28) ; T3 Astor (2 photos chambres + salon) | Panneau : **`JUNIORS 8–17`** · `Juan-les-Pins Premium` · `All-inclusive · Supervised` (4,5 s) → (rafale sans texte) → `Classes in the morning.` / `The Riviera all afternoon.` (3,5 s, sur la fin de rafale + plan tenu) → **`CASTEL ARABEL`** `500 m from the beach` (3 s) → **`ASTOR`** `In the heart of Juan-les-Pins` (2,5 s) |
+| 6 | 56–72 s | **03 · Wine & Cooking** | T4 → T8 → T3 → vidéo | T4 sur la cheffe (WC 00:05) ; T8 triptyque inserts (WC 00:07, 00:11, 00:12) ; T3 photos (fraisier, cheffe, dégustation recadrée) ; drone Crémat (WC 00:51) + chai (WC 01:02) + on trinque (WC 01:12) | Carte programme : **`WINE & COOKING`** · `French through gastronomy` · `Workshops · Tastings · Excursions` (4,5 s) → triptyque : `Cook it. Taste it.` / `Say it in French.` (3 s) → drone : **`CHÂTEAU DE CRÉMAT`** `AOC Bellet, Nice` (3 s) |
+| 7 | 72–82 s | **04 · 50+** | T2 → vidéo | T2 : ruelle du vieil Antibes (SR 00:06) + panneau ; 3 plans de 1,5 s (marché SR 00:22, socca SR 00:25, photo face à la mer SR 00:29) | Panneau : **`50+ PROGRAMME`** · `Culture · Markets · Excursions` (4,5 s) → `Your pace. Your Riviera.` (2,5 s) |
+| 8 | 82–90 s | **Finale** | rafale → T1 → carte de fin | 6 sourires 0,4 s (1 par film minimum) → coucher de soleil (COURS 00:56) → carte de fin | `Don't learn French.` / *`Live it.`* tracé (3 s, blanc sur le soleil) → **carte de fin** (3 s) : logo blanc, 4 pictos programmes + `French courses · Juniors · Wine & Cooking · 50+`, `www.cia-france.com`, bouton `DISCOVER OUR PROGRAMMES` |
 
-### B · Titre (4–10 s, ~180 f)
-| # | Source | In | Dur | Plan | Texte |
-|---|---|---|---|---|---|
-| B1 | SR | 00:01.0 | 110 f | Drone : de la mer vers le vieil Antibes | `Bonjour.` (sur le drop) → s'efface → titre `LEARN FRENCH` / **`ON THE FRENCH RIVIERA`** + barre rouge |
-| B2 | WC | 00:36.0 | 70 f | Drone sur les toits d'Antibes et le port | surtitre `CENTRE INTERNATIONAL D'ANTIBES · SINCE 1985` + ligne `ANTIBES · JUAN-LES-PINS · CANNES` |
-
-### C · 01 French Courses (10–20 s, ~300 f)
-Étiquette de chapitre : `01` / `FRENCH COURSES` (+ sous-ligne `All levels · All year`).
-| # | Source | In | Dur | Plan | Texte / info |
-|---|---|---|---|---|---|
-| C1 | COURS | 00:05.0 | 40 f | Le Château : le mas couvert de lierre | étiquette de lieu `LE CHÂTEAU` |
-| C2 | COURS | 00:24.5 | 30 f | Drone sur les toits du vieil Antibes | étiquette de lieu `LE PORT · OLD TOWN` |
-| C3 | COURS | 00:11.0 | 40 f | Arrivée des étudiants sous les drapeaux | compteurs `10,000 students a year` · `50+ nationalities` |
-| C4 | COURS | 00:15.8 | 25 f | Prof expressive (autre moment que A4) | — |
-| C5 | COURS | 00:18.0 | 25 f | Prof en sweat jaune, au tableau | — |
-| C6 | COURS | 00:21.0 | 30 f | Groupe qui rit | chip `Max. 12 per class` |
-| C7 | COURS | 00:32.5 | 12 f | Insert : main qui écrit | — |
-| C8 | COURS | 00:29.0 | 30 f | Échange prof / étudiants | — |
-| C9 | photo `le-port-balcony-view-port-vauban.jpg` | — | 40 f | Balcon de l'école Le Port, vue sur le port Vauban (zoom lent) | chip `Intensive · DELF · Business French` |
-| C10 | COURS | 00:47.0 | 28 f | Terrasse, étudiants détendus | — |
-
-### D · 02 Juniors — Juan-les-Pins Premium (20–32 s, ~360 f)
-Étiquette de chapitre : `02` / `JUNIORS` + sous-ligne `Juan-les-Pins Premium · Ages 8–17`.
-| # | Source | In | Dur | Plan | Texte / info |
-|---|---|---|---|---|---|
-| D1 | JR | 00:22.0 | 30 f | Arrivée, valises, allée | — |
-| D2 | JR | 00:23.5 | 30 f | Écran partagé : découverte des chambres | — |
-| D3 | JR | 00:17.0 | 30 f | Classe avec vue | chip `Small classes · max. 10` |
-| D4 | JR | 00:19.0 | 20 f | Sourire en classe | — |
-| D5 | JR | 00:13.0 | 30 f | Déjeuner en terrasse | chip `All-inclusive · Supervised` |
-| D6 | JR | 00:28.5 | 45 f | Piscine de Castel Arabel | étiquette de lieu `CASTEL ARABEL` + `500 m from the beach` |
-| D7 | JR | 00:05.0 | 25 f | Bouée tractée (autre angle que A2) | — |
-| D8 | JR | 00:07.0 | 30 f | Catamaran, les filles rient | — |
-| D9 | JR | 00:11.0 | 25 f | Accrobranche | — |
-| D10 | JR | 00:31.0 | 45 f | Plage, l'équipe en t-shirts CIA | chip `Classes · Beach · Adventure` |
-Les plans juniors viennent **uniquement des films officiels CIA** (déjà diffusés par le CIA). Pas de photos de juniors en gros plan de visage.
-
-### E · 03 Wine & Cooking (32–43 s, ~330 f) — break musical
-Étiquette de chapitre : `03` / `WINE & COOKING` + sous-ligne `Cook. Taste. Speak French.`
-| # | Source | In | Dur | Plan | Texte / info |
-|---|---|---|---|---|---|
-| E1 | WC | 00:05.0 | 35 f | La cheffe sourit, panier de légumes | — |
-| E2 | WC | 00:07.0 | 10 f | Insert : couteau, tomate | triptyque (E2+E3+E4 côte à côte, sur 3 temps) |
-| E3 | WC | 00:11.0 | 10 f | Insert : poêle | |
-| E4 | WC | 00:12.0 | 10 f | Insert : farce de courgette | |
-| E5 | WC | 00:15.0 | 20 f | Four | — |
-| E6 | WC | 00:28.0 | 25 f | Poche à douille | — |
-| E7 | WC | 00:31.0 | 30 f | Tarte, finition des agrumes | — |
-| E8 | WC | 00:51.0 | 50 f | Drone : Château de Crémat, façade rouge | étiquette de lieu `CHÂTEAU DE CRÉMAT` + `AOC Bellet, Nice` |
-| E9 | WC | 00:58.0 | 25 f | Vignes au pied des remparts | — |
-| E10 | WC | 01:02.0 | 30 f | Chai à barriques | — |
-| E11 | WC | 01:09.0 | 25 f | On sert le vin | — |
-| E12 | WC | 01:12.0 | 40 f | On trinque en terrasse | — |
-**Interdit dans WC :** 00:55 (vitrail avec un monogramme de marque), gros plans de bouteilles avec étiquette lisible (01:05, 01:13).
-
-### F · 04 50+ & Culture (43–50 s, ~210 f)
-Étiquette de chapitre : `04` / `50+ PROGRAMME` + sous-ligne `Markets · Art · The Riviera`.
-| # | Source | In | Dur | Plan | Texte / info |
-|---|---|---|---|---|---|
-| F1 | SR | 00:06.0 | 35 f | Ruelle du vieil Antibes | — |
-| F2 | SR | 00:16.0 | 15 f | Insert : légumes du marché | — |
-| F3 | SR | 00:18.0 | 15 f | Insert : fleurs de courgette | — |
-| F4 | SR | 00:22.5 | 25 f | Groupe au marché, rires | — |
-| F5 | SR | 00:25.0 | 25 f | Four à socca | — |
-| F6 | SR | 00:29.0 | 30 f | Photo face à la mer | — |
-| F7 | SR | 00:53.0 | 25 f | Touches à parfum (**vérifie qu'aucune marque n'est lisible**) | — |
-| F8 | SR | 00:13.0 | 40 f | Drone sur les toits, vers la mer | — |
-**Interdit dans SR :** 00:15 (enseigne de marché lisible), 00:43, 00:46 et 00:51 (marque Fragonard lisible).
-
-### G · Finale (50–60 s, ~300 f)
-| # | Source | In | Dur | Plan | Texte |
-|---|---|---|---|---|---|
-| G1–G6 | mixte | — | 8–10 f chacun | **Rafale de 6 sourires** pas encore utilisés (un par film au moins), coupés sur chaque temps | — |
-| G7 | COURS | 00:54.0 | 55 f | Drone : vieil Antibes et remparts au soleil doré | — |
-| G8 | COURS | 00:56.0 | 70 f | Coucher de soleil sur la mer (vitesse réelle ou 0,9) | `Don't learn French.` puis *`Live it.`* tracé à la main (tracés du logo PDF), en **blanc** sur le soleil |
-| G9 | G8 figé ou suite | — | 120 f | Voile `#11263D` à 85 % qui monte sur le coucher de soleil | **Carte de fin** : logo CIA blanc, ligne `French courses · Juniors · Wine & Cooking · 50+ · Business French`, `www.cia-france.com`, bouton **`DISCOVER OUR PROGRAMMES`** (fond blanc, texte `#11263D`), crédits en petit. Tenue ≥ 2,5 s. |
-
-Total indicatif : ~1 800 f. Ajuste les durées sur la musique ; **la fin doit tomber pile sur 1 800 f.**
+**Vérifie le total : 2 700 f pile.** Ajuste les plans, pas les temps de lecture. Si une section déborde, raccourcis une rafale ou un plan sans texte.
+Les timecodes sources sont ceux de ton dérush V2 : reprends tes meilleurs in/out. Évite toujours WC 00:55, SR 00:15, 00:43, 00:46, 00:51 et les étiquettes de bouteilles lisibles.
 
 ---
 
-## 5. MUSIQUE — c'est elle qui fait le film
+## 3. LES 8 GABARITS (le motion design éditorial)
 
-- **Piste sous licence obligatoire pour un rendu pro.** Jules dépose un MP3/WAV dans `assets-src/audio/` (Artlist, Epidemic Sound ou Musicbed). Brief musical : **instrumental, 118–124 BPM, pop/house estivale lumineuse avec guitare ou percussions organiques, montée en intro, drop net, break au milieu, drop final, fin franche** (pas de fondu interminable). Pas de voix.
-- **Si `assets-src/audio/` est vide :** génère une piste **TEMP** à 120 BPM avec cette structure (intro filtrée 0–4 s, drop à 4 s, break à 32 s, drop à 50 s, coup final à 56 s), uniquement pour valider le montage. Nomme le rendu `…-TEMP-MUSIC.mp4` et signale-le. Ne présente jamais une piste générée comme définitive.
-- **Sound design** (léger, sous la musique) : whoosh sur les transitions de chapitre, impact sur le titre et sur le drop final, sons d'ambiance réels courts si utiles (vague, verres qui trinquent) — générés ou synthétisés, jamais repris des films sources (leur son contient leur propre musique).
-- **Mixage :** −14 LUFS intégrés (web / réseaux), crête vraie ≤ −1 dBTP.
+Grille 12 colonnes sur 1920 px, marges 140 px, gouttière 24 px. Un seul texte actif à la fois. Les animations d'entrée et de sortie se calent sur les temps du métronome (15 f).
 
----
+| Gabarit | Description | Technique |
+|---|---|---|
+| **T1 · Titre sur vidéo** | Vidéo plein cadre, voile dégradé `#11263D` en bas à gauche, titre 96–112 px Regular + **Bold**, barre rouge. | Masques ligne par ligne (`overflow:hidden`), `@remotion/layout-utils` (`fitText`) pour que le titre tienne sans casser. |
+| **T2 · Écran partagé** | 7 colonnes de vidéo à gauche, 5 colonnes de panneau `#11263D` à droite : numéro `02`, nom du programme 72 px Bold, 2 à 3 lignes de faits 36 px avec pictos Lucide qui se dessinent. Le panneau entre en glissé ; la vidéo continue derrière. | `clipPath` animé, `@remotion/paths` pour les pictos. |
+| **T3 · Collage photo** | 3 photos en cartes (coins 8 px, bordure blanche 6 px, ombre douce) posées l'une après l'autre sur un fond **vidéo floutée et assombrie** du même lieu (pas de fond uni), titre du lieu 72 px + légende 36 px. | Entrées décalées de 6 f, léger zoom dans chaque photo, **parallaxe 2,5D** sur la photo principale (§4). |
+| **T4 · Carte programme** | La vidéo du programme tourne en fond (flou 12 px + voile 55 %) ; au premier plan, une carte blanche (6 colonnes, coins 8 px) : numéro, **nom du programme** 80 px Bold `#11263D`, 3 lignes de faits 36 px, barre rouge. La carte s'ouvre en volet, puis la vidéo se défloute à la sortie de la carte. | `@remotion/transitions` (présentation custom), flou animé. |
+| **T5 · Chiffre en défonce** | Chiffre géant (400–520 px, Bold) qui sert de **masque** : on voit la vidéo à travers les chiffres, sur fond `#11263D` ; libellé 48 px à côté. Le chiffre défile (compteur), puis le masque s'ouvre jusqu'au plein cadre pour passer au plan suivant. | Texte en `clipPath` / `mask-image` sur `<OffthreadVideo>`, compteur `interpolate` + chiffres tabulaires. |
+| **T6 · Image dans l'image** | Une photo du lieu dans une carte au centre, sur le voile bleu → la carte s'agrandit jusqu'au plein cadre et **devient la vidéo** du même lieu (fondu sur 8 f à l'intérieur de la carte). Label de lieu en bas à gauche. | Interpolation de taille et de position de la carte, fondu photo → vidéo. |
+| **T7 · Carte de la Côte** | 3 s seulement : trait de côte (reprends la carte V1), 3 villes qui s'allument l'une après l'autre, sur fond `#11263D`, avec la vidéo drone en incrustation ronde qui suit la caméra. | Réutilisation du composant carte V1, accéléré. |
+| **T8 · Triptyque** | 3 vidéos côte à côte (filets blancs de 6 px) qui apparaissent une par temps ; texte au-dessus sur une bande `#11263D`. | 3 `<OffthreadVideo>` synchronisés. |
 
-## 6. MOTION DESIGN — sur l'image, au service du rythme
-
-**Outils à utiliser :**
-- **Étiquettes de chapitre** (4) : petit numéro `01` en Medium +0.25em, titre en Bold majuscules 88–100 px, sous-ligne Regular 32 px, barre rouge. Apparition en masque vertical sur le premier temps du chapitre, visibles 2 mesures, sortie en masque. Calées en bas à gauche, voile dégradé `#11263D` dessous.
-- **Étiquettes de lieu** (Le Château, Le Port, Castel Arabel, Château de Crémat) : petit point + filet fin qui pointe vers le bâtiment, nom en Medium majuscules 26 px +0.25em. Le point suit le bâtiment : keyframes manuels tous les 15 f, vérifiés sur les stills.
-- **Chips d'info** : pastille `#11263D` à 80 %, texte blanc 28 px, coins 4 px, entrée en glissé 10 f. Une seule à l'écran à la fois.
-- **Compteurs** (C3) : chiffres qui roulent sur l'image (tabulaires), pas sur fond blanc.
-- **Salutations du cold open** : mot centré, coupé avec le plan, très léger flou de mouvement d'entrée.
-- **Triptyque** (E2–E4) : 3 inserts côte à côte qui apparaissent un par temps, filets blancs de 6 px entre eux.
-- **Transitions :** 80 % de **coupes franches sur les temps**. Entre chapitres : **whip pan** (glissé 8 f + flou directionnel, `@remotion/motion-blur`) ou volet signature bleu `#283371` + filet rouge en **8 f maximum**. Un **flash blanc de 2 f** sur le drop du titre et sur le drop final. Jamais de fondu enchaîné long.
-- **Énergie dans le plan :** léger zoom avant continu (1.00 → 1.04) sur les plans fixes, recadrage dynamique (punch-in de 1.15 sur un temps fort) 2 ou 3 fois dans le film, vitesse 1.0 à 1.2 sur les plans lents. Pas de ralenti sous 0,9 (sauf le coucher de soleil).
-
-**Retirés de la v1 :** carte animée, écran de compteurs sur blanc, carrousel de cartes 3D, colonnes de programmes sur blanc, shader. Ils ne reviennent pas.
+**Transitions :** coupes franches sur les temps (60 %), entrées et sorties de gabarit (30 %), **whip pan** 8 f avec flou directionnel (`@remotion/motion-blur`) entre chapitres (10 %). Pas de fondu enchaîné long, pas de flash.
+**Signature de marque :** numéro de chapitre + barre rouge à chaque début de chapitre ; petite signature logo blanche en haut à droite sur les plans vidéo plein cadre (pas sur les gabarits).
 
 ---
 
-## 7. IMAGE : RECADRAGE OBLIGATOIRE & ÉTALONNAGE
+## 4. STACK TECHNIQUE (niveau studio)
 
-- **Les films sources portent des logos incrustés** : logo CIA en bas à gauche (les 4 films) et **badge « vimeo » en bas à droite** (WC et SR). Ils ne doivent **jamais** apparaître.
-  - Par défaut : **scale 1.18, ancré en haut** (`transformOrigin: 'top center'`). Ça retire les 15 % du bas, logos compris.
-  - Si un cadrage coupe une tête : ancre au centre et ajuste `translateY`, mais vérifie que les deux coins bas restent hors champ.
-  - Contrôle **chaque plan** sur sa 1re et sa dernière frame.
-  - **Droits confirmés par Jules :** le CIA a produit ces films de A à Z ; Vimeo n'est qu'une plateforme de diffusion. Tu peux **retirer les filigranes** (logo CIA et badge vimeo) par tout moyen technique. Quand le recadrage 1.18 abîme un plan (tête coupée, horizon de drone trop serré), efface le filigrane à la place : `ffmpeg -vf delogo=x:y:w:h` sur des copies dans `public/video/clean/`, ou inpainting OpenCV (`cv2.inpaint`, image par image) pour les plans en mouvement. Vérifie à 100 % qu'il ne reste ni tache floue visible ni contour : si le résultat se voit, reviens au recadrage.
-  - *Jules va aussi demander les masters propres sans logo au vidéaste. S'ils arrivent dans `assets-src/video/clean/`, utilise-les à la place et repasse à scale 1.00–1.04.*
-- **Photos CIA** : zoom lent ≤ 1.12, jamais de bord vide.
-- **Étalonnage commun** sur toutes les sources : léger voile chaud (`rgba(255,190,120,.05)` en soft-light), contraste +4 %, saturation +5 %, vignettage `#11263D` doux. Les 4 films doivent sembler venir du même tournage.
-- Aucun texte sur un visage. Aucune marque tierce lisible.
+| Brique | Usage | Si indisponible |
+|---|---|---|
+| Remotion 4 (`Series`, `TransitionSeries`, `interpolate`, `spring` amorti, `Easing.bezier`) | Montage et animation pilotés par la frame | — |
+| `@remotion/layout-utils` | `fitText` / `measureText` : titres qui tiennent toujours dans leur colonne, en EN comme en FR | Tailles fixes vérifiées sur stills |
+| `@remotion/transitions` (présentations custom) | Volet T4, whip pan, ouverture de masque T5 | — |
+| `@remotion/motion-blur` | Flou de mouvement des whip pans et des entrées rapides | Flou CSS directionnel |
+| `@remotion/paths` | Pictos Lucide et filets qui se dessinent, « Live it. » tracé | — |
+| `@remotion/three` | Parallaxe 2,5D des photos (photo projetée sur un plan déformé par sa carte de profondeur, caméra qui glisse légèrement) | Parallaxe en 2 couches (détourage) ou zoom lent |
+| **Python : Depth Anything V2 Small** (`transformers` ou ONNX) | Cartes de profondeur des photos pour la parallaxe 2,5D | Pas de profondeur → zoom lent |
+| **Python : `rembg` (u2net / BiRefNet)** | Détourage des sujets pour **mettre du texte derrière une personne ou un bâtiment** (1 ou 2 fois dans le film, sur T1 ou T3) | Texte devant, simplement |
+| ffmpeg / OpenCV | Filigranes (déjà en place), flou de fond, planches contact, contrôle | — |
 
----
-
-## 8. CHARTE (rappel)
-
-- **Couleurs :** `#11263D` (dominante), `#283371` (structure), `#E64353` (accent : barres, 1 mot max par écran), blanc. Rien d'autre (pas d'or, pas de couleurs de l'app e-learning).
-- **Typo :** Avenir Next si présente dans `assets-src/fonts/`, sinon **Nunito Sans** (déjà en place). « Live it. » = tracés extraits du logo PDF (déjà en place).
-- **Logo :** version principale sans baseline sur la carte de fin, en blanc sur fond sombre ; zone de protection respectée. Petite signature blanche en haut à droite **uniquement** pendant l'acte B.
-- **Marges :** 140 px gauche/droite, 130 px bas, 100 px haut.
-- **Faits autorisés :** since 1985 · 10,000 students a year · 50+ nationalities · Qualité FLE & EAQUALS · max. 12 per class (adults), max. 10 (Premium juniors) · Juniors 8–17 Premium Juan-les-Pins, all-inclusive, supervised · Castel Arabel, 500 m from the beach · Château de Crémat, AOC Bellet. Rien d'autre (pas de prix, pas de superlatif, pas de 97 % DELF).
-- Site : **www.cia-france.com**.
+Les modèles se téléchargent depuis Hugging Face. **Teste l'accès d'abord** ; s'il est bloqué, dis-le et passe aux solutions de repli sans contourner. **Toutes les images générées par ces outils** (profondeur, détourages) sont **précalculées** dans `public/derived/` et versionnées : rien n'est calculé au rendu.
 
 ---
 
-## 9. DÉCLINAISONS
+## 5. MÉDIAS
 
-- **9:16 (1080×1920, 60 s)** : même EDL, **recadrage par plan** (`crop9x16: {x}` dans l'EDL : centre d'intérêt de chaque plan). Le triptyque devient vertical. Textes 84 px, marges 80 / 220 bas.
-- **Cutdown 30 s** : A (2 s) → B (3 s) → 2 plans par chapitre avec leur étiquette (C, D, E, F) → G7-G8-G9. Sur la même musique, coupée sur une mesure.
-- **Cutdown 15 s (réseaux)** : A (2 s) → B1 (2 s) → 1 plan par chapitre (C6, D8, E12, F4) → G8-G9.
-- **Version FR** : `LANG='fr'` — `APPRENDRE LE FRANÇAIS / SUR LA CÔTE D'AZUR`, `COURS DE FRANÇAIS`, `JUNIORS`, `WINE & COOKING`, `PROGRAMME 50+`, chips traduites ; la baseline reste en anglais.
+- **Vidéos :** les 4 films, avec ton dérush V2 (EDL, recadrages, filigranes retirés).
+- **Photos à mettre dans `public/photos/`, en plus de celles déjà copiées** (copie et renomme depuis `assets-src/photos/`, redimensionne à 2560 px de large) :
+  - piscine de Castel Arabel : `Piscine Castel Petits (18, 28, 37 sur 37)` → `castel-arabel-pool-*.jpg`. Enfants : uniquement en plan large, sans visage reconnaissable en gros plan.
+  - `cooking-workshop-chef-a.jpg`, `wine-tasting-toast.jpg` (étiquette de vin recadrée hors champ), `le-port-class-teacher-student.jpg`.
+  - les photos `Prestige Sem 31`, `Groupes divers`, `1 (2)`, `2`, `16`, `24 (1)`, `38` et `test (… sur 27)` : regarde-les, garde celles qui servent le script (lieux, cours, activités) et indique dans ton message ce que tu as pris et ce que tu as écarté, et pourquoi.
+- **Polices :** Nunito Sans tant qu'Avenir Next / Better Together ne sont pas dans `assets-src/fonts/`.
 
 ---
 
-## 10. CHECKLIST AVANT LIVRAISON
+## 6. IMAGE
 
-- [ ] Aucun écran graphique plein cadre avant la carte de fin ; la vidéo est présente 100 % du temps.
-- [ ] 40 à 55 plans, durée moyenne 1–1,5 s ; toutes les coupes tombent sur un temps (tolérance ±1 f).
-- [ ] Les 4 programmes phares sont **montrés** et nommés ; chaque chapitre dure au moins 7 s.
-- [ ] **Aucun logo incrusté visible** (CIA bas gauche, vimeo bas droite) sur aucune frame : vérifie la planche contact à 2 images/s.
-- [ ] Aucune marque tierce lisible (Fragonard, monogramme du vitrail, étiquettes de bouteilles).
-- [ ] Étalonnage homogène entre les 4 sources.
-- [ ] Texte lisible (contraste sur l'image, voile dessous), jamais sur un visage, une seule chip à la fois.
-- [ ] Musique : drops aux bons endroits, fin franche, −14 LUFS, piste TEMP signalée si générée.
-- [ ] 1 800 f pile (master), 900 f (30 s), 450 f (15 s).
-- [ ] Rien poussé ailleurs que sur `video-presentation-cia`.
+- Filigranes : jamais visibles (règles V2 inchangées).
+- Étalonnage commun sur vidéos **et photos** : léger voile chaud, contraste +4 %, saturation +5 %, vignettage `#11263D` doux. Les photos ne doivent pas paraître plus « plates » que la vidéo.
+- Aucun texte sur un visage, aucune marque tierce lisible.
 
-## 11. LIVRABLES (dans la conversation)
+---
 
-1. Étape 3 : `offline-cut-540p.mp4` + `offline-contact-sheet.png` → **validation**
-2. Étape 5 : `cia-brand-film-60s-16x9-en.mp4` (+ `-fr`), `cia-brand-film-60s-9x16-en.mp4`, `cia-brand-film-30s-16x9-en.mp4`, `cia-brand-film-15s-9x16-en.mp4`, poster PNG, planche contact, et l'EDL finale (`edl.json`).
+## 7. CHARTE (rappel)
+
+- Couleurs : `#11263D` (dominante), `#283371` (structure), `#E64353` (accent : barres, 1 mot max par écran), blanc. Opacités autorisées, rien d'autre.
+- Typo : Avenir Next si fournie, sinon Nunito Sans. Titres en MAJUSCULES +0.02em ; surtitres Medium +0.25em ; lignes de lecture en casse normale.
+- Logo : version principale sans baseline sur la carte de fin, blanc sur fond sombre.
+- Faits autorisés : since 1985 · 10,000 students a year · 50+ nationalities · Qualité FLE & EAQUALS · max. 12 per class (adults) · Juniors 8–17, Juan-les-Pins Premium, all-inclusive, supervised, classes in the morning / activities in the afternoon · Le Port (Old Town, steps from the beach) · Le Château (Provençal mas, 22 classrooms) · Castel Arabel (500 m from the beach) · Astor (In the heart of Juan-les-Pins — **à valider par Jules**) · Château de Crémat (AOC Bellet, Nice) · 50+ (culture, markets, excursions). Pas de prix, pas de superlatif.
+- Site : www.cia-france.com.
+
+---
+
+## 8. VERSION FR (`LANG='fr'`)
+
+`Bonjour.` · `APPRENDRE LE FRANÇAIS / SUR LA CÔTE D'AZUR` · `Depuis 1985` · `étudiants par an` · `nationalités` · `Labels Qualité FLE & EAQUALS` · `COURS DE FRANÇAIS` · `Tous niveaux · Toute l'année` · `12 élèves max. par classe` · `Petits groupes. Vraies conversations.` · `Le vieil Antibes, à deux pas de la plage` · `Un mas provençal, 22 salles` · `JUNIORS 8–17 ANS` · `Tout compris · Encadré` · `Les cours le matin.` / `La Riviera l'après-midi.` · `À 500 m de la plage` · `Au cœur de Juan-les-Pins` · `WINE & COOKING` · `Le français par la gastronomie` · `Ateliers · Dégustations · Excursions` · `Cuisinez. Goûtez.` / `Dites-le en français.` · `PROGRAMME 50+` · `Culture · Marchés · Excursions` · `Votre rythme. Votre Riviera.` · `DÉCOUVREZ NOS PROGRAMMES`. La baseline reste en anglais.
+
+---
+
+## 9. LIVRABLES DE CETTE ÉTAPE (dans la conversation)
+
+1. `styleframes.png` (planche des 8 gabarits) + les 8 PNG en 1920×1080.
+2. `animatic-v3-540p.mp4` (90 s, métronome) + `animatic-v3-contact-sheet.png`.
+3. Un message court : tableau script → durée de lecture calculée pour chaque texte, liste des photos utilisées et écartées, état des outils Python (profondeur, détourage : OK ou repli).
+
+Déclinaisons (9:16, 30 s, 15 s), étalonnage final et musique : **après** validation de l'animatic.
