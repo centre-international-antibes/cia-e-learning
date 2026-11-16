@@ -7,6 +7,7 @@
 | `photos/le-port-balcony-view-port-vauban.jpg` | `photos/le-port-balcony-view-port-vauban.jpg` | Scène 4 — Le Port |
 | `photos/le-chateau-garden-a.jpg` | `photos/Photos CHATEAU Haute résolution-22.JPG` | Scène 4 — Le Château |
 | `photos/castel-arabel-facade-tower.jpg` | `photos/castel-arabel-facade-tower.jpg` | Scène 4 — Castel Arabel |
+| `photos/astor-room-balcony.jpg` | `photos/2.jpg` (résidence Astor, confirmé par le CIA) | Scène 4 — Astor |
 | `photos/le-port-class-adults-groupwork.jpg` | `photos/le-port-class-adults-groupwork.jpg` | Scène 6 — LEARN |
 | `photos/cooking-workshop-chef-b.jpg` | `photos/cooking-workshop-chef-b.jpg` | Scène 6 — TASTE (cadré en haut : brique de crème hors champ) |
 | `video/riviera-aerial-bay.mp4` | `video/centre_international_antibes_cours_de_français_v1 (1080p).mp4`, 0,00–4,30 s (ralenti ×1,7) | Scène 1 |
@@ -17,7 +18,7 @@
 
 Les extraits vidéo CIA sont recadrés ×1,08 (`prepare-assets.py`) pour retirer le logo CIA incrusté (et le badge « 40 ans » du film junior). Les films *Wine & Cooking* et *Senior Program* portent un badge « vimeo » non retirable dans la limite de zoom : ils ne sont pas utilisés.
 
-Les personnes visibles sur les photos et vidéos CIA sont des modèles des tournages CIA : aucun nom, aucune citation, aucun rôle n'est indiqué. **Droit à l'image (notamment juniors) : à confirmer par le CIA avant diffusion.**
+Les personnes visibles sur les photos et vidéos CIA sont des modèles des tournages CIA : aucun nom, aucune citation, aucun rôle n'est indiqué. Autorisations parentales des juniors : **confirmées par le CIA (16/11/2026)**.
 
 ## Médias libres de droits
 

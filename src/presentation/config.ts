@@ -195,6 +195,7 @@ export const TEXT = {
         {name: 'LE CHÂTEAU', caption: 'A Provençal mas, 22 classrooms'},
         {name: 'CANNES', caption: 'A listed historic campus'},
         {name: 'CASTEL ARABEL', caption: 'Our residence in Juan-les-Pins'},
+        {name: 'ASTOR', caption: ''}, // caption awaiting validation (brief §1: name only)
       ],
     },
     programmes: {
@@ -241,6 +242,7 @@ export const TEXT = {
         {name: 'LE CHÂTEAU', caption: 'Un mas provençal, 22 salles'},
         {name: 'CANNES', caption: 'Un campus classé monument historique'},
         {name: 'CASTEL ARABEL', caption: 'Notre résidence à Juan-les-Pins'},
+        {name: 'ASTOR', caption: ''}, // légende à valider (brief §1 : nom seul)
       ],
     },
     programmes: {
@@ -279,6 +281,7 @@ export const ASSETS = {
     {photo: 'photos/le-chateau-garden-a.jpg', focus: [0.5, 0.5] as [number, number]},
     {photo: 'photos/cannes-vieux-port-wikimedia.jpg', focus: [0.55, 0.55] as [number, number]},
     {photo: 'photos/castel-arabel-facade-tower.jpg', focus: [0.45, 0.4] as [number, number]},
+    {photo: 'photos/astor-room-balcony.jpg', focus: [0.5, 0.55] as [number, number]},
   ] as {photo: string | null; focus: [number, number]}[],
   /** Scene 6 shots, one word each, cut on beats. Video zoom ≤ 1.08, photo ≤ 1.12. */
   liveIt: [

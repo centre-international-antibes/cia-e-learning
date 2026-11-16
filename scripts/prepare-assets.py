@@ -37,6 +37,12 @@ PHOTOS = {
     "Photos CHATEAU Haute résolution-23.JPG": "le-chateau-terrace-b.jpg",
     "Photos CHATEAU Haute résolution-41.JPG": "le-chateau-terrace-c.jpg",
     "test (10 sur 27).jpg": "juniors-class-teacher-whiteboard.jpg",
+    # Résidence Astor (confirmed by the CIA, 16/11/2026)
+    "2.jpg": "astor-room-balcony.jpg",
+    "1 (2).jpg": "astor-room-a.jpg",
+    "16.jpg": "astor-lounge.jpg",
+    "24 (1).jpg": "astor-room-b.jpg",
+    "38.jpg": "astor-room-c.jpg",
 }
 # Free-licence media downloaded by scripts/download-media.sh
 DOWNLOADED = {
