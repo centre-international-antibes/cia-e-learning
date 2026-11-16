@@ -186,7 +186,8 @@ Total indicatif : ~1 800 f. Ajuste les durées sur la musique ; **la fin doit to
   - Par défaut : **scale 1.18, ancré en haut** (`transformOrigin: 'top center'`). Ça retire les 15 % du bas, logos compris.
   - Si un cadrage coupe une tête : ancre au centre et ajuste `translateY`, mais vérifie que les deux coins bas restent hors champ.
   - Contrôle **chaque plan** sur sa 1re et sa dernière frame.
-  - *Jules va demander les masters propres sans logo au vidéaste. S'ils arrivent dans `assets-src/video/clean/`, utilise-les à la place et repasse à scale 1.00–1.04.*
+  - **Droits confirmés par Jules :** le CIA a produit ces films de A à Z ; Vimeo n'est qu'une plateforme de diffusion. Tu peux **retirer les filigranes** (logo CIA et badge vimeo) par tout moyen technique. Quand le recadrage 1.18 abîme un plan (tête coupée, horizon de drone trop serré), efface le filigrane à la place : `ffmpeg -vf delogo=x:y:w:h` sur des copies dans `public/video/clean/`, ou inpainting OpenCV (`cv2.inpaint`, image par image) pour les plans en mouvement. Vérifie à 100 % qu'il ne reste ni tache floue visible ni contour : si le résultat se voit, reviens au recadrage.
+  - *Jules va aussi demander les masters propres sans logo au vidéaste. S'ils arrivent dans `assets-src/video/clean/`, utilise-les à la place et repasse à scale 1.00–1.04.*
 - **Photos CIA** : zoom lent ≤ 1.12, jamais de bord vide.
 - **Étalonnage commun** sur toutes les sources : léger voile chaud (`rgba(255,190,120,.05)` en soft-light), contraste +4 %, saturation +5 %, vignettage `#11263D` doux. Les 4 films doivent sembler venir du même tournage.
 - Aucun texte sur un visage. Aucune marque tierce lisible.
