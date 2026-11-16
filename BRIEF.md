@@ -1,7 +1,7 @@
 # BRIEF CLAUDE CODE — Film motion design « Centre International d'Antibes — Présentation »
 
-> À coller tel quel dans Claude Code, **à la racine du kit** (le dossier qui contient `assets-src/`).
-> Ce film est le **film institutionnel** de la série vidéo CIA (après « Cooking Masterclass » et « Wine Tasting au Château de Crémat »). **Si le projet Remotion de ces vidéos existe, réutilise son code** (composants, polices, volet de transition, CTA, config) : on garde la même signature. Nouvelle composition, nouveau `config`.
+> Tu travailles sur la branche **`video-presentation-cia`** du dépôt `centre-international-antibes/cia-e-learning`. Cette branche est **isolée** : elle ne contient que ce film (brief + `assets-src/`), pas le code de l'app. **Ne fusionne jamais dans `main`, n'ouvre pas de PR vers `main`, ne touche à aucune autre branche.** Crée le projet Remotion **à la racine de cette branche**.
+> Ce film est le **film institutionnel** de la série vidéo CIA (après « Cooking Masterclass » et « Wine Tasting au Château de Crémat »). Le code de ces vidéos n'est pas sur cette branche : reproduis leur signature à partir de ce brief (volet bleu + filet rouge, barre rouge, CTA).
 >
 > Source de vérité visuelle : **charte institutionnelle CIA juin 2026** (`assets-src/brand/charte-graphique-CIA.pdf`, résumée au §6). **Ne jamais utiliser `CIA-charte-graphique.md`** (charte de l'app e-learning : or, Spark, Plus Jakarta Sans… tout est interdit ici).
 
@@ -19,10 +19,11 @@ Tu es **directeur artistique motion designer senior** (niveau studio, référenc
 6. Rends le master, extrais une **planche contact** (1 image/seconde) et un **contrôle audio** (loudness), vérifie-les, puis seulement dis-moi que c'est fini.
 
 ### Environnement : Claude Code sur le web (cloud)
-- Tu travailles dans un dépôt GitHub **privé** cloné dans un conteneur Linux **sans GPU** : rends tout ce qui contient du Three.js avec `--gl=swangle`. Teste d'abord un rendu court (scène 1 seule) pour mesurer le temps de rendu ; si c'est trop lent, baisse la complexité du shader plutôt que de supprimer la scène.
+- Commits réguliers sur `video-presentation-cia` uniquement (un commit par scène terminée).
+- Tu travailles dans un conteneur Linux **sans GPU** : rends tout ce qui contient du Three.js avec `--gl=swangle`. Teste d'abord un rendu court (scène 1 seule) pour mesurer le temps de rendu ; si c'est trop lent, baisse la complexité du shader plutôt que de supprimer la scène.
 - Vérifie au démarrage que `ffmpeg` et `python3` (numpy, scipy) sont présents ; installe ce qui manque (`pip install --break-system-packages`).
 - Le réseau est filtré : npm et GitHub passent, les autres sites peuvent être bloqués. Si un téléchargement échoue (Mixkit, Wikimedia, tuiles Mapbox), **arrête-toi et dis-le-moi**, ne contourne pas.
-- **Ne committe jamais les rendus dans git** (`out/` dans `.gitignore`). Livre les MP4, PNG et la planche contact en **release GitHub** : `gh release create v1-presentation out/* --title "Film présentation CIA v1" --notes "…"`. Les polices commerciales restent dans le dépôt privé, jamais dans une release.
+- **Ne committe jamais les rendus dans git** (`out/` dans `.gitignore`). Livre les MP4, PNG et la planche contact en **release GitHub** marquée pré-version, rattachée à cette branche : `gh release create video-presentation-v1 out/* --target video-presentation-cia --prerelease --title "Film présentation CIA v1" --notes "…"`. Si `gh` n'est pas authentifié, dis-le-moi et donne-moi la liste des fichiers produits au lieu de chercher un autre moyen. Les polices commerciales restent dans le dépôt privé, jamais dans une release.
 
 ---
 
@@ -43,6 +44,8 @@ Tu es **directeur artistique motion designer senior** (niveau studio, référenc
 - Établissement d'enseignement supérieur privé.
 - **3 destinations** : **Antibes, Juan-les-Pins, Cannes**.
 - Écoles : **Le Port** (vieil Antibes, à deux pas des plages, du marché provençal et du port ; 10 salles + cuisine pour les ateliers culinaires) · **Le Château** (ancien mas provençal, 22 salles, restaurant panoramique, jardin méditerranéen) · **campus de Cannes** classé monument historique.
+- Résidence **Castel Arabel** à Juan-les-Pins, à 500 m des plages. N'affiche ni nombre de chambres ni équipements (piscine, etc.) : non confirmés.
+- Résidence **Astor** : aucun fait validé pour l'instant → nom seul, légende à me faire valider.
 - Adultes : **12 étudiants maximum par classe**, tous niveaux, cours toute l'année.
 - Programmes adultes : Intensive, DELF, Business French / Manager, 50+, Wine & Cooking.
 - Juniors : **6 à 17 ans**, séjours tout compris, activités et excursions (Monaco, Nice, Cannes), voile et sports nautiques.
@@ -80,13 +83,13 @@ Convention : `MOT` en **gras** = Avenir Next Bold ; mot en *rouge* = accent `#E6
 | 1 | **0–6,5 s** (195 f) | **Accroche : le monde entier** | Fond : lumière méditerranéenne générée en **shader WebGL** (`@remotion/three`, plan plein cadre, reflets d'eau / caustiques lents, teintes **uniquement** dérivées de `#11263D` et `#283371` + blanc). Si un rush mer/port de qualité existe, il remplace le shader sous un voile bleu. | Au centre, salutations qui défilent en accélérant : `Hello` · `Hallo` · `Hola` · `Ciao` · `Olá` · `Привет` · `Merhaba` · `こんにちは` · `你好` → atterrissage sur **`Bonjour`** (tenu 1,5 s). Puis surtitre : `CENTRE INTERNATIONAL D'ANTIBES · SINCE 1985`. | Chaque mot entre en masque vertical + léger flou de mouvement (`@remotion/motion-blur`, `<CameraMotionBlur>`), cadence 10 f → 4 f. « Bonjour » : arrêt net, barre rouge qui s'étire dessous. |
 | 2 | **6,5–14 s** (225 f) | **Lieu : la Côte d'Azur** | **Carte animée** : plan Europe → descente sur la Côte d'Azur, le trait de côte se dessine, 3 points s'allument. Méthode : skill **`remotion-maps`** (Mapbox, style épuré re-coloré en palette CIA) **si un token Mapbox est dans `.env`** ; sinon carte SVG maison : trait de côte Natural Earth (domaine public) projeté avec `d3-geo`, dessiné avec `@remotion/paths` (`evolvePath`). | Titre : `LEARN FRENCH` / **`ON THE FRENCH RIVIERA`** + 3 étiquettes aux points : `ANTIBES` · `JUAN-LES-PINS` · `CANNES`. | Caméra qui plonge (scale + translate, easing zoom lent). Points : cercles (`@remotion/shapes`) + onde concentrique unique, décalage 8 f. Étiquettes en surtitre. |
 | 3 | **14–22,5 s** (255 f) | **Crédibilité : les chiffres** | Fond blanc. 3 compteurs alignés + ligne de labels. Fines lignes de grille bleues qui se tracent, grain subtil (`@remotion/noise`, amplitude très faible). | `SINCE` **`1985`** · **`10,000`** `students a year` · **`50+`** `nationalities` — puis ligne secondaire : `Accredited by Qualité FLE & EAQUALS`. | Compteurs qui roulent (chiffres tabulaires, `font-variant-numeric: tabular-nums`) avec easing de sortie, décalage 12 f. Barre rouge sous le chiffre central seulement. |
-| 4 | **22,5–35 s** (375 f) | **Les écoles** | **3 cartes photo dans un espace 3D** (`@remotion/three` : plans texturés, caméra en travelling latéral lent, profondeur de champ légère). Une carte = une école. Médias : photos/vidéos des écoles dans `assets-src/` ; sinon photos libres de droits des lieux (vieil Antibes, Juan-les-Pins, Cannes — Wikimedia Commons, crédit obligatoire). | Surtitre : `OUR SCHOOLS` puis, carte par carte : `LE PORT` — `Antibes Old Town, steps from the beach` · `LE CHÂTEAU` — `A Provençal mas, 22 classrooms` · `CANNES` — `A listed historic campus`. | La caméra s'arrête ~2,5 s devant chaque carte, la légende arrive à ce moment-là. Parallaxe 2,5D dans chaque photo (2 couches si détourage propre possible, sinon zoom lent). |
-| 5 | **35–46,5 s** (345 f) | **Les programmes** | Fond blanc, grille éditoriale à 3 colonnes. Pictos Lucide au trait (SVG inline) **qui se dessinent** (`@remotion/paths`, longueur de trait animée). | Titre : `A PROGRAMME` / **`FOR EVERY LEARNER`**. Colonnes : **`ADULTS`** — `Intensive · DELF · Business French · 50+ · Wine & Cooking` · **`JUNIORS 6–17`** — `Summer camps · Watersports · Sailing` · **`GROUPS`** — `Schools · Tailor-made stays`. | Colonnes en cascade (10 f), puces qui apparaissent mot par mot (3 f). Une fine bande `#283371` passe derrière la colonne active, de gauche à droite. |
-| 6 | **46,5–56 s** (285 f) | **La vie : « Live it »** | **Montage rythmé** de 6 à 8 plans réels calés sur les temps de la musique : classe en petit groupe, terrasse/vieille ville, marché, plage, atelier cuisine, voile, excursion (Monaco / Nice). Étalonnage commun (§5). Sans rush : séquence de cartes photo plein cadre. | Un mot par plan, sur le temps fort : `LEARN.` · `TASTE.` · `SAIL.` · `EXPLORE.` · *`LIVE.`* (le dernier en rouge). | Coupes franches sur les temps. Mot en masque rapide (8 f), tenu jusqu'à la coupe. Aucun mot sur un visage. |
+| 4 | **22,5–37 s** (435 f) | **Où l'on apprend, où l'on vit** | **4 cartes photo dans un espace 3D** (`@remotion/three` : plans texturés, caméra en travelling latéral lent, profondeur de champ légère). Une carte = un lieu. Médias (§5) : `le-port-balcony-view-port-vauban.jpg` · photo `le-chateau-*` si présente · photo `cannes-*` si présente, sinon Wikimedia Commons (crédit) · `castel-arabel-facade-tower.jpg`. **Carte Astor uniquement si des photos `astor-*` sont présentes** (5e carte, en prenant 60 f à la carte Cannes). | Surtitre : `OUR SCHOOLS & RESIDENCES` puis, carte par carte : `LE PORT` — `Antibes Old Town, steps from the beach` · `LE CHÂTEAU` — `A Provençal mas, 22 classrooms` · `CANNES` — `A listed historic campus` · `CASTEL ARABEL` — `Our residence in Juan-les-Pins` · *(option)* `ASTOR` — légende à me faire valider. | La caméra s'arrête ~2,2 s devant chaque carte, la légende arrive à ce moment-là. Zoom lent dans chaque photo (photos HD : scale ≤ 1.12). Une carte sans photo → aplat `#283371` + nom du lieu en grand, jamais de carte vide. |
+| 5 | **37–47,5 s** (315 f) | **Les programmes** | Fond blanc, grille éditoriale à 3 colonnes. Pictos Lucide au trait (SVG inline) **qui se dessinent** (`@remotion/paths`, longueur de trait animée). | Titre : `A PROGRAMME` / **`FOR EVERY LEARNER`**. Colonnes : **`ADULTS`** — `Intensive · DELF · Business French · 50+ · Wine & Cooking` · **`JUNIORS 6–17`** — `Summer camps · Watersports · Sailing` · **`GROUPS`** — `Schools · Tailor-made stays`. | Colonnes en cascade (10 f), puces qui apparaissent mot par mot (3 f). Une fine bande `#283371` passe derrière la colonne active, de gauche à droite. |
+| 6 | **47,5–56 s** (255 f) | **La vie : « Live it »** | **Montage rythmé** de 5 à 7 plans calés sur les temps de la musique, **extraits vidéo CIA en priorité** (`assets-src/video/`), photos en complément. Ordre conseillé : classe (`le-port-class-adults-groupwork.jpg` ou extrait « cours de français ») → cuisine (`cooking-workshop-chef-b.jpg` ou extrait « wine & cooking ») → dégustation (`wine-tasting-toast.jpg`, **étiquette recadrée hors champ**) → juniors / mer (extrait « junior program ») → balcon sur le port (`le-port-balcony-view-port-vauban.jpg` si pas déjà utilisée en sc. 4, sinon `castel-arabel-arches-vertical.jpg` recadrée). | Un mot par plan, sur le temps fort : `LEARN.` · `TASTE.` · `EXPLORE.` · *`LIVE.`* (le dernier en rouge). Adapte les mots aux plans réellement choisis (ex. `SAIL.` seulement s'il y a un plan de voile). | Coupes franches sur les temps. Mot en masque rapide (8 f), tenu jusqu'à la coupe. Aucun mot sur un visage. |
 | 7 | **56–60 s + tenue** (240 f) | **Signature** | Fond blanc. Logo CIA couleur (version avec baseline si fournie). | Baseline : `Don't learn French.` (Avenir Next) / *`Live it.`* en **Better Together rouge**, **tracé à la plume** : glyphes convertis en chemins (`opentype.js`) puis `evolvePath`. Puis `www.cia-france.com` et bouton **`DISCOVER OUR PROGRAMMES`**. Crédits en bas, en petit. | Logo : fondu + légère montée. « Live it. » s'écrit en 30 f. Bouton : apparition douce, la barre rouge souligne. **Image fixe ≥ 2,5 s** à la fin. |
 
 **Transitions** (20 f, easing in-out, jamais linéaire) : signature de la série = **volet bleu `#283371` bordé d'un filet rouge `#E64353`** pour 2→3, 4→5 et 6→7 ; **fondus** pour 1→2, 3→4, 5→6.
-Calcul : 195 + 225 + 255 + 375 + 345 + 285 + 240 − 6 × 20 = **1 800 frames**.
+Calcul : 195 + 225 + 255 + 435 + 315 + 255 + 240 − 6 × 20 = **1 800 frames**.
 
 **Petite signature de marque** : sur les plans vidéo sombres (scènes 1, 2, 6), logo **bandeau blanc** discret en haut à droite, 60 % d'opacité.
 
@@ -118,17 +121,29 @@ Règles Three.js : animer **uniquement** depuis `useCurrentFrame()` (jamais `use
 
 ## 5. MÉDIAS & DROITS
 
-### Contenu attendu du kit
+### Contenu du kit (état au 16/11/2026)
 ```
 assets-src/
-├─ brand/    LOGO CIA.png · LOGO CIA ssBL.png · Picto.png · charte-graphique-CIA.pdf
+├─ brand/    charte-graphique-CIA.pdf · logo-cia.pdf (VECTORIEL, source à utiliser)
+│            logo-cia.jpg · logo-cia-sans-baseline.jpg · picto-cia.jpg (JPEG fond blanc, référence visuelle seulement)
 ├─ docs/     brochure2026en.pdf (source des faits)
-├─ photos/   photos CIA (écoles, classes, activités) — nom = sujet : le-port-*.jpg, le-chateau-*.jpg, cannes-*.jpg, class-*.jpg…
-├─ video/    rushs CIA si disponibles (même convention de nommage)
-├─ fonts/    Avenir Next (Regular, Medium, Bold) + Better Together
+├─ photos/   photos pro CIA, 2353 px de large environ :
+│            le-port-balcony-view-port-vauban.jpg   balcon de l'école Le Port, vue port Vauban + Fort Carré
+│            le-port-class-adults-a.jpg             cours adultes, porte-fenêtre ouverte
+│            le-port-class-adults-groupwork.jpg     travail en petit groupe
+│            le-port-class-teacher-student.jpg      professeure + étudiant, balcon en fer forgé
+│            cooking-workshop-chef-a.jpg / -b.jpg   atelier cuisine avec la cheffe
+│            cooking-pastry-fraisier-vertical.jpg   fraisier à la poche (portrait → 9:16 ou carte)
+│            wine-tasting-toast.jpg                 dégustation, on trinque ⚠ étiquette tierce à masquer
+│            castel-arabel-facade-tower.jpg         résidence Castel Arabel, tour mauresque
+│            castel-arabel-arches-vertical.jpg      Castel Arabel, arcades (portrait)
+│            (+ à venir : astor-*, le-chateau-*, juniors-*)
+├─ video/    extraits des 3 films CIA (Junior Program, Cours de français, Wine & Cooking) — peut être vide au départ
+├─ fonts/    Avenir Next (Regular, Medium, Bold) + Better Together — peut être vide au départ
 └─ audio/    optionnel : musique sous licence
 ```
-Inspecte les 3 logos et déduis lequel est la version principale, sans baseline, et le picto. **En cas de doute, demande-moi.**
+**Logos :** pars de `logo-cia.pdf` (`pdftocairo -svg` ou `-png -transp -r 600`) pour produire une version couleur et une version blanche transparentes. Les JPEG ont un fond blanc : ne les utilise jamais sur un fond coloré.
+**Au démarrage, fais l'inventaire réel** (`ls`, dimensions, durées) : les dossiers `video/`, `fonts/` et `photos/` peuvent avoir été complétés depuis. Adapte le choix des plans à ce qui est présent et liste-le dans ton plan.
 
 ### Ordre de priorité des images
 1. **Médias CIA** fournis dans `assets-src/` (toujours en premier).
@@ -137,8 +152,9 @@ Inspecte les 3 logos et déduis lequel est la version principale, sans baseline,
 
 ### Règles
 - Les personnes des banques d'images sont des figurants : **ne jamais les présenter comme des étudiants du CIA**, ni écrire de témoignage sur leurs plans.
-- Aucune personnalité publique, aucune marque tierce lisible à l'écran, aucun mineur identifiable dans les médias libres de droits.
-- Rushs 720p : **zoom ≤ 1.05**. Étalonnage commun pour lier les sources : voile chaud identique (`rgba(255,190,120,.06)` en `soft-light`) + vignettage bleu `#11263D` doux, `filter: contrast(1.04) saturate(1.05)` au plus.
+- Aucune personnalité publique, aucune marque tierce lisible à l'écran (bouteille de `wine-tasting-toast.jpg` : recadrage ou flou), aucun mineur identifiable dans les médias libres de droits. **Juniors : uniquement les images issues des films CIA**, jamais de banque d'images.
+- Les personnes des photos CIA sont des modèles du tournage : pas de nom, pas de citation, pas de rôle inventé (« our teacher Marie… »).
+- Photos CIA HD : zoom lent **≤ 1.12**. Extraits vidéo 1080p : **≤ 1.08**. Médias 720p : **≤ 1.05**. Étalonnage commun pour lier les sources : voile chaud identique (`rgba(255,190,120,.06)` en `soft-light`) + vignettage bleu `#11263D` doux, `filter: contrast(1.04) saturate(1.05)` au plus.
 - Crédits sur la carte de fin, en bas, Avenir Next Regular 18 px, `#11263D` à 60 % (ex. `Photos: Wikimedia Commons, CC BY-SA 4.0 · Footage: Mixkit`).
 
 ---
@@ -211,7 +227,7 @@ Marges de sécurité **140 px** gauche/droite, **130 px** bas, **100 px** haut. 
 ## 8. ARCHITECTURE DU CODE
 
 ```
-cia-video-series/                  (projet existant de la série, ou nouveau)
+(racine de la branche video-presentation-cia)
 ├─ public/{photos,video,brand,fonts,audio,geo}/
 ├─ scripts/   download-media.sh · prepare-assets.py · make-music.py · contact-sheet.sh
 ├─ src/
@@ -262,7 +278,9 @@ Règles : aucune valeur en dur dans les scènes ; `COLORS` = 3 couleurs charte +
 - [ ] Logo conforme (ratio, zone de protection, version adaptée au fond).
 - [ ] Carte : Antibes, Juan-les-Pins et Cannes **géographiquement justes** (ordre est→ouest : Antibes, Juan-les-Pins, Cannes).
 - [ ] Three.js : aucun scintillement, aucune frame noire, rendu déterministe (2 rendus d'une même frame identiques).
-- [ ] Aucun bord blanc pendant les zooms ; aucun texte sur un visage ; aucun plan flou (zoom ≤ 1.05 sur rushs 720p).
+- [ ] Aucun bord blanc pendant les zooms ; aucun texte sur un visage ; aucun plan flou (zooms dans les limites du §5).
+- [ ] Étiquette de vin illisible ; aucune marque tierce lisible ; juniors uniquement issus des films CIA.
+- [ ] Rien n'a été poussé ailleurs que sur `video-presentation-cia`.
 - [ ] Transitions fluides, aucun easing linéaire, aucun rebond visible.
 - [ ] Crédits de toutes les sources présents et lisibles ; `CREDITS-LICENCES.md` complet.
 - [ ] Durées exactes : 1 800 f (master et 9:16), 600 f (cutdown) ; image fixe finale ≥ 2,5 s.
