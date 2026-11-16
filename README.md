@@ -70,7 +70,7 @@ Voir `CREDITS-LICENCES.md`. Points d'attention :
 - Rushs CIA recadrés ×1,08 pour retirer le logo incrusté ; films *Wine & Cooking* et *Senior* non utilisés (badge vimeo).
 - Juniors : autorisations parentales confirmées par le CIA (16/11/2026) ; le montage actuel n'utilise que des plans de dos ou lointains.
 - Photo de dégustation (`wine-tasting-toast.jpg`) non utilisée ; photo cuisine cadrée pour exclure une marque.
-- Résidence Astor : carte en scène 4 avec le nom seul (aucune légende validée pour l'instant — `TEXT.*.schools.cards`).
+- Résidences (confirmé par le CIA) : Castel Arabel (façade orientale, piscine) et Astor (chambres bois et blanc), au centre de Juan-les-Pins.
 
 ## Arborescence
 

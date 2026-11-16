@@ -164,6 +164,7 @@ export const FACTS = {
   founded: 1985,
   studentsPerYear: 10000,
   nationalities: 50, // shown as "50+" — 60+ not confirmed
+  // Residences (CIA, 16/11/2026): Castel Arabel and Astor are in central Juan-les-Pins, 5 min from school.
 };
 
 // --------------------------------------------------------------------- text --
@@ -195,7 +196,7 @@ export const TEXT = {
         {name: 'LE CHÂTEAU', caption: 'A Provençal mas, 22 classrooms'},
         {name: 'CANNES', caption: 'A listed historic campus'},
         {name: 'CASTEL ARABEL', caption: 'Our residence in Juan-les-Pins'},
-        {name: 'ASTOR', caption: ''}, // caption awaiting validation (brief §1: name only)
+        {name: 'ASTOR', caption: 'In the heart of Juan-les-Pins'},
       ],
     },
     programmes: {
@@ -242,7 +243,7 @@ export const TEXT = {
         {name: 'LE CHÂTEAU', caption: 'Un mas provençal, 22 salles'},
         {name: 'CANNES', caption: 'Un campus classé monument historique'},
         {name: 'CASTEL ARABEL', caption: 'Notre résidence à Juan-les-Pins'},
-        {name: 'ASTOR', caption: ''}, // légende à valider (brief §1 : nom seul)
+        {name: 'ASTOR', caption: 'Au cœur de Juan-les-Pins'},
       ],
     },
     programmes: {
