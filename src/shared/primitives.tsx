@@ -49,6 +49,17 @@ export const RevealLine: React.FC<{delay: number; duration?: number; children: R
 
 // -------------------------------------------------------------- Headline --
 export type HeadlineLine = {text: string; bold?: boolean; red?: boolean};
+
+/** Split a line in two (at the space closest to the middle) when it would not fit `maxWidth`. */
+export const fitLines = (lines: HeadlineLine[], size: number, maxWidth: number): HeadlineLine[] =>
+  lines.flatMap((l) => {
+    const est = l.text.length * size * (l.bold ? 0.66 : 0.6);
+    if (est <= maxWidth || !l.text.includes(' ')) return [l];
+    const mid = l.text.length / 2;
+    const spaces = [...l.text.matchAll(/ /g)].map((m) => m.index ?? 0);
+    const cut = spaces.reduce((a, b) => (Math.abs(b - mid) < Math.abs(a - mid) ? b : a));
+    return [{...l, text: l.text.slice(0, cut)}, {...l, text: l.text.slice(cut + 1)}];
+  });
 /** Title: uppercase lines, Regular + Bold on the key part, red bar after the last line. */
 export const Headline: React.FC<{
   lines: HeadlineLine[];
@@ -58,8 +69,9 @@ export const Headline: React.FC<{
   size?: number;
   bar?: boolean;
 }> = ({lines, delay = 0, color = COLORS.navy, align = 'left', size, bar = true}) => {
-  const {titleScale} = useLayout();
+  const {titleScale, width, marginX} = useLayout();
   const fontSize = size ?? TYPE.title.size * titleScale;
+  lines = fitLines(lines, fontSize, width - marginX * 2);
   const lastLine = delay + (lines.length - 1) * TITLE_ANIM.lineStagger;
   return (
     <div style={{display: 'flex', flexDirection: 'column', alignItems: align === 'center' ? 'center' : 'flex-start'}}>

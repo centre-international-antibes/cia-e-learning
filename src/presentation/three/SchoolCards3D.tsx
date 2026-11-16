@@ -11,7 +11,8 @@ export type CardCam = {pos: number; focus: number}; // camera position along the
 
 const W = 5.4; // card width (world units)
 const H = 3.6; // card height (3:2)
-const GAP = 7.0; // distance between card centres
+const GAP = 7.0; // distance between card centres (landscape)
+const GAP_VERTICAL = 10.5; // 9:16: the next card stays off-screen during a stop
 const BORDER = 0.036; // ≈ 6 px on screen
 const RADIUS = 0.048; // ≈ 8 px on screen
 
@@ -119,7 +120,7 @@ const Card: React.FC<{
   shadowTex: THREE.Texture;
 }> = ({index, tex, focus, cam, zoom, vertical, geo, shadowTex}) => {
   const d = index - cam; // distance from camera focus, in cards
-  const along = index * GAP;
+  const along = index * (vertical ? GAP_VERTICAL : GAP);
   const dist = Math.min(Math.abs(d), 1.4);
   const z = -dist * 0.9; // the card in focus comes forward
   const rot = Math.max(-1, Math.min(1, d)) * -0.16; // neighbours turn slightly toward the travel
@@ -172,10 +173,10 @@ export const SchoolCards3D: React.FC<{cam: number; zooms: number[]; offset: [num
   const shadowTex = useMemo(() => makeShadowTexture(), []);
   useCurrentFrame();
   if (!textures) return null;
-  const along = cam * GAP;
+  const along = cam * (vertical ? GAP_VERTICAL : GAP);
   const camPos: [number, number, number] = vertical ? [offset[0], -along + offset[1], 12] : [along + offset[0], offset[1], 12];
   return (
-    <ThreeCanvas width={width} height={height} flat linear={false} gl={{antialias: true, alpha: true, preserveDrawingBuffer: true}} camera={{fov: vertical ? 42 : 30, position: camPos, near: 0.1, far: 100}}>
+    <ThreeCanvas width={width} height={height} flat linear={false} gl={{antialias: true, alpha: true, preserveDrawingBuffer: true}} camera={{fov: vertical ? 50 : 30, position: camPos, near: 0.1, far: 100}}>
       <CameraRig pos={camPos} />
       {ASSETS.schools.map((s, i) => (
         <Card key={i} index={i} tex={textures[i]} focus={s.focus} cam={cam} zoom={zooms[i]} vertical={vertical} geo={geo} shadowTex={shadowTex} />

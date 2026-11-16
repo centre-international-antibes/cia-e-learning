@@ -46,13 +46,14 @@ export const sceneStart = (key: SceneKey): number => {
   throw new Error(key);
 };
 
-// 20 s cutdown: Bonjour (3 s) → Riviera (5 s) → Live it (7 s) → Signature (5 s)
-// 90 + 150 + 210 + 210 − 3 × 20 = 600
+// 20 s cutdown: Bonjour (3 s) → Riviera (≈5 s) → Live it (≈7 s) → Signature (7 s)
+// 90 + 141 + 219 + 210 − 3 × 20 = 600. Durations chosen so that scene-6 cuts land on
+// beats 13/15/17/19 and "Live it." on beat 25 (frame 450) of the 20 s score.
 export const CUTDOWN = {
   scenes: [
     {key: 'hello' as const, duration: 90, offset: 105}, // starts on "Bonjour"
-    {key: 'riviera' as const, duration: 150, offset: 40},
-    {key: 'liveIt' as const, duration: 210, offset: 45},
+    {key: 'riviera' as const, duration: 141, offset: 40},
+    {key: 'liveIt' as const, duration: 219, offset: 0},
     {key: 'signature' as const, duration: 210, offset: 0},
   ],
   transitions: ['fade', 'wipe', 'wipe'] as ('fade' | 'wipe')[],
@@ -144,6 +145,8 @@ export const AUDIO = {
   beat: (30 * 60) / 100,
   music: 'audio/cia-presentation-music.wav',
   musicCutdown: 'audio/cia-presentation-music-20s.wav',
+  /** score is normalised to ≈ −15 LUFS; −1 dB here + SFX → ≈ −16 LUFS mix */
+  musicVolume: 0.89,
   sfx: {
     whoosh: 'audio/sfx-whoosh.wav',
     tick: 'audio/sfx-tick.wav',
@@ -311,3 +314,12 @@ export const CREDITS = {
   en: 'Photo Cannes: Spike, Wikimedia Commons, CC BY-SA 4.0 · Map data: Natural Earth',
   fr: 'Photo Cannes : Spike, Wikimedia Commons, CC BY-SA 4.0 · Carte : Natural Earth',
 };
+
+// ------------------------------------------------------------- invariants --
+// Fail loudly if a duration edit breaks the exact lengths required by the brief.
+{
+  const master = SCENE_ORDER.reduce((a, k) => a + SCENES[k], 0) - (SCENE_ORDER.length - 1) * TRANSITION_FRAMES;
+  if (master !== VIDEO.durationInFrames) throw new Error(`SCENES total ${master} ≠ ${VIDEO.durationInFrames} frames`);
+  const cut = CUTDOWN.scenes.reduce((a, s) => a + s.duration, 0) - CUTDOWN.transitions.length * TRANSITION_FRAMES;
+  if (cut !== VIDEO.cutdownDurationInFrames) throw new Error(`CUTDOWN total ${cut} ≠ ${VIDEO.cutdownDurationInFrames} frames`);
+}
