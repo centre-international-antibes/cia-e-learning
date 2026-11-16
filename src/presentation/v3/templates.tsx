@@ -291,11 +291,12 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
   const pw = 1920 - split;
   const inP = interpolate(f, [0, 18], [0, 1], {...clamp, easing: IO});
   const outP = interpolate(f, [dur - 18, dur], [0, 1], {...clamp, easing: IO});
-  const panelLeft = 1920 - pw * inP + pw * outP;
+  const panelLeft = split + 240 * (1 - inP) + 240 * outP;
+  const panelOpacity = inP * (1 - outP);
   const drift = interpolate(f, [0, dur], [0, -24], clamp);
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
-      <AbsoluteFill style={{clipPath: `inset(0 ${1920 - panelLeft}px 0 0)`}}>
+      <AbsoluteFill>
         <div style={{position: 'absolute', left: -pw / 2, top: 0, width: 1920, height: 1080}}>
           <ClipChain clips={clips} />
           <Grade />
@@ -303,7 +304,7 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
       </AbsoluteFill>
       <CameraMotionBlur samples={8} shutterAngle={180}>
         <AbsoluteFill>
-          <div style={{position: 'absolute', left: panelLeft, top: 0, width: pw, height: 1080, background: COLORS.navy, boxShadow: `inset 8px 0 0 0 ${COLORS.red}`}}>
+          <div style={{position: 'absolute', left: panelLeft, top: 0, width: pw + 240, height: 1080, background: COLORS.navy, opacity: panelOpacity, boxShadow: `inset 8px 0 0 0 ${COLORS.red}`}}>
             <div style={{position: 'absolute', left: 72, right: 56, top: 200, translate: `0 ${drift}px`, color: COLORS.white, fontFamily: SANS}}>
               <Reveal delay={10}>
                 <div style={{fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em'}}>{num.text}</div>
@@ -524,7 +525,7 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
       </AbsoluteFill>
     );
   }
-  const open = interpolate(f, [dur - 18, dur], [0, 1], {...clamp, easing: IO});
+  const open = interpolate(f, [dur - 21, dur - 3], [0, 1], {...clamp, easing: IO});
   const id = `t5-${Math.round(clip.in * 100)}`;
   const cy = baseline - size * 0.36;
   const sc = 1 + 0.3 * open;
@@ -561,40 +562,44 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
   );
 };
 
-/** T6 · Picture in picture: photo card grows (24 f) to full frame and becomes the footage. */
+/** T6 · Picture in picture: a framed window grows (30 f) to full frame over a FIXED full-frame photo
+ *  (the image is never rescaled during the growth → no large frame-to-frame change), then becomes the footage. */
 export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: number; text: string; kicker?: string}> = ({photo, photoDur, clip, dur, text, kicker}) => {
   const f = useCurrentFrame();
   const g = interpolate(f, [photoDur - 30, photoDur], [0, 1], {...clamp, easing: IO});
   const d = interpolate(f, [0, photoDur], [0, 1], clamp);
-  const card = {x: 700 - 700 * g - 24 * d * (1 - g), y: 170 - 170 * g - 14 * d * (1 - g), w: 900 + 1020 * g, h: 600 + 480 * g};
+  const win = {x: 700 * (1 - g) - 20 * d * (1 - g), y: 170 * (1 - g), w: 900 + 1020 * g, h: 600 + 480 * g};
   const videoIn = interpolate(f, [photoDur - 8, photoDur], [0, 1], {...clamp, easing: IO});
+  const inset = `inset(${win.y}px ${1920 - win.x - win.w}px ${1080 - win.y - win.h}px ${win.x}px round ${8 * (1 - g)}px)`;
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
       <AbsoluteFill style={{filter: 'blur(4px)', opacity: 0.55}}>
-        <PhotoView src={photo} dur={dur} zoom={[1.08, 1.12]} />
+        <PhotoView src={photo} dur={photoDur} zoom={[1.04, 1.08]} />
       </AbsoluteFill>
       <AbsoluteFill style={{background: alpha('navy', 0.5)}} />
+      {/* shadow + white frame drawn around the window */}
       <div
         style={{
           position: 'absolute',
-          left: card.x,
-          top: card.y,
-          width: card.w,
-          height: card.h,
-          borderRadius: 8 * (1 - g),
-          border: `${6 * (1 - g)}px solid ${COLORS.white}`,
-          overflow: 'hidden',
+          left: win.x - 6 * (1 - g),
+          top: win.y - 6 * (1 - g),
+          width: win.w + 12 * (1 - g),
+          height: win.h + 12 * (1 - g),
+          borderRadius: 8 * (1 - g) + 4,
+          background: COLORS.white,
+          opacity: 1 - g,
           boxShadow: `0 30px 60px -25px ${alpha('navy', 0.55)}`,
         }}
-      >
-        <PhotoView src={photo} dur={photoDur} zoom={[1.0, 1.08]} />
+      />
+      <AbsoluteFill style={{clipPath: inset}}>
+        <PhotoView src={photo} dur={photoDur} zoom={[1.0, 1.06]} />
         <Sequence from={photoDur - 10} layout="absolute-fill">
           <AbsoluteFill style={{opacity: videoIn}}>
             <ClipView clip={clip} dur={dur - photoDur} />
             <Grade />
           </AbsoluteFill>
         </Sequence>
-      </div>
+      </AbsoluteFill>
       <ScrimBL strength={0.9} />
       <LowerText text={text} dur={dur} delay={4} kicker={kicker} />
     </AbsoluteFill>
@@ -638,7 +643,7 @@ export const T8: React.FC<{panels: TimedClip[][]; dur: number; text: string; kic
 const PanelIn: React.FC<{children: React.ReactNode}> = ({children}) => {
   const f = useCurrentFrame();
   const p = interpolate(f, [0, 15], [0, 1], {...clamp, easing: IO});
-  return <AbsoluteFill style={{translate: `0 ${(1 - p) * 30}%`, opacity: p}}>{children}</AbsoluteFill>;
+  return <AbsoluteFill style={{translate: `0 ${(1 - p) * 8}%`, opacity: p}}>{children}</AbsoluteFill>;
 };
 
 /** Full-frame media chain (photos and/or footage) with a two-line reading text */

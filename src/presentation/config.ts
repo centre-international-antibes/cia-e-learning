@@ -595,7 +595,7 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '4c', sec: 4, dur: 135, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], bg: [{...tv('sr', 30.35), dur: 52}, {...tv('sr', 32.1), dur: 83}]},
   {id: '4d', sec: 4, dur: 105, tpl: 'T6', text: 'leChateau', photo: 'photos/le-chateau-garden-a.jpg', photoDur: 96, clip: tv('cours', 7.46)},
   // 5 · 02 Juniors (1155–1677): T2 → burst → morning/afternoon → T6 Castel Arabel → T3 Astor
-  {id: '5a', sec: 5, dur: 150, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], clips: [{...tv('jr', 30.8), dur: 66}, {...tv('jr', 16.82), dur: 41}, {...tv('jr', 12.55), dur: 32}, {...tv('jr', 13.62), dur: 11}]},
+  {id: '5a', sec: 5, dur: 150, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], clips: [{...tv('jr', 30.8), dur: 66}, {...tv('jr', 16.82), dur: 39}, {...tv('jr', 12.55), dur: 31}, {...tv('jr', 13.62), dur: 14}]},
   {id: '5b', sec: 5, dur: 15, tpl: 'video', clip: tv('jr', 5.05, JRB3)},
   {id: '5c', sec: 5, dur: 12, tpl: 'video', clip: tv('jr', 10.1)},
   {id: '5d', sec: 5, dur: 18, tpl: 'video', clip: tv('jr', 28.25)},
@@ -618,7 +618,7 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '6f', sec: 6, dur: 30, tpl: 'video', clip: tv('wc', 71.25), bug: true},
   // 7 · 04 50+ (2097–2427): T6 old-Antibes photo → the lane footage; market, socca, sea; drone
   {id: '7a', sec: 7, dur: 165, tpl: 'T6', text: 'seniors', photo: 'photos/old-antibes-lane-still.jpg', photoDur: 96, clip: tv('sr', 6.38)},
-  {id: '7b', sec: 7, dur: 120, tpl: 'line', text: 'seniorsLine', bug: true, media: [{kind: 'video', ...tv('sr', 22.3), dur: 35}, {kind: 'video', ...tv('sr', 24.6), dur: 33}, {kind: 'video', ...tv('sr', 29.22), dur: 32}, {kind: 'video', ...tv('sr', 9.05), dur: 20}]},
+  {id: '7b', sec: 7, dur: 120, tpl: 'line', text: 'seniorsLine', bug: true, media: [{kind: 'video', ...tv('sr', 22.25), dur: 34}, {kind: 'video', ...tv('sr', 24.58), dur: 33}, {kind: 'video', ...tv('sr', 29.21), dur: 32}, {kind: 'video', ...tv('sr', 9.05), dur: 21}]},
   {id: '7c', sec: 7, dur: 45, tpl: 'video', clip: tv('sr', 13.05), bug: true},
   // 8 · Finale (2427–2700): 4 smiles (one per film), sunset at speed 1.0, end card
   {id: '8a', sec: 8, dur: 12, tpl: 'video', clip: tv('sr', 45.4)},
