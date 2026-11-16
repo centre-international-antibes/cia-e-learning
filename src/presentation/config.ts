@@ -327,3 +327,122 @@ export const CREDITS = {
   const cut = CUTDOWN.scenes.reduce((a, s) => a + s.duration, 0) - CUTDOWN.transitions.length * TRANSITION_FRAMES;
   if (cut !== VIDEO.cutdownDurationInFrames) throw new Error(`CUTDOWN total ${cut} ≠ ${VIDEO.cutdownDurationInFrames} frames`);
 }
+
+// ============================================================================
+//  V2 — BRAND FILM (brief V2). EDL: one entry per shot, cuts on the music grid.
+//  120 BPM TEMP music → 1 beat = 15 f, 1 bar = 60 f, 30 bars = 1800 f.
+// ============================================================================
+export const V2_AUDIO = {
+  bpm: 120,
+  beat: 15,
+  bar: 60,
+  music: 'audio/TEMP-music-120bpm.wav',
+  isTemp: true, // generated placeholder — replace with the licensed track (assets-src/audio/)
+};
+
+export const SOURCES = {
+  cours: 'video/src/cours.mp4', // cours de français (25 fps, 60 s)
+  jr: 'video/src/jr.mp4', // junior program (23.976 fps, 34.5 s)
+  wc: 'video/src/wc.mp4', // wine & cooking (30 fps, 80 s)
+  sr: 'video/src/sr.mp4', // senior program (30 fps, 81 s)
+} as const;
+export type SourceKey = keyof typeof SOURCES;
+
+/** Default crop: scale 1.18 anchored top → removes the burnt-in CIA logo (bottom-left)
+ *  and the vimeo badge (bottom-right). JR 0–7 s carries a taller "40 ans" badge → 1.27. */
+export const CROP = {scale: 1.18, scaleJrBadge: 1.27};
+
+export type Clip = {src: SourceKey; in: number; rate?: number; scale?: number};
+export type Shot = {
+  id: string;
+  act: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
+  dur: number; // frames (multiples of 15 = on the beat)
+  kind: 'video' | 'photo' | 'still' | 'triptych';
+  clip?: Clip;
+  panels?: Clip[]; // triptych: appear one per beat
+  image?: string; // photo / still
+  /** provisional text for the offline cut (final typography in the motion pass) */
+  text?: string;
+  crop9x16?: number; // 0..1 horizontal centre of interest for the 9:16 version
+};
+
+const v = (src: SourceKey, inS: number, extra: Partial<Clip> = {}): Clip => ({src, in: inS, ...extra});
+const JRB = {scale: CROP.scaleJrBadge};
+
+export const EDL: Shot[] = [
+  // A · Cold open (0–120)
+  {id: 'A1', act: 'A', dur: 30, kind: 'video', clip: v('jr', 0.3, JRB), text: 'Hello'},
+  {id: 'A2', act: 'A', dur: 15, kind: 'video', clip: v('jr', 2.4, JRB), text: 'Hola'},
+  {id: 'A3', act: 'A', dur: 15, kind: 'video', clip: v('wc', 33.6), text: 'Ciao'},
+  {id: 'A4', act: 'A', dur: 15, kind: 'video', clip: v('cours', 20.0), text: 'Hallo'},
+  {id: 'A5', act: 'A', dur: 15, kind: 'video', clip: v('sr', 9.2), text: 'Привет'},
+  {id: 'A6', act: 'A', dur: 30, kind: 'video', clip: v('jr', 3.75, JRB), text: 'こんにちは'},
+  // B · Title (120–300) — drop at 4 s
+  {id: 'B1', act: 'B', dur: 120, kind: 'video', clip: v('sr', 2.0), text: 'Bonjour. → LEARN FRENCH / ON THE FRENCH RIVIERA'},
+  {id: 'B2', act: 'B', dur: 60, kind: 'video', clip: v('sr', 32.1), text: "CENTRE INTERNATIONAL D'ANTIBES · SINCE 1985 / ANTIBES · JUAN-LES-PINS · CANNES"},
+  // C · 01 French courses (300–600)
+  {id: 'C1', act: 'C', dur: 45, kind: 'video', clip: v('cours', 5.6), text: '01 FRENCH COURSES — All levels · All year  |  LE CHÂTEAU'},
+  {id: 'C2', act: 'C', dur: 30, kind: 'video', clip: v('cours', 24.85), text: 'LE PORT · OLD TOWN'},
+  {id: 'C3', act: 'C', dur: 45, kind: 'video', clip: v('cours', 11.5), text: '10,000 students a year · 50+ nationalities'},
+  {id: 'C4', act: 'C', dur: 30, kind: 'video', clip: v('cours', 15.45)},
+  {id: 'C5', act: 'C', dur: 30, kind: 'video', clip: v('cours', 18.25)},
+  {id: 'C6', act: 'C', dur: 30, kind: 'video', clip: v('cours', 21.0), text: 'Max. 12 per class'},
+  {id: 'C8', act: 'C', dur: 45, kind: 'video', clip: v('cours', 29.0)},
+  {id: 'C9', act: 'C', dur: 30, kind: 'photo', image: 'photos/le-port-balcony-view-port-vauban.jpg', text: 'Intensive · DELF · Business French'},
+  {id: 'C10', act: 'C', dur: 15, kind: 'video', clip: v('cours', 47.0)},
+  // D · 02 Juniors — Juan-les-Pins Premium (600–960)
+  {id: 'D1', act: 'D', dur: 30, kind: 'video', clip: v('jr', 21.74, {rate: 0.95}), text: '02 JUNIORS — Juan-les-Pins Premium · Ages 8–17'},
+  {id: 'D2', act: 'D', dur: 30, kind: 'video', clip: v('jr', 22.75)},
+  {id: 'D3', act: 'D', dur: 30, kind: 'video', clip: v('jr', 16.82), text: 'Small classes · max. 10'},
+  {id: 'D4', act: 'D', dur: 15, kind: 'video', clip: v('jr', 19.52)},
+  {id: 'D5', act: 'D', dur: 30, kind: 'video', clip: v('jr', 12.55), text: 'All-inclusive · Supervised'},
+  {id: 'D6a', act: 'D', dur: 30, kind: 'video', clip: v('jr', 28.25)},
+  {id: 'D6b', act: 'D', dur: 30, kind: 'video', clip: v('jr', 29.68), text: 'CASTEL ARABEL · 500 m from the beach'},
+  {id: 'D7', act: 'D', dur: 30, kind: 'video', clip: v('jr', 5.05, JRB)},
+  {id: 'D8', act: 'D', dur: 30, kind: 'video', clip: v('jr', 6.65)},
+  {id: 'D9', act: 'D', dur: 45, kind: 'video', clip: v('jr', 10.1)},
+  {id: 'D10', act: 'D', dur: 60, kind: 'video', clip: v('jr', 30.78), text: 'Classes · Beach · Adventure'},
+  // E · 03 Wine & Cooking (960–1260) — musical break
+  {id: 'E1', act: 'E', dur: 30, kind: 'video', clip: v('wc', 5.25), text: '03 WINE & COOKING — Cook. Taste. Speak French.'},
+  {id: 'E2-4', act: 'E', dur: 45, kind: 'triptych', panels: [v('wc', 10.62, {rate: 0.9}), v('wc', 24.05), v('wc', 7.24)]},
+  {id: 'E5', act: 'E', dur: 15, kind: 'video', clip: v('wc', 14.62)},
+  {id: 'E6', act: 'E', dur: 30, kind: 'video', clip: v('wc', 28.05)},
+  {id: 'E7', act: 'E', dur: 30, kind: 'video', clip: v('wc', 30.75)},
+  {id: 'E8', act: 'E', dur: 45, kind: 'video', clip: v('wc', 51.0), text: 'CHÂTEAU DE CRÉMAT · AOC Bellet, Nice'},
+  {id: 'E9', act: 'E', dur: 30, kind: 'video', clip: v('wc', 57.75)},
+  {id: 'E10', act: 'E', dur: 30, kind: 'video', clip: v('wc', 61.85)},
+  {id: 'E11', act: 'E', dur: 15, kind: 'video', clip: v('wc', 68.55)},
+  {id: 'E12', act: 'E', dur: 30, kind: 'video', clip: v('wc', 71.25)},
+  // F · 04 50+ & Culture (1260–1500)
+  {id: 'F1', act: 'F', dur: 45, kind: 'video', clip: v('sr', 7.3), text: '04 50+ PROGRAMME — Markets · Art · The Riviera'},
+  {id: 'F2', act: 'F', dur: 15, kind: 'video', clip: v('sr', 16.5)},
+  {id: 'F3', act: 'F', dur: 15, kind: 'video', clip: v('sr', 18.25)},
+  {id: 'F4', act: 'F', dur: 30, kind: 'video', clip: v('sr', 22.3)},
+  {id: 'F5', act: 'F', dur: 30, kind: 'video', clip: v('sr', 24.6)},
+  {id: 'F6', act: 'F', dur: 30, kind: 'video', clip: v('sr', 29.22)},
+  {id: 'F7', act: 'F', dur: 30, kind: 'video', clip: v('sr', 53.45)},
+  {id: 'F8', act: 'F', dur: 45, kind: 'video', clip: v('sr', 13.1)},
+  // G · Finale (1500–1800) — final drop at 50 s, final hit at 56 s
+  {id: 'G1', act: 'G', dur: 15, kind: 'video', clip: v('sr', 45.4)},
+  {id: 'G2', act: 'G', dur: 15, kind: 'video', clip: v('wc', 26.8)},
+  {id: 'G3', act: 'G', dur: 15, kind: 'video', clip: v('jr', 7.85)},
+  {id: 'G4', act: 'G', dur: 15, kind: 'video', clip: v('cours', 16.85)},
+  {id: 'G5', act: 'G', dur: 15, kind: 'video', clip: v('wc', 20.8)},
+  {id: 'G6', act: 'G', dur: 15, kind: 'video', clip: v('sr', 69.3)},
+  {id: 'G7', act: 'G', dur: 60, kind: 'video', clip: v('cours', 54.0)},
+  {id: 'G8', act: 'G', dur: 60, kind: 'video', clip: v('cours', 56.55), text: 'Don’t learn French. → Live it.'},
+  {id: 'G9', act: 'G', dur: 90, kind: 'still', image: 'video/stills/sunset-freeze.jpg', text: 'END CARD — logo · French courses · Juniors · Wine & Cooking · 50+ · Business French · www.cia-france.com · DISCOVER OUR PROGRAMMES'},
+];
+
+export const edlStarts = () => {
+  let t = 0;
+  return EDL.map((s) => {
+    const start = t;
+    t += s.dur;
+    return start;
+  });
+};
+{
+  const total = EDL.reduce((a, s) => a + s.dur, 0);
+  if (total !== VIDEO.durationInFrames) throw new Error(`EDL total ${total} ≠ ${VIDEO.durationInFrames}`);
+}

@@ -5,3 +5,4 @@ out/
 *.log
 .remotion/
 build/
+public/video/src/
