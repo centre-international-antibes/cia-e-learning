@@ -9,7 +9,7 @@ import type {TransitionPresentation, TransitionPresentationComponentProps} from 
 import {AbsoluteFill, Easing, staticFile} from 'remotion';
 import {COLORS, SCRIPT_V3, SegV3, TEXT_V3, TextKeyV3, V3, WHIP_FRAMES} from '../config';
 import {useLang} from '../../shared/context';
-import {BonjourSeg, CitiesSeg, EndCard, LineSeg, SunsetSeg, T1, T2, T3, T4, T5, T6, T8, VideoSeg} from './templates';
+import {BonjourSeg, CitiesSeg, EndCard, LineSeg, PlaceSeg, SunsetSeg, T1, T2, T3, T4, T5, T6, T8, VideoSeg} from './templates';
 
 // ------------------------------------------------------------ whip pan --
 type WhipProps = Record<string, never>;
@@ -47,7 +47,9 @@ const Seg: React.FC<{s: SegV3; dur: number}> = ({s, dur}) => {
     case 'bonjour':
       return <BonjourSeg clip={s.clip} dur={dur} text={T.bonjour} />;
     case 'T1':
-      return <T1 clip={s.clip} dur={dur} text={tx(s.text)!} />;
+      return <T1 clip={s.clip} dur={dur} text={tx(s.text)!} clips={s.clips} />;
+    case 'place':
+      return <PlaceSeg media={s.media} dur={dur} text={tx(s.text)!} />;
     case 'cities':
       return <CitiesSeg clip={s.clip} dur={dur} cities={tx(s.text)!.split(' · ')} points={s.points} />;
     case 'T2':
@@ -62,7 +64,7 @@ const Seg: React.FC<{s: SegV3; dur: number}> = ({s, dur}) => {
       const t = tx(s.text)!;
       const [first, ...rest] = t.split('|');
       const numbered = /^\d\d$/.test(first);
-      return <T6 photo={s.photo} photoDur={s.photoDur} clip={s.clip} dur={dur} text={numbered ? rest.join('|') : t} kicker={numbered ? first : undefined} />;
+      return <T6 photo={s.photo} photoDur={s.photoDur} videoFrom={s.videoFrom} clip={s.clip} dur={dur} text={numbered ? rest.join('|') : t} kicker={numbered ? first : undefined} />;
     }
     case 'T8':
       return <T8 panels={s.panels} dur={dur} text={tx(s.text)!} kicker={s.kicker} />;

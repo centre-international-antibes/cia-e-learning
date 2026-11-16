@@ -40,7 +40,8 @@ export const layoutLine = (text: string, width: number, max: number, weight: num
   const mid = text.length / 2;
   const spaces = [...text.matchAll(/ /g)].map((m) => m.index ?? 0);
   const cut = spaces.reduce((a, b) => (Math.abs(b - mid) < Math.abs(a - mid) ? b : a));
-  const parts = [text.slice(0, cut), text.slice(cut + 1)];
+  // a line break replaces a ' · ' separator: never leave a dangling middle dot
+  const parts = [text.slice(0, cut).replace(/\s*·\s*$/, ''), text.slice(cut + 1).replace(/^\s*·\s*/, '')];
   const size = Math.min(max, ...parts.map((p) => fit(p, width, weight, upper)));
   return {size: Math.max(size, min), lines: parts};
 };
@@ -70,13 +71,14 @@ export const TextBlock: React.FC<{
   out?: number;
   upperTitle?: boolean;
   gap?: number;
-}> = ({lines, width, titleMax, lineMax, delay = 0, stagger = 5, color = COLORS.white, lineColor, out, upperTitle = true, gap = 0}) => {
+  minSize?: number;
+}> = ({lines, width, titleMax, lineMax, delay = 0, stagger = 5, color = COLORS.white, lineColor, out, upperTitle = true, gap = 0, minSize}) => {
   let k = 0;
   return (
     <div style={{width, fontFamily: SANS, color}}>
       {lines.map((l, i) => {
         const w = l.bold ? WEIGHTS.bold : WEIGHTS.regular;
-        const lay = layoutLine(l.text, width, l.bold ? titleMax : lineMax, w, l.bold && upperTitle);
+        const lay = layoutLine(l.text, width, l.bold ? titleMax : lineMax, w, l.bold && upperTitle, minSize);
         return (
           <div key={i} style={{marginTop: i && gap ? gap : 0}}>
             {lay.lines.map((t, j) => (
@@ -162,6 +164,7 @@ export const PhotoView: React.FC<{src: string; dur: number; zoom?: [number, numb
         style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: position, scale: String(interpolate(f, [0, dur], zoom, {...clamp, easing: STEADY})), filter: GRADE.filter}}
       />
       <AbsoluteFill style={{background: GRADE.warmVeil, mixBlendMode: 'soft-light'}} />
+      <AbsoluteFill style={{background: GRADE.vignette}} />
     </AbsoluteFill>
   );
 };
@@ -225,17 +228,52 @@ export const BonjourSeg: React.FC<{clip: Clip; dur: number; text: string}> = ({c
 );
 
 /** T1 · Title on video — 120 px minimum */
-export const T1: React.FC<{clip: Clip; dur: number; text: string}> = ({clip, dur, text}) => {
+export const T1: React.FC<{clip: Clip; dur: number; text: string; clips?: TimedClip[]}> = ({clip, dur, text, clips}) => {
   const drift = useDrift(dur, [12, 0]);
+  const parts = text.split('|');
+  const kicker = /^\d\d$/.test(parts[0]) ? parts[0] : undefined;
+  const lines = parseText((kicker ? parts.slice(1) : parts).join('|'));
   return (
     <AbsoluteFill>
-      <ClipView clip={clip} dur={dur} />
+      {clips ? <ClipChain clips={clips} /> : <ClipView clip={clip} dur={dur} />}
       <Grade />
       <ScrimBL />
       <div style={{position: 'absolute', left: M.x, bottom: M.bottom, translate: drift}}>
-        <TextBlock lines={parseText(text).map((l) => ({...l, bold: true}))} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.title} delay={2} />
+        {kicker ? (
+          // chapter opening: "04" + programme name (title size) + reading line
+          <>
+            <Reveal delay={2}>
+              <div style={{fontFamily: SANS, fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em', color: COLORS.white, marginBottom: 16}}>{kicker}</div>
+            </Reveal>
+            <TextBlock lines={lines} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.line} delay={6} gap={10} />
+          </>
+        ) : (
+          <TextBlock lines={lines.map((l) => ({...l, bold: true}))} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.title} delay={2} />
+        )}
         <Bar delay={22} w={96} h={10} style={{marginTop: 28}} />
       </div>
+      <CornerBug />
+    </AbsoluteFill>
+  );
+};
+
+/** Full-frame footage/photo chain with a place label (dot-less lower third) — e.g. Le Château, accreditation. */
+export const PlaceSeg: React.FC<{media: Media[]; dur: number; text: string}> = ({media, dur, text}) => {
+  let t = 0;
+  return (
+    <AbsoluteFill>
+      {media.map((m, i) => {
+        const from = t;
+        t += m.dur;
+        return (
+          <Sequence key={i} from={from} durationInFrames={i === media.length - 1 ? dur - from : m.dur} layout="absolute-fill" premountFor={20}>
+            {m.kind === 'photo' ? <PhotoView src={m.src} dur={m.dur} /> : <ClipView clip={m} dur={m.dur} />}
+            <Grade />
+          </Sequence>
+        );
+      })}
+      <ScrimBL />
+      <LowerText text={text} dur={dur} />
       <CornerBug />
     </AbsoluteFill>
   );
@@ -289,8 +327,8 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
   const [num, name, ...facts] = parseText(text);
   const split = M.x + cols(7) + 12;
   const pw = 1920 - split;
-  const inP = interpolate(f, [0, 18], [0, 1], {...clamp, easing: IO});
-  const outP = interpolate(f, [dur - 18, dur], [0, 1], {...clamp, easing: IO});
+  const inP = interpolate(f, [6, 6+18], [0, 1], {...clamp, easing: IO});
+  const outP = interpolate(f, [dur - 18 - 6, dur - 6], [0, 1], {...clamp, easing: IO});
   const panelLeft = split + 240 * (1 - inP) + 240 * outP;
   const panelOpacity = inP * (1 - outP);
   const drift = interpolate(f, [0, dur], [0, -24], clamp);
@@ -389,8 +427,8 @@ export const T3: React.FC<{photos: string[]; bg: TimedClip[]; dur: number; text?
 export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, dur, text}) => {
   const f = useCurrentFrame();
   const [num, name, ...facts] = parseText(text);
-  const open = interpolate(f, [0, 18], [0, 1], {...clamp, easing: IO});
-  const close = interpolate(f, [dur - 18, dur], [0, 1], {...clamp, easing: IO});
+  const open = interpolate(f, [6, 6 + 18], [0, 1], {...clamp, easing: IO});
+  const close = interpolate(f, [dur - 18 - 6, dur - 6], [0, 1], {...clamp, easing: IO});
   const w = M.x + cols(6);
   const drift = interpolate(f, [0, dur], [0, 26], clamp);
   return (
@@ -414,7 +452,7 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
               translate: `${drift - 70 * (1 - open) - 70 * close}px 0`,
             }}
           >
-            <div style={{position: 'absolute', left: M.x + 60, right: 64, top: 96, fontFamily: SANS, color: COLORS.navy}}>
+            <div style={{position: 'absolute', left: M.x + 60, right: 64, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', fontFamily: SANS, color: COLORS.navy}}>
               <Reveal delay={10}>
                 <div style={{fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em'}}>{num.text}</div>
               </Reveal>
@@ -422,7 +460,7 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
                 <ProgrammeName text={name.text} width={w - M.x - 64} delay={14} />
               </div>
               <Bar delay={22} style={{marginTop: 30, marginBottom: 44}} />
-              <TextBlock lines={facts} width={w - M.x - 64} titleMax={V3.type.fact} lineMax={48} delay={24} stagger={6} color={COLORS.navy} lineColor={alpha('navy', 0.85)} gap={10} />
+              <TextBlock lines={facts} width={w - M.x - 64} titleMax={V3.type.fact} lineMax={48} minSize={46} delay={24} stagger={6} color={COLORS.navy} lineColor={alpha('navy', 0.85)} gap={14} />
             </div>
           </div>
         </AbsoluteFill>
@@ -525,7 +563,7 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
       </AbsoluteFill>
     );
   }
-  const open = interpolate(f, [dur - 21, dur - 3], [0, 1], {...clamp, easing: IO});
+  const open = interpolate(f, [dur - 18 - 6, dur - 6], [0, 1], {...clamp, easing: IO});
   const id = `t5-${Math.round(clip.in * 100)}`;
   const cy = baseline - size * 0.36;
   const sc = 1 + 0.3 * open;
@@ -564,12 +602,13 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
 
 /** T6 · Picture in picture: a framed window grows (30 f) to full frame over a FIXED full-frame photo
  *  (the image is never rescaled during the growth → no large frame-to-frame change), then becomes the footage. */
-export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: number; text: string; kicker?: string}> = ({photo, photoDur, clip, dur, text, kicker}) => {
+export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: number; text: string; kicker?: string; videoFrom?: number}> = ({photo, photoDur, clip, dur, text, kicker, videoFrom}) => {
+  const vf = videoFrom ?? photoDur - 10;
   const f = useCurrentFrame();
   const g = interpolate(f, [photoDur - 30, photoDur], [0, 1], {...clamp, easing: IO});
   const d = interpolate(f, [0, photoDur], [0, 1], clamp);
   const win = {x: 700 * (1 - g) - 20 * d * (1 - g), y: 170 * (1 - g), w: 900 + 1020 * g, h: 600 + 480 * g};
-  const videoIn = interpolate(f, [photoDur - 8, photoDur], [0, 1], {...clamp, easing: IO});
+  const videoIn = interpolate(f, [vf, vf + 12], [0, 1], {...clamp, easing: IO});
   const inset = `inset(${win.y}px ${1920 - win.x - win.w}px ${1080 - win.y - win.h}px ${win.x}px round ${8 * (1 - g)}px)`;
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
@@ -592,10 +631,10 @@ export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: num
         }}
       />
       <AbsoluteFill style={{clipPath: inset}}>
-        <PhotoView src={photo} dur={photoDur} zoom={[1.0, 1.06]} />
-        <Sequence from={photoDur - 10} layout="absolute-fill">
+        <PhotoView src={photo} dur={vf} zoom={[1.0, 1.08]} />
+        <Sequence from={vf} layout="absolute-fill">
           <AbsoluteFill style={{opacity: videoIn}}>
-            <ClipView clip={clip} dur={dur - photoDur} />
+            <ClipView clip={clip} dur={dur - vf} />
             <Grade />
           </AbsoluteFill>
         </Sequence>
@@ -677,14 +716,14 @@ export const LineSeg: React.FC<{media: Media[]; dur: number; text: string; bug?:
 /** Sunset (speed 1.0) + "Don't learn French." / "Live it." traced in white */
 export const SunsetSeg: React.FC<{clip: Clip; dur: number; dont: string}> = ({clip, dur, dont}) => {
   const f = useCurrentFrame();
-  const h = 150;
+  const h = 190; // svg box incl. 12 % padding each side → traced glyphs ≈ 153 px tall (≥ 120 px)
   return (
     <AbsoluteFill>
       <ClipView clip={clip} dur={dur} push={[1, 1.03]} />
       <Grade />
       <AbsoluteFill style={{background: `linear-gradient(0deg, ${alpha('navy', 0.55)} 0%, ${alpha('navy', 0)} 55%)`}} />
-      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 190}}>
-        <div style={{fontFamily: SANS, fontWeight: WEIGHTS.regular, fontSize: 84, color: COLORS.white, opacity: interpolate(f, [2, 17], [0, 1], {...clamp, easing: IO}), textShadow: `0 4px 30px ${alpha('navy', 0.4)}`}}>{dont}</div>
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 150}}>
+        <div style={{fontFamily: SANS, fontWeight: WEIGHTS.regular, fontSize: 88, color: COLORS.white, opacity: interpolate(f, [2, 17], [0, 1], {...clamp, easing: IO}), textShadow: `0 4px 30px ${alpha('navy', 0.4)}`}}>{dont}</div>
         <div style={{width: h * LIVE_RATIO, height: h, marginTop: 14}}>
           <HandwrittenLive delay={22} duration={30} height={h} color={COLORS.white} />
         </div>

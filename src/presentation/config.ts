@@ -489,13 +489,14 @@ export type CityPoint = {x: number; y: number; lx: number; ly: number; anchor: '
 export type SegV3 =
   | {id: string; sec: number; dur: number; tpl: 'video'; clip: Clip; text?: string; textKind?: 'greeting' | 'line'; bug?: boolean}
   | {id: string; sec: number; dur: number; tpl: 'bonjour'; clip: Clip}
-  | {id: string; sec: number; dur: number; tpl: 'T1'; clip: Clip; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T1'; clip: Clip; text: string; clips?: TimedClip[]}
+  | {id: string; sec: number; dur: number; tpl: 'place'; media: MediaV3[]; text: string}
   | {id: string; sec: number; dur: number; tpl: 'cities'; clip: Clip; text: string; points: CityPoint[]}
   | {id: string; sec: number; dur: number; tpl: 'T2'; clips: TimedClip[]; text: string; icons: string[]}
   | {id: string; sec: number; dur: number; tpl: 'T3'; photos: string[]; bg: TimedClip[]; text?: string}
   | {id: string; sec: number; dur: number; tpl: 'T4'; bg: TimedClip[]; text: string}
   | {id: string; sec: number; dur: number; tpl: 'T5'; clip: Clip; text: string; value: number; from: number; suffix: string; grouping: boolean; onNavy: boolean}
-  | {id: string; sec: number; dur: number; tpl: 'T6'; photo: string; photoDur: number; clip: Clip; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T6'; photo: string; photoDur: number; clip: Clip; text: string; videoFrom?: number}
   | {id: string; sec: number; dur: number; tpl: 'T8'; panels: TimedClip[][]; text: string; kicker?: string}
   | {id: string; sec: number; dur: number; tpl: 'line'; media: MediaV3[]; text: string; bug?: boolean}
   | {id: string; sec: number; dur: number; tpl: 'sunset'; clip: Clip}
@@ -579,7 +580,7 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '1g', sec: 1, dur: 45, tpl: 'bonjour', clip: tv('sr', 1.72)},
   // 2 · Promise (165–345): title on the drone, then the bay with 3 city labels (replaces the T7 map)
   {id: '2a', sec: 2, dur: 105, tpl: 'T1', clip: tv('sr', 3.22), text: 'promise'},
-  {id: '2b', sec: 2, dur: 75, tpl: 'cities', clip: tv('cours', 0.3), text: 'cities', points: [
+  {id: '2b', sec: 2, dur: 94, tpl: 'cities', clip: tv('cours', 0.3), text: 'cities', points: [
     {x: 300, y: 600, lx: 300, ly: 470, anchor: 'start'}, // Antibes: foreground town
     {x: 1080, y: 470, lx: 1180, ly: 600, anchor: 'start'}, // Juan-les-Pins: the bay front
     {x: 820, y: 318, lx: 700, ly: 230, anchor: 'end'}, // Cannes: across the bay, under the Estérel
@@ -588,12 +589,12 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '3a', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 11.42), text: 'since', value: 1985, from: 1900, suffix: '', grouping: false, onNavy: true},
   {id: '3b', sec: 3, dur: 75, tpl: 'T5', clip: tv('cours', 26.62), text: 'students', value: 10000, from: 0, suffix: '', grouping: true, onNavy: false},
   {id: '3c', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 45.95), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false, onNavy: false},
-  {id: '3d', sec: 3, dur: 75, tpl: 'video', clip: tv('cours', 48.2), text: 'accredited', textKind: 'line', bug: true},
+  {id: '3d', sec: 3, dur: 69, tpl: 'place', text: 'accredited', media: [{kind: 'video', ...tv('cours', 21.0), dur: 33}, {kind: 'video', ...tv('cours', 32.25), dur: 36}]},
   // 4 · 01 French courses (615–1155): T4 → classes → T3 Le Port → T6 Le Château
-  {id: '4a', sec: 4, dur: 180, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 28}, {...tv('cours', 29.0), dur: 15}]},
+  {id: '4a', sec: 4, dur: 150, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 13}]},
   {id: '4b', sec: 4, dur: 120, tpl: 'line', text: 'fcLine', bug: true, media: [{kind: 'video', ...tv('cours', 13.75), dur: 45}, {kind: 'video', ...tv('cours', 28.95), dur: 45}, {kind: 'video', ...tv('cours', 22.12), dur: 30}]},
   {id: '4c', sec: 4, dur: 135, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], bg: [{...tv('sr', 30.35), dur: 52}, {...tv('sr', 32.1), dur: 83}]},
-  {id: '4d', sec: 4, dur: 105, tpl: 'T6', text: 'leChateau', photo: 'photos/le-chateau-garden-a.jpg', photoDur: 96, clip: tv('cours', 7.46)},
+  {id: '4d', sec: 4, dur: 89, tpl: 'place', text: 'leChateau', media: [{kind: 'video', ...tv('cours', 7.46), dur: 32}, {kind: 'video', ...tv('sr', 59.18), dur: 57}]},
   // 5 · 02 Juniors (1155–1677): T2 → burst → morning/afternoon → T6 Castel Arabel → T3 Astor
   {id: '5a', sec: 5, dur: 150, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], clips: [{...tv('jr', 30.8), dur: 66}, {...tv('jr', 16.82), dur: 39}, {...tv('jr', 12.55), dur: 31}, {...tv('jr', 13.62), dur: 14}]},
   {id: '5b', sec: 5, dur: 15, tpl: 'video', clip: tv('jr', 5.05, JRB3)},
@@ -603,22 +604,23 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '5f', sec: 5, dur: 15, tpl: 'video', clip: tv('jr', 17.0)},
   {id: '5g', sec: 5, dur: 105, tpl: 'line', text: 'morning', media: [{kind: 'photo', src: 'photos/juniors-class-teacher-whiteboard.jpg', dur: 47}, {kind: 'video', ...tv('jr', 6.6), dur: 58}]},
   // Castel Arabel: facade photo → wide pool footage (no child's face full screen)
-  {id: '5h', sec: 5, dur: 105, tpl: 'T6', text: 'castel', photo: 'photos/castel-arabel-facade-tower.jpg', photoDur: 85, clip: tv('jr', 29.66)},
-  {id: '5i', sec: 5, dur: 90, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], bg: [{...tv('jr', 24.0), dur: 30}, {...tv('jr', 25.0), dur: 40}, {...tv('jr', 26.7), dur: 20}]},
+  {id: '5h', sec: 5, dur: 105, tpl: 'T6', text: 'castel', photo: 'photos/castel-arabel-facade-tower.jpg', photoDur: 42, videoFrom: 73, clip: tv('jr', 29.66)},
+  {id: '5i', sec: 5, dur: 120, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], bg: [{...tv('jr', 24.0), dur: 30}, {...tv('jr', 25.0), dur: 50}, {...tv('jr', 26.7), dur: 40}]},
   // 6 · 03 Wine & Cooking (1677–2097): T8 → T4 → T3 → Crémat
   {id: '6a', sec: 6, dur: 105, tpl: 'T8', text: 'wcLine', kicker: '03', panels: [
-    [{...tv('wc', 7.24), dur: 15}, {...tv('wc', 10.62), dur: 30}, {...tv('wc', 24.05), dur: 30}, {...tv('wc', 30.75), dur: 30}],
-    [{...tv('wc', 11.92), dur: 15}, {...tv('wc', 13.72), dur: 27}, {...tv('wc', 22.92), dur: 33}, {...tv('wc', 28.05), dur: 15}],
+    // cuts at 36 / 72 / 63 / 96 / 60 / 90 f: never on a panel settle (15, 30, 45 f)
+    [{...tv('wc', 10.62), dur: 36}, {...tv('wc', 24.05), dur: 36}, {...tv('wc', 30.75), dur: 33}],
+    [{...tv('wc', 11.92), dur: 21}, {...tv('wc', 13.72), dur: 27}, {...tv('wc', 22.92), dur: 33}, {...tv('wc', 28.05), dur: 9}],
     [{...tv('wc', 14.62), dur: 30}, {...tv('wc', 7.9), dur: 12}, {...tv('wc', 12.65), dur: 18}, {...tv('wc', 29.45), dur: 15}],
   ]},
   {id: '6b', sec: 6, dur: 135, tpl: 'T4', text: 'wcCard', bg: [{...tv('wc', 5.25), dur: 39}, {...tv('wc', 20.7), dur: 39}, {...tv('wc', 26.75), dur: 39}, {...tv('wc', 2.9), dur: 18}]},
   {id: '6c', sec: 6, dur: 45, tpl: 'T3', photos: ['photos/cooking-pastry-fraisier-vertical.jpg', 'photos/cooking-workshop-chef-a.jpg', 'photos/wine-tasting-toast.jpg'], bg: [{...tv('wc', 33.5), dur: 45}]},
-  {id: '6d', sec: 6, dur: 90, tpl: 'video', clip: tv('wc', 74.6), text: 'cremat', textKind: 'line', bug: true},
+  {id: '6d', sec: 6, dur: 120, tpl: 'video', clip: tv('wc', 74.6), text: 'cremat', textKind: 'line', bug: true},
   {id: '6e', sec: 6, dur: 15, tpl: 'video', clip: tv('wc', 61.85), bug: true},
   {id: '6f', sec: 6, dur: 30, tpl: 'video', clip: tv('wc', 71.25), bug: true},
   // 7 · 04 50+ (2097–2427): T6 old-Antibes photo → the lane footage; market, socca, sea; drone
-  {id: '7a', sec: 7, dur: 165, tpl: 'T6', text: 'seniors', photo: 'photos/old-antibes-lane-still.jpg', photoDur: 96, clip: tv('sr', 6.38)},
-  {id: '7b', sec: 7, dur: 120, tpl: 'line', text: 'seniorsLine', bug: true, media: [{kind: 'video', ...tv('sr', 22.25), dur: 34}, {kind: 'video', ...tv('sr', 24.58), dur: 33}, {kind: 'video', ...tv('sr', 29.21), dur: 32}, {kind: 'video', ...tv('sr', 9.05), dur: 21}]},
+  {id: '7a', sec: 7, dur: 129, tpl: 'T1', text: 'seniors', clip: tv('sr', 6.38), clips: [{...tv('sr', 6.38), dur: 79}, {...tv('sr', 9.05), dur: 50}]},
+  {id: '7b', sec: 7, dur: 129, tpl: 'line', text: 'seniorsLine', bug: true, media: [{kind: 'video', ...tv('sr', 22.25), dur: 34}, {kind: 'video', ...tv('sr', 18.25), dur: 30}, {kind: 'video', ...tv('sr', 24.58), dur: 33}, {kind: 'video', ...tv('sr', 29.21), dur: 32}]},
   {id: '7c', sec: 7, dur: 45, tpl: 'video', clip: tv('sr', 13.05), bug: true},
   // 8 · Finale (2427–2700): 4 smiles (one per film), sunset at speed 1.0, end card
   {id: '8a', sec: 8, dur: 12, tpl: 'video', clip: tv('sr', 45.4)},

@@ -38,6 +38,19 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={defaultProps}
       />
       <Composition
+        id="CiaBrandFilm90"
+        component={({lang}: Props) => (
+          <FilmShell lang={lang}>
+            <FilmV3 metronome={false} />
+          </FilmShell>
+        )}
+        durationInFrames={V3.durationInFrames}
+        fps={fps}
+        width={landscape.width}
+        height={landscape.height}
+        defaultProps={defaultProps}
+      />
+      <Composition
         id="CiaBrandFilm-Offline"
         component={({lang}: Props) => (
           <FilmShell lang={lang}>
