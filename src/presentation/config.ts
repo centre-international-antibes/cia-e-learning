@@ -279,12 +279,14 @@ export const ASSETS = {
   ] as {photo: string | null; focus: [number, number]}[],
   /** Scene 6 shots, one word each, cut on beats. Video zoom ≤ 1.08, photo ≤ 1.12. */
   liveIt: [
-    {kind: 'photo', src: 'photos/le-port-class-adults-groupwork.jpg', frames: 0, wordSide: 'left'},
-    {kind: 'photo', src: 'photos/cooking-workshop-chef-b.jpg', frames: 0, wordSide: 'left'},
-    {kind: 'video', src: 'video/sail-catamaran-splash.mp4', frames: 45, wordSide: 'left'},
-    {kind: 'video', src: 'video/juniors-beach-from-back.mp4', frames: 68, wordSide: 'left'},
-    {kind: 'video', src: 'video/live-antibes-ramparts-aerial.mp4', frames: 104, wordSide: 'left'},
-  ] as {kind: 'photo' | 'video'; src: string; frames: number; wordSide: 'left' | 'right'}[],
+    {kind: 'photo', src: 'photos/le-port-class-adults-groupwork.jpg', focus: [0.5, 0.35], zoom: 1.06},
+    // focus at the top: keeps the third-party cream carton (bottom edge) out of frame
+    {kind: 'photo', src: 'photos/cooking-workshop-chef-b.jpg', focus: [0.5, 0], zoom: 1.06},
+    {kind: 'video', src: 'video/sail-catamarans-offshore.mp4', focus: [0.5, 0.5], zoom: 1.0},
+    {kind: 'video', src: 'video/juniors-beach-from-back.mp4', focus: [0.5, 0.5], zoom: 1.04},
+    // already cropped ×1.08 in prepare-assets.py (watermark removal) → no extra zoom
+    {kind: 'video', src: 'video/live-antibes-ramparts-aerial.mp4', focus: [0.5, 0.5], zoom: 1.0},
+  ] as {kind: 'photo' | 'video'; src: string; focus: [number, number]; zoom: number}[],
   /** Local shot starts in scene 6 (frames). Global cut = sceneStart('liveIt') + value, on beats. */
   liveItCuts: [0, 43, 79, 115, 151],
   zoomMax: {photo: 1.12, video: 1.08},

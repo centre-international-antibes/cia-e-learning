@@ -8,7 +8,7 @@ import {HandwrittenLive, LIVE_RATIO} from '../../shared/drawing';
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
 /** Timings inside the scene (frames). The scene starts under the brand wipe. */
-export const SIGNATURE_T = {logo: 14, dont: 40, live: 56, liveDuration: 30, url: 96, cta: 106, credits: 120};
+export const SIGNATURE_T = {logo: 14, dont: 40, live: 60, liveDuration: 30, url: 98, cta: 108, credits: 122};
 
 export const Signature: React.FC = () => {
   const frame = useCurrentFrame();

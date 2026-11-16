@@ -52,13 +52,17 @@ V3 = "junior_program_centre_international_antibes_v1 (1080p).mp4"
 # delogo the whole mark on the full frame, then keep the top-right 1778x1000 window.
 CROP_TR = "delogo=x=12:y=972:w=284:h=90,crop=1778:1000:142:0,scale=1920:1080:flags=lanczos"
 NO_CROP = "scale=1920:1080:flags=lanczos"
+# v3 opening shot: "40 ans" badge bottom-left (x 15-420, y 855-1005) → delogo + same top-right crop
+CROP_V3 = "delogo=x=10:y=850:w=420:h=170,crop=1778:1000:142:0,scale=1920:1080:flags=lanczos"
+# NB: the catamaran close-up (v3 8.6-10 s) shows a legible boat brand mid-shot → not used.
 
 CLIPS = [
     # name, source, start, end, filter, slow factor (1 = real time)
     ("riviera-aerial-bay.mp4", V1, 0.00, 4.30, CROP_TR, 1.70),
     ("learn-hand-writing.mp4", V1, 32.24, 33.36, CROP_TR, 1.0),
     ("live-antibes-ramparts-aerial.mp4", V1, 53.90, 56.30, CROP_TR, 1.45),
-    ("sail-catamaran-splash.mp4", V3, 8.60, 10.05, NO_CROP, 1.0),
+    # catamarans sailing offshore; the "40 ans" CIA badge sits bottom-left on blurred rocks
+    ("sail-catamarans-offshore.mp4", V3, 0.04, 1.96, CROP_V3, 1.0),
     ("juniors-beach-from-back.mp4", V3, 30.78, 33.00, NO_CROP, 1.0),
 ]
 
