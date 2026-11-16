@@ -580,7 +580,7 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '1g', sec: 1, dur: 45, tpl: 'bonjour', clip: tv('sr', 1.72)},
   // 2 · Promise (165–345): title on the drone, then the bay with 3 city labels (replaces the T7 map)
   {id: '2a', sec: 2, dur: 105, tpl: 'T1', clip: tv('sr', 3.22), text: 'promise'},
-  {id: '2b', sec: 2, dur: 94, tpl: 'cities', clip: tv('cours', 0.3), text: 'cities', points: [
+  {id: '2b', sec: 2, dur: 96, tpl: 'cities', clip: tv('cours', 0.3), text: 'cities', points: [
     {x: 300, y: 600, lx: 300, ly: 470, anchor: 'start'}, // Antibes: foreground town
     {x: 1080, y: 470, lx: 1180, ly: 600, anchor: 'start'}, // Juan-les-Pins: the bay front
     {x: 820, y: 318, lx: 700, ly: 230, anchor: 'end'}, // Cannes: across the bay, under the Estérel
@@ -589,9 +589,9 @@ export const SCRIPT_V3: SegV3[] = [
   {id: '3a', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 11.42), text: 'since', value: 1985, from: 1900, suffix: '', grouping: false, onNavy: true},
   {id: '3b', sec: 3, dur: 75, tpl: 'T5', clip: tv('cours', 26.62), text: 'students', value: 10000, from: 0, suffix: '', grouping: true, onNavy: false},
   {id: '3c', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 45.95), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false, onNavy: false},
-  {id: '3d', sec: 3, dur: 69, tpl: 'place', text: 'accredited', media: [{kind: 'video', ...tv('cours', 21.0), dur: 33}, {kind: 'video', ...tv('cours', 32.25), dur: 36}]},
+  {id: '3d', sec: 3, dur: 67, tpl: 'place', text: 'accredited', media: [{kind: 'video', ...tv('cours', 21.0), dur: 32}, {kind: 'video', ...tv('cours', 32.23), dur: 35}]},
   // 4 · 01 French courses (615–1155): T4 → classes → T3 Le Port → T6 Le Château
-  {id: '4a', sec: 4, dur: 150, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 13}]},
+  {id: '4a', sec: 4, dur: 150, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 15}, {...tv('cours', 19.95), dur: 30}]},
   {id: '4b', sec: 4, dur: 120, tpl: 'line', text: 'fcLine', bug: true, media: [{kind: 'video', ...tv('cours', 13.75), dur: 45}, {kind: 'video', ...tv('cours', 28.95), dur: 45}, {kind: 'video', ...tv('cours', 22.12), dur: 30}]},
   {id: '4c', sec: 4, dur: 135, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], bg: [{...tv('sr', 30.35), dur: 52}, {...tv('sr', 32.1), dur: 83}]},
   {id: '4d', sec: 4, dur: 89, tpl: 'place', text: 'leChateau', media: [{kind: 'video', ...tv('cours', 7.46), dur: 32}, {kind: 'video', ...tv('sr', 59.18), dur: 57}]},
@@ -613,7 +613,7 @@ export const SCRIPT_V3: SegV3[] = [
     [{...tv('wc', 11.92), dur: 21}, {...tv('wc', 13.72), dur: 27}, {...tv('wc', 22.92), dur: 33}, {...tv('wc', 28.05), dur: 9}],
     [{...tv('wc', 14.62), dur: 30}, {...tv('wc', 7.9), dur: 12}, {...tv('wc', 12.65), dur: 18}, {...tv('wc', 29.45), dur: 15}],
   ]},
-  {id: '6b', sec: 6, dur: 135, tpl: 'T4', text: 'wcCard', bg: [{...tv('wc', 5.25), dur: 39}, {...tv('wc', 20.7), dur: 39}, {...tv('wc', 26.75), dur: 39}, {...tv('wc', 2.9), dur: 18}]},
+  {id: '6b', sec: 6, dur: 135, tpl: 'T4', text: 'wcCard', bg: [{...tv('wc', 5.25), dur: 39}, {...tv('wc', 20.7), dur: 39}, {...tv('wc', 2.9), dur: 24}, {...tv('wc', 26.75), dur: 33}]},
   {id: '6c', sec: 6, dur: 45, tpl: 'T3', photos: ['photos/cooking-pastry-fraisier-vertical.jpg', 'photos/cooking-workshop-chef-a.jpg', 'photos/wine-tasting-toast.jpg'], bg: [{...tv('wc', 33.5), dur: 45}]},
   {id: '6d', sec: 6, dur: 120, tpl: 'video', clip: tv('wc', 74.6), text: 'cremat', textKind: 'line', bug: true},
   {id: '6e', sec: 6, dur: 15, tpl: 'video', clip: tv('wc', 61.85), bug: true},
