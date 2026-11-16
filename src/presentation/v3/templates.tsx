@@ -24,8 +24,9 @@ const MASK = 15; // standard mask / entrance length (frames)
 export type Line = {text: string; bold: boolean};
 export const parseText = (t: string): Line[] => t.split('|').map((l) => ({text: l.replace(/^\*/, ''), bold: l.startsWith('*')}));
 
+// letter-spacing passed explicitly + 3 % safety margin (fitText alone under-measured by a few px)
 const fit = (text: string, width: number, weight: number, upper: boolean) =>
-  fitText({text, withinWidth: width, fontFamily: FONTS.sans, fontWeight: weight, textTransform: upper ? 'uppercase' : 'none'}).fontSize;
+  fitText({text, withinWidth: width * 0.97, fontFamily: FONTS.sans, fontWeight: weight, letterSpacing: upper ? '0.02em' : '0.005em', textTransform: upper ? 'uppercase' : 'none'}).fontSize;
 
 /**
  * Lay out one logical line inside `width`: largest size ≤ max that fits on one line;
@@ -400,9 +401,9 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
           <div
             style={{
               position: 'absolute',
-              left: 0,
+              left: -60, // extra bleed on the left: the slow drift never detaches the card from the edge
               top: M.top,
-              width: w,
+              width: w + 60,
               height: 1080 - M.top - M.bottom,
               background: COLORS.white,
               borderRadius: '0 8px 8px 0',
@@ -411,7 +412,7 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
               clipPath: `inset(0 ${100 - open * 100}% 0 0 round 0 8px 8px 0)`,
             }}
           >
-            <div style={{position: 'absolute', left: M.x, right: 64, top: 96, fontFamily: SANS, color: COLORS.navy}}>
+            <div style={{position: 'absolute', left: M.x + 60, right: 64, top: 96, fontFamily: SANS, color: COLORS.navy}}>
               <Reveal delay={10}>
                 <div style={{fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em'}}>{num.text}</div>
               </Reveal>
@@ -478,7 +479,7 @@ export const T5: React.FC<{clip: Clip; dur: number; text: string; value: number;
         position: 'absolute',
         left: 0,
         right: 0,
-        top: labelAbove ? baseline - size * 0.98 - 84 : baseline + 50,
+        top: labelAbove ? baseline - size * 0.98 - 84 : baseline + size * 0.22 + 40,
         textAlign: 'center',
         fontFamily: SANS,
         fontWeight: WEIGHTS.regular,
