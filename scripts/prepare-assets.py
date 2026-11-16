@@ -43,7 +43,20 @@ PHOTOS = {
     "16.jpg": "astor-lounge.jpg",
     "24 (1).jpg": "astor-room-b.jpg",
     "38.jpg": "astor-room-c.jpg",
+    # V3 additions
+    "Piscine Castel Petits (18 sur 37).jpg": "castel-arabel-pool-18.jpg",
+    "Piscine Castel Petits (28 sur 37).jpg": "castel-arabel-pool-28.jpg",
+    "Piscine Castel Petits (37 sur 37).jpg": "castel-arabel-pool-37.jpg",
+    "cooking-workshop-chef-a.jpg": "cooking-workshop-chef-a.jpg",
+    "wine-tasting-toast.jpg": "wine-tasting-toast.jpg",
+    "le-port-class-teacher-student.jpg": "le-port-class-teacher-student.jpg",
 }
+# Relative crops (x0, y0, x1, y1) applied before resizing: third-party brands out of frame.
+CROPS = {
+    "wine-tasting-toast.jpg": (0.53, 0.0, 1.0, 1.0),  # wine label (centre-bottom) removed
+    "cooking-workshop-chef-a.jpg": (0.0, 0.0, 1.0, 0.84),  # "Crème" carton (bottom) removed
+}
+
 # Free-licence media downloaded by scripts/download-media.sh
 DOWNLOADED = {
     "cannes-vieux-port-wikimedia.jpg": "cannes-vieux-port-wikimedia.jpg",
@@ -89,6 +102,9 @@ def prep_photos():
                 continue
             dst = out / dst_name
             im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+            if dst_name in CROPS:
+                x0, y0, x1, y1 = CROPS[dst_name]
+                im = im.crop((round(x0 * im.width), round(y0 * im.height), round(x1 * im.width), round(y1 * im.height)))
             if im.width > 2560:
                 im = im.resize((2560, round(im.height * 2560 / im.width)), Image.LANCZOS)
             im.save(dst, "JPEG", quality=88, optimize=True, progressive=True)

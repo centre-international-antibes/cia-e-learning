@@ -17,15 +17,15 @@ const parseIcon = (svg: string): IconEl[] =>
   }));
 
 /** Lucide stroke icon (2 px) inside an 88 px circle, drawn stroke by stroke. */
-export const DrawIcon: React.FC<{name: 'GraduationCap' | 'Sun' | 'Users'; delay: number; size?: number}> = ({name, delay, size = 88}) => {
+export const DrawIcon: React.FC<{name: string; delay: number; size?: number; color?: string}> = ({name, delay, size = 88, color = COLORS.navy}) => {
   const frame = useCurrentFrame();
   const els = useMemo(() => parseIcon((lucide as unknown as Record<string, string>)[name]), [name]);
   const ring = interpolate(frame, [delay, delay + 22], [0, 1], {...clamp, easing: EASE.out});
   const per = 10;
   return (
     <svg width={size} height={size} viewBox="0 0 88 88" style={{display: 'block', overflow: 'visible'}}>
-      <circle cx="44" cy="44" r="43" fill="none" stroke={COLORS.navy} strokeWidth={1.5} pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - ring} transform="rotate(-90 44 44)" />
-      <g transform="translate(22 22) scale(1.8333)" fill="none" stroke={COLORS.navy} strokeWidth={2 / 1.8333} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="44" cy="44" r="43" fill="none" stroke={color} strokeWidth={1.5} pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - ring} transform="rotate(-90 44 44)" />
+      <g transform="translate(22 22) scale(1.8333)" fill="none" stroke={color} strokeWidth={2 / 1.8333} strokeLinecap="round" strokeLinejoin="round">
         {els.map((el, i) => {
           const p = interpolate(frame, [delay + 8 + i * per * 0.6, delay + 8 + i * per * 0.6 + 22], [0, 1], {...clamp, easing: EASE.inOut});
           if (el.tag === 'path') {

@@ -11,8 +11,8 @@ import {COLORS, EASE, FONTS, MAP, TYPE, WEIGHTS, alpha} from '../config';
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 export const MAP_T = {diveStart: 6, diveEnd: 140, coastDraw: [4, 84] as [number, number], city0: 128, cityStagger: 8};
 
-export const RivieraSvg: React.FC<{cities: readonly string[]}> = ({cities}) => {
-  const frame = useCurrentFrame();
+export const RivieraSvg: React.FC<{cities: readonly string[]; speed?: number; labelSize?: number}> = ({cities, speed = 1, labelSize = TYPE.label.size}) => {
+  const frame = useCurrentFrame() * speed;
   const {width, height} = useVideoConfig();
   const portrait = height > width;
 
@@ -56,7 +56,8 @@ export const RivieraSvg: React.FC<{cities: readonly string[]}> = ({cities}) => {
         const dot = interpolate(frame, [s, s + 12], [0, 1], {...clamp, easing: EASE.out});
         const wave = interpolate(frame, [s, s + 36], [0, 1], {...clamp, easing: EASE.out});
         const label = interpolate(frame, [s + 6, s + 24], [0, 1], {...clamp, easing: EASE.out});
-        const dx = portrait ? c.labelDx * 0.9 : c.labelDx;
+        const k = labelSize / TYPE.label.size;
+        const dx = (portrait ? c.labelDx * 0.9 : c.labelDx) * Math.min(k, 1.6);
         return (
           <g key={i}>
             <g transform={`translate(${x} ${y})`} opacity={1 - wave} style={{display: wave >= 1 || frame < s ? 'none' : undefined}}>
@@ -68,16 +69,16 @@ export const RivieraSvg: React.FC<{cities: readonly string[]}> = ({cities}) => {
               <Circle radius={9 * dot} fill={COLORS.white} stroke={COLORS.navy} strokeWidth={2} />
             </g>
             {Math.abs(c.labelDy) > 60 ? (
-              <line x1={x + 8} y1={y + 8} x2={x + dx - 8} y2={y + c.labelDy - 14} stroke={COLORS.white} strokeOpacity={0.7 * label} strokeWidth={1.5} />
+              <line x1={x + 8} y1={y + 8} x2={x + dx - 8} y2={y + c.labelDy * Math.min(k, 1.6) - 24} stroke={COLORS.white} strokeOpacity={0.7 * label} strokeWidth={1.5} />
             ) : null}
             <text
               x={x + dx}
-              y={y + c.labelDy}
+              y={y + c.labelDy * Math.min(k, 1.6)}
               textAnchor={c.anchor}
               dominantBaseline="middle"
               opacity={label}
               fill={COLORS.white}
-              style={{fontFamily: `'${FONTS.sans}'`, fontWeight: WEIGHTS.medium, fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking}}
+              style={{fontFamily: `'${FONTS.sans}'`, fontWeight: WEIGHTS.medium, fontSize: labelSize, letterSpacing: TYPE.label.tracking}}
             >
               {cities[i]}
             </text>

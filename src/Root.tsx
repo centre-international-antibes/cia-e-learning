@@ -5,6 +5,8 @@ import {FilmShell} from './shared/FilmShell';
 import {SCENE_COMPONENTS} from './presentation/scenes';
 import {PresentationFilm, PresentationCutdown} from './presentation/PresentationFilm';
 import {OfflineCut} from './presentation/v2/OfflineCut';
+import {FilmV3} from './presentation/v3/FilmV3';
+import {V3} from './presentation/config';
 
 type Props = {lang: Lang};
 const defaultProps: Props = {lang: DEFAULT_LANG};
@@ -22,6 +24,19 @@ export const RemotionRoot: React.FC = () => {
   const {landscape, portrait, fps} = VIDEO;
   return (
     <>
+      <Composition
+        id="CiaBrandFilmV3"
+        component={({lang}: Props) => (
+          <FilmShell lang={lang}>
+            <FilmV3 />
+          </FilmShell>
+        )}
+        durationInFrames={V3.durationInFrames}
+        fps={fps}
+        width={landscape.width}
+        height={landscape.height}
+        defaultProps={defaultProps}
+      />
       <Composition
         id="CiaBrandFilm-Offline"
         component={({lang}: Props) => (

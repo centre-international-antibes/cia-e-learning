@@ -446,3 +446,184 @@ export const edlStarts = () => {
   const total = EDL.reduce((a, s) => a + s.dur, 0);
   if (total !== VIDEO.durationInFrames) throw new Error(`EDL total ${total} ≠ ${VIDEO.durationInFrames}`);
 }
+
+// ============================================================================
+//  V3 — BRAND FILM 90 s (brief V3): readable script, video + editorial layouts.
+//  Metronome 120 BPM: 1 beat = 15 f. Total 2700 f.
+// ============================================================================
+export const V3 = {
+  durationInFrames: 2700,
+  beat: 15,
+  metronome: 'audio/metronome-120bpm-90s.wav',
+  /** reading rule (§0): 1 s + 0.3 s per word, title + caption together */
+  readFrames: (words: number) => Math.ceil((1 + 0.3 * words) * 30),
+  minReadPx: 44,
+  type: {
+    greeting: 120,
+    bonjour: 160,
+    title: 104,
+    programmeName: 80,
+    splitName: 72,
+    placeTitle: 72,
+    line: 48, // readable lines ≥ 44 px
+    fact: 44,
+    kicker: 26,
+    number: 460,
+    numberLabel: 48,
+  },
+};
+
+const tv = (src: SourceKey, inS: number, extra: Partial<Clip> = {}): Clip => ({src, in: inS, ...extra});
+const JRB3 = {scale: CROP.scaleJrBadge};
+
+export type TimedClip = Clip & {dur: number};
+export type SegV3 =
+  | {id: string; sec: number; dur: number; tpl: 'video'; clip: Clip; text?: string; textKind?: 'greeting' | 'line'; bug?: boolean}
+  | {id: string; sec: number; dur: number; tpl: 'bonjour'; clip: Clip}
+  | {id: string; sec: number; dur: number; tpl: 'T1'; clip: Clip; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T2'; clips: TimedClip[]; text: string; icons: string[]}
+  | {id: string; sec: number; dur: number; tpl: 'T3'; photos: string[]; bg: TimedClip[]; text?: string}
+  | {id: string; sec: number; dur: number; tpl: 'T4'; bg: TimedClip[]; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T5'; clip: Clip; text: string; value: number; from: number; suffix: string; grouping: boolean}
+  | {id: string; sec: number; dur: number; tpl: 'T6'; photo: string; photoDur: number; clip: Clip; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T7'; inset: Clip; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'T8'; panels: TimedClip[][]; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'photos'; photos: {src: string; dur: number}[]; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'line'; clips: TimedClip[]; text: string}
+  | {id: string; sec: number; dur: number; tpl: 'sunset'; clip: Clip}
+  | {id: string; sec: number; dur: number; tpl: 'endcard'; image: string};
+
+/** Texts (EN / FR). Keys are referenced by the script below. */
+export const TEXT_V3 = {
+  en: {
+    hello: 'Hello', hola: 'Hola', ciao: 'Ciao', hallo: 'Hallo', privet: 'Привет', konnichiwa: 'こんにちは',
+    bonjour: 'Bonjour.',
+    promise: 'LEARN FRENCH|*ON THE FRENCH RIVIERA',
+    cities: 'ANTIBES · JUAN-LES-PINS · CANNES',
+    since: '1985|Since',
+    students: '10,000|students a year',
+    nationalities: '50+|nationalities',
+    accredited: 'Accredited Qualité FLE & EAQUALS',
+    fcCard: '01|*FRENCH COURSES|All levels · All year|Max. 12 per class|Intensive · DELF · Business French',
+    fcLine: 'Small classes.|Real conversations.',
+    lePort: '*LE PORT|Old Town, steps from the beach',
+    leChateau: '*LE CHÂTEAU|A Provençal mas, 22 classrooms',
+    juniors: '02|*JUNIORS 8–17|Juan-les-Pins Premium|All-inclusive|Supervised',
+    morning: 'Classes in the morning.|The Riviera all afternoon.',
+    castel: '*CASTEL ARABEL|500 m from the beach',
+    astor: '*ASTOR|In the heart of Juan-les-Pins',
+    wcCard: '03|*WINE & COOKING|French through gastronomy|Workshops · Tastings · Excursions',
+    wcLine: 'Cook it. Taste it.|Say it in French.',
+    cremat: '*CHÂTEAU DE CRÉMAT|AOC Bellet, Nice',
+    seniors: '04|*50+ PROGRAMME|Culture|Markets|Excursions',
+    seniorsLine: 'Your pace.|Your Riviera.',
+    dont: 'Don’t learn French.',
+    programmes: 'French courses · Juniors · Wine & Cooking · 50+',
+    url: 'www.cia-france.com',
+    cta: 'DISCOVER OUR PROGRAMMES',
+  },
+  fr: {
+    hello: 'Hello', hola: 'Hola', ciao: 'Ciao', hallo: 'Hallo', privet: 'Привет', konnichiwa: 'こんにちは',
+    bonjour: 'Bonjour.',
+    promise: 'APPRENDRE LE FRANÇAIS|*SUR LA CÔTE D’AZUR',
+    cities: 'ANTIBES · JUAN-LES-PINS · CANNES',
+    since: '1985|Depuis',
+    students: '10 000|étudiants par an',
+    nationalities: '50+|nationalités',
+    accredited: 'Labels Qualité FLE & EAQUALS',
+    fcCard: '01|*COURS DE FRANÇAIS|Tous niveaux · Toute l’année|12 élèves max. par classe|Intensif · DELF · Français des affaires',
+    fcLine: 'Petits groupes.|Vraies conversations.',
+    lePort: '*LE PORT|Le vieil Antibes, à deux pas de la plage',
+    leChateau: '*LE CHÂTEAU|Un mas provençal, 22 salles',
+    juniors: '02|*JUNIORS 8–17 ANS|Juan-les-Pins Premium|Tout compris|Encadré',
+    morning: 'Les cours le matin.|La Riviera l’après-midi.',
+    castel: '*CASTEL ARABEL|À 500 m de la plage',
+    astor: '*ASTOR|Au cœur de Juan-les-Pins',
+    wcCard: '03|*WINE & COOKING|Le français par la gastronomie|Ateliers · Dégustations · Excursions',
+    wcLine: 'Cuisinez. Goûtez.|Dites-le en français.',
+    cremat: '*CHÂTEAU DE CRÉMAT|AOC Bellet, Nice',
+    seniors: '04|*PROGRAMME 50+|Culture|Marchés|Excursions',
+    seniorsLine: 'Votre rythme.|Votre Riviera.',
+    dont: 'Don’t learn French.',
+    programmes: 'Cours de français · Juniors · Wine & Cooking · 50+',
+    url: 'www.cia-france.com',
+    cta: 'DÉCOUVREZ NOS PROGRAMMES',
+  },
+} as const;
+export type TextKeyV3 = keyof (typeof TEXT_V3)['en'];
+
+/**
+ * The script. `text` values are keys of TEXT_V3. Within a text, '|' separates lines,
+ * a leading '*' marks a Bold line. Sections: 1 hook · 2 promise · 3 who · 4 French courses ·
+ * 5 Juniors · 6 Wine & Cooking · 7 50+ · 8 finale.
+ */
+export const SCRIPT_V3: SegV3[] = [
+  // 1 · Hook (0–180): burst of greetings, then Bonjour on the SR drone
+  {id: '1a', sec: 1, dur: 22, tpl: 'video', clip: tv('jr', 0.3, JRB3), text: 'hello', textKind: 'greeting'},
+  {id: '1b', sec: 1, dur: 15, tpl: 'video', clip: tv('jr', 2.4, JRB3), text: 'hola', textKind: 'greeting'},
+  {id: '1c', sec: 1, dur: 15, tpl: 'video', clip: tv('wc', 33.6), text: 'ciao', textKind: 'greeting'},
+  {id: '1d', sec: 1, dur: 23, tpl: 'video', clip: tv('cours', 20.0), text: 'hallo', textKind: 'greeting'},
+  {id: '1e', sec: 1, dur: 15, tpl: 'video', clip: tv('sr', 9.2), text: 'privet', textKind: 'greeting'},
+  {id: '1f', sec: 1, dur: 30, tpl: 'video', clip: tv('jr', 3.75, JRB3), text: 'konnichiwa', textKind: 'greeting'},
+  {id: '1g', sec: 1, dur: 45, tpl: 'bonjour', clip: tv('sr', 1.72, {rate: 0.9})},
+  // 2 · Promise (180–360)
+  {id: '2a', sec: 2, dur: 105, tpl: 'T1', clip: tv('sr', 3.07, {rate: 0.9}), text: 'promise'},
+  {id: '2b', sec: 2, dur: 75, tpl: 'T7', inset: tv('sr', 30.4), text: 'cities'},
+  // 3 · Who we are (360–660): video seen through the numbers
+  {id: '3a', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 11.42, {rate: 0.9}), text: 'since', value: 1985, from: 1900, suffix: '', grouping: false},
+  {id: '3b', sec: 3, dur: 75, tpl: 'T5', clip: tv('cours', 26.62, {rate: 0.9}), text: 'students', value: 10000, from: 0, suffix: '', grouping: true},
+  {id: '3c', sec: 3, dur: 60, tpl: 'T5', clip: tv('cours', 45.95, {rate: 0.9}), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false},
+  {id: '3d', sec: 3, dur: 75, tpl: 'video', clip: tv('cours', 48.2, {rate: 0.9}), text: 'accredited', textKind: 'line', bug: true},
+  // 4 · 01 French courses (660–1170)
+  {id: '4a', sec: 4, dur: 180, tpl: 'T4', text: 'fcCard', bg: [{...tv('cours', 8.55), dur: 15}, {...tv('cours', 18.25), dur: 32}, {...tv('cours', 15.4), dur: 42}, {...tv('cours', 31.15), dur: 31}, {...tv('cours', 33.45), dur: 32}, {...tv('cours', 19.95), dur: 28}]},
+  {id: '4b', sec: 4, dur: 120, tpl: 'line', text: 'fcLine', clips: [{...tv('cours', 13.75), dur: 45}, {...tv('cours', 28.95), dur: 45}, {...tv('cours', 22.12), dur: 30}]},
+  {id: '4c', sec: 4, dur: 135, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], bg: [{...tv('sr', 30.35), dur: 52}, {...tv('sr', 32.1), dur: 83}]},
+  {id: '4d', sec: 4, dur: 105, tpl: 'T6', text: 'leChateau', photo: 'photos/le-chateau-garden-a.jpg', photoDur: 47, clip: tv('cours', 5.45)},
+  // 5 · 02 Juniors (1170–1680)
+  {id: '5a', sec: 5, dur: 150, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], clips: [{...tv('jr', 30.8), dur: 66}, {...tv('jr', 16.82), dur: 41}, {...tv('jr', 12.55), dur: 32}, {...tv('jr', 13.62), dur: 11}]},
+  {id: '5b', sec: 5, dur: 12, tpl: 'video', clip: tv('jr', 5.05, JRB3)},
+  {id: '5c', sec: 5, dur: 18, tpl: 'video', clip: tv('jr', 6.65)},
+  {id: '5d', sec: 5, dur: 12, tpl: 'video', clip: tv('jr', 11.5)},
+  {id: '5e', sec: 5, dur: 18, tpl: 'video', clip: tv('jr', 28.25)},
+  {id: '5f', sec: 5, dur: 15, tpl: 'video', clip: tv('jr', 21.75)},
+  {id: '5g', sec: 5, dur: 105, tpl: 'photos', text: 'morning', photos: [{src: 'photos/juniors-class-teacher-whiteboard.jpg', dur: 45}, {src: 'photos/castel-arabel-pool-18.jpg', dur: 60}]},
+  {id: '5h', sec: 5, dur: 105, tpl: 'T6', text: 'castel', photo: 'photos/castel-arabel-facade-tower.jpg', photoDur: 70, clip: tv('jr', 29.67, {rate: 0.9})},
+  {id: '5i', sec: 5, dur: 90, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], bg: [{...tv('jr', 24.0), dur: 30}, {...tv('jr', 25.0), dur: 40}, {...tv('jr', 26.7), dur: 20}]},
+  // 6 · 03 Wine & Cooking (1680–2115)
+  {id: '6a', sec: 6, dur: 150, tpl: 'T4', text: 'wcCard', bg: [{...tv('wc', 5.25), dur: 39}, {...tv('wc', 20.7), dur: 39}, {...tv('wc', 26.75), dur: 39}, {...tv('wc', 2.9), dur: 18}, {...tv('wc', 32.15), dur: 15}]},
+  {id: '6b', sec: 6, dur: 105, tpl: 'T8', text: 'wcLine', panels: [
+    [{...tv('wc', 7.24), dur: 15}, {...tv('wc', 10.62), dur: 30}, {...tv('wc', 24.05), dur: 30}, {...tv('wc', 30.75), dur: 30}],
+    [{...tv('wc', 11.92), dur: 15}, {...tv('wc', 13.72), dur: 27}, {...tv('wc', 22.92), dur: 33}, {...tv('wc', 28.05), dur: 15}],
+    [{...tv('wc', 14.62), dur: 30}, {...tv('wc', 7.9), dur: 12}, {...tv('wc', 12.65), dur: 18}, {...tv('wc', 29.45), dur: 15}],
+  ]},
+  {id: '6c', sec: 6, dur: 45, tpl: 'T3', photos: ['photos/cooking-pastry-fraisier-vertical.jpg', 'photos/cooking-workshop-chef-a.jpg', 'photos/wine-tasting-toast.jpg'], bg: [{...tv('wc', 33.5), dur: 45}]},
+  {id: '6d', sec: 6, dur: 90, tpl: 'video', clip: tv('wc', 50.98, {rate: 0.9}), text: 'cremat', textKind: 'line', bug: true},
+  {id: '6e', sec: 6, dur: 15, tpl: 'video', clip: tv('wc', 61.85), bug: true},
+  {id: '6f', sec: 6, dur: 30, tpl: 'video', clip: tv('wc', 71.25), bug: true},
+  // 7 · 04 50+ (2115–2400)
+  {id: '7a', sec: 7, dur: 150, tpl: 'T2', text: 'seniors', icons: ['Landmark', 'ShoppingBasket', 'MapPin'], clips: [{...tv('sr', 7.3), dur: 51}, {...tv('sr', 11.9), dur: 33}, {...tv('sr', 28.05), dur: 36}, {...tv('sr', 10.72), dur: 15}, {...tv('sr', 21.12), dur: 15}]},
+  {id: '7b', sec: 7, dur: 105, tpl: 'line', text: 'seniorsLine', clips: [{...tv('sr', 9.05), dur: 45}, {...tv('sr', 24.6), dur: 30}, {...tv('sr', 29.22), dur: 30}]},
+  {id: '7c', sec: 7, dur: 30, tpl: 'video', clip: tv('sr', 13.05), bug: true},
+  // 8 · Finale (2400–2700): burst of smiles, sunset + baseline, end card
+  {id: '8a', sec: 8, dur: 12, tpl: 'video', clip: tv('sr', 45.4)},
+  {id: '8b', sec: 8, dur: 15, tpl: 'video', clip: tv('wc', 16.1)},
+  {id: '8c', sec: 8, dur: 12, tpl: 'video', clip: tv('jr', 19.55)},
+  {id: '8d', sec: 8, dur: 15, tpl: 'video', clip: tv('cours', 16.85)},
+  {id: '8e', sec: 8, dur: 12, tpl: 'video', clip: tv('jr', 7.85)},
+  {id: '8f', sec: 8, dur: 9, tpl: 'video', clip: tv('sr', 69.3)},
+  {id: '8g', sec: 8, dur: 90, tpl: 'sunset', clip: tv('cours', 56.47, {rate: 0.8})},
+  {id: '8h', sec: 8, dur: 135, tpl: 'endcard', image: 'video/stills/sunset-freeze.jpg'},
+];
+
+export const v3Starts = () => {
+  let t = 0;
+  return SCRIPT_V3.map((s) => {
+    const st = t;
+    t += s.dur;
+    return st;
+  });
+};
+{
+  const total = SCRIPT_V3.reduce((a, s) => a + s.dur, 0);
+  if (total !== V3.durationInFrames) throw new Error(`SCRIPT_V3 total ${total} ≠ ${V3.durationInFrames}`);
+}
