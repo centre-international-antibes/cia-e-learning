@@ -172,7 +172,7 @@ export const TEXT = {
     hello: {
       greetings: ['Hello', 'Hallo', 'Hola', 'Ciao', 'Olá', 'Привет', 'Merhaba', 'こんにちは', '你好'],
       bonjour: 'Bonjour',
-      kicker: "CENTRE INTERNATIONAL D'ANTIBES · SINCE 1985",
+      kicker: 'CENTRE INTERNATIONAL D’ANTIBES · SINCE 1985',
     },
     riviera: {
       line1: 'LEARN FRENCH',
@@ -218,11 +218,11 @@ export const TEXT = {
     hello: {
       greetings: ['Hello', 'Hallo', 'Hola', 'Ciao', 'Olá', 'Привет', 'Merhaba', 'こんにちは', '你好'],
       bonjour: 'Bonjour',
-      kicker: "CENTRE INTERNATIONAL D'ANTIBES · DEPUIS 1985",
+      kicker: 'CENTRE INTERNATIONAL D’ANTIBES · DEPUIS 1985',
     },
     riviera: {
       line1: 'APPRENDRE LE FRANÇAIS',
-      line2: "SUR LA CÔTE D'AZUR",
+      line2: 'SUR LA CÔTE D’AZUR',
       cities: ['ANTIBES', 'JUAN-LES-PINS', 'CANNES'],
     },
     numbers: {
