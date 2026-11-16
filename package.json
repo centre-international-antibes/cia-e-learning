@@ -1,0 +1,56 @@
+{
+  "name": "cia-presentation-film",
+  "version": "1.0.0",
+  "description": "My Remotion video",
+  "repository": {},
+  "license": "UNLICENSED",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "private": true,
+  "dependencies": {
+    "@fontsource/noto-sans": "^5.3.0",
+    "@fontsource/noto-sans-jp": "^5.3.1",
+    "@fontsource/noto-sans-sc": "^5.3.1",
+    "@fontsource/nunito-sans": "^5.3.0",
+    "@react-three/fiber": "^9.8.2",
+    "@remotion/cli": "4.0.544",
+    "@remotion/fonts": "4.0.544",
+    "@remotion/media": "4.0.544",
+    "@remotion/motion-blur": "4.0.544",
+    "@remotion/noise": "4.0.544",
+    "@remotion/paths": "4.0.544",
+    "@remotion/shapes": "4.0.544",
+    "@remotion/three": "4.0.544",
+    "@remotion/transitions": "4.0.544",
+    "d3-geo": "^3.1.2",
+    "lucide-static": "^1.73.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.544",
+    "svg-path-properties": "^2.2.0",
+    "three": "^0.187.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.544",
+    "@types/d3-geo": "^3.1.1",
+    "@types/react": "19.3.0",
+    "@types/three": "^0.187.0",
+    "@types/topojson-client": "^3.1.5",
+    "@types/web": "0.0.166",
+    "eslint": "10.12.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src && tsc"
+  },
+  "allowScripts": {
+    "esbuild": false
+  }
+}
