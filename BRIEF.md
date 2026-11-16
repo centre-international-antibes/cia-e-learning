@@ -64,7 +64,7 @@ Grille 12 colonnes sur 1920 px, marges 140 px, gouttière 24 px. Un seul texte a
 | **T7 · Carte de la Côte** | 3 s seulement : trait de côte (reprends la carte V1), 3 villes qui s'allument l'une après l'autre, sur fond `#11263D`, avec la vidéo drone en incrustation ronde qui suit la caméra. | Réutilisation du composant carte V1, accéléré. |
 | **T8 · Triptyque** | 3 vidéos côte à côte (filets blancs de 6 px) qui apparaissent une par temps ; texte au-dessus sur une bande `#11263D`. | 3 `<OffthreadVideo>` synchronisés. |
 
-**Transitions :** coupes franches sur les temps (60 %), entrées et sorties de gabarit (30 %), **whip pan** 8 f avec flou directionnel (`@remotion/motion-blur`) entre chapitres (10 %). Pas de fondu enchaîné long, pas de flash.
+**Transitions :** coupes franches sur les temps (60 %), entrées et sorties de gabarit (30 %), **whip pan** de 12 f avec flou directionnel (`@remotion/motion-blur`) entre chapitres (10 %). Pas de fondu enchaîné long, pas de flash.
 **Signature de marque :** numéro de chapitre + barre rouge à chaque début de chapitre ; petite signature logo blanche en haut à droite sur les plans vidéo plein cadre (pas sur les gabarits).
 
 ---
