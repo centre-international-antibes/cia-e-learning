@@ -295,12 +295,12 @@ export const MAP = {
   /** lon, lat — order east → west: Antibes, Juan-les-Pins, Cannes */
   cities: [
     {lon: 7.1256, lat: 43.5808, labelDx: 26, labelDy: -26, anchor: 'start'},
-    {lon: 7.1083, lat: 43.5704, labelDx: 24, labelDy: 46, anchor: 'start'},
-    {lon: 7.0128, lat: 43.5513, labelDx: -26, labelDy: -26, anchor: 'end'},
+    {lon: 7.1083, lat: 43.5704, labelDx: 70, labelDy: 96, anchor: 'start'},
+    {lon: 7.0128, lat: 43.5513, labelDx: -22, labelDy: -34, anchor: 'end'},
   ] as {lon: number; lat: number; labelDx: number; labelDy: number; anchor: 'start' | 'end'}[],
   /** camera: Europe → Côte d'Azur */
-  from: {lon: 6.2, lat: 46.4, span: 26}, // span = degrees of longitude across the frame
-  to: {lon: 7.06, lat: 43.6, span: 0.62},
+  from: {lon: 4.2, lat: 46.4, span: 22}, // span = degrees of longitude across the frame
+  to: {lon: 7.07, lat: 43.545, span: 0.86},
   credit: 'Map: Natural Earth',
 };
 

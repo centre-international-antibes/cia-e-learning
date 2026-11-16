@@ -109,8 +109,19 @@ const topo = JSON.parse(fs.readFileSync(require.resolve('world-atlas/countries-1
 const {feature} = await import('topojson-client');
 const countries = feature(topo, topo.objects.countries);
 const keep = ['France', 'Italy', 'Monaco', 'Spain', 'Switzerland', 'Germany', 'Belgium', 'Luxembourg', 'Netherlands', 'Austria', 'Portugal', 'United Kingdom', 'Ireland', 'Andorra', 'San Marino', 'Vatican', 'Liechtenstein', 'Slovenia', 'Croatia', 'Denmark', 'Czechia', 'Poland', 'Hungary', 'Slovakia', 'Bosnia and Herz.', 'Tunisia', 'Algeria', 'Morocco', 'Montenegro', 'Serbia', 'Albania', 'Greece', 'North Macedonia', 'Kosovo', 'Malta', 'Sweden', 'Norway'];
-const geo = {type: 'FeatureCollection', features: countries.features.filter((f) => keep.includes(f.properties.name))};
-console.log('countries kept', geo.features.length, '/', keep.length);
+const {merge} = await import('topojson-client');
+const kept = topo.objects.countries.geometries.filter((g) => keep.includes(g.properties.name));
+// Coastline only: merge the countries into one land mass (no borders drawn).
+const merged = merge(topo, kept);
+// d3-geo expects clockwise exterior rings (spherical winding): fix any ring
+// whose area would cover the rest of the globe.
+const {geoArea} = await import('d3-geo');
+merged.coordinates = merged.coordinates.map((poly) => {
+  const test = {type: 'Polygon', coordinates: [poly[0]]};
+  return geoArea(test) > 2 * Math.PI ? poly.map((ring) => [...ring].reverse()) : poly;
+});
+const geo = {type: 'Feature', properties: {}, geometry: merged};
+console.log('countries merged', kept.length, '/', keep.length);
 fs.writeFileSync(path.join(ROOT, 'src', 'presentation', 'map', 'europe-10m.json'), JSON.stringify(geo));
 
 const gen = {
