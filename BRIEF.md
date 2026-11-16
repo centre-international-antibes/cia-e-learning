@@ -129,3 +129,23 @@ Les modèles se téléchargent depuis Hugging Face. **Teste l'accès d'abord** ;
 3. Un message court : tableau script → durée de lecture calculée pour chaque texte, liste des photos utilisées et écartées, état des outils Python (profondeur, détourage : OK ou repli).
 
 Déclinaisons (9:16, 30 s, 15 s), étalonnage final et musique : **après** validation de l'animatic.
+
+---
+
+## 10. FLUIDITÉ — RÈGLES TECHNIQUES OBLIGATOIRES (ajout après l'animatic V3)
+
+Diagnostic mesuré sur l'animatic V3 (différence image par image) : les saccades viennent de 3 causes.
+
+1. **Cadences mélangées.** COURS = **25 fps**, JR = **23,976 fps**, WC et SR = 30 fps, dans une composition à 30 fps → une image répétée toutes les 5 ou 6 images sur COURS et JR, très visible sur les mouvements de drone.
+   → **Conforme toutes les sources à 30 fps AVANT montage**, par interpolation de mouvement : `ffmpeg -i in.mp4 -vf "minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1" -c:v libx264 -crf 14 -preset slow -an public/video/30fps/<nom>.mp4`. Contrôle les artefacts (objets qui fondent, contours qui ondulent) sur chaque plan retenu ; si un plan est abîmé, utilise un plan sans mouvement de caméra à la place.
+2. **Ralentis par `playbackRate` < 1** (0,8–0,9 sur les drones, les chiffres, Castel Arabel, Crémat, le coucher de soleil) → images dupliquées à chaque seconde.
+   → **Interdit.** Vitesse 1,0 par défaut (1,0–1,2 autorisé). Si un ralenti est indispensable : génère un intermédiaire à 60 fps avec `minterpolate=fps=60:…`, lis-le à 0,5, et vérifie qu'aucune image n'est répétée.
+3. **Transitions trop courtes** : ouvertures de masque et entrées de gabarit en 4 à 6 images (vers 13,2 s, 15,7 s, 17,8 s, 43,3 s, 75,3 s) → l'image saute.
+   → Transitions et masques **entre 12 et 18 images**, easing in-out `Easing.bezier(0.65, 0, 0.35, 1)`, **jamais linéaire**. Flou de mouvement (`<CameraMotionBlur samples={8} shutterAngle={180}>`) sur tout élément qui bouge vite. **Aucun élément ne se déplace de plus de 80 px par image.** Les transitions **chevauchent** les deux plans (`TransitionSeries`), jamais d'échange brut sous un masque.
+
+**Contrôle obligatoire avant chaque livraison**, résultat à joindre dans ton message :
+```bash
+ffmpeg -loglevel error -i out.mp4 -vf "scale=320:180,tblend=all_mode=difference,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=diff.txt" -f null -
+```
+- Une image répétée (`YAVG` < 0,15) n'est acceptée que sur un plan volontairement fixe (carte de fin).
+- Un pic (`YAVG` > 14) n'est accepté que sur une coupe franche voulue ; plusieurs pics à la suite = transition trop rapide → à corriger.
