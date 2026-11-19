@@ -6,6 +6,7 @@ import {SCENE_COMPONENTS} from './presentation/scenes';
 import {PresentationFilm, PresentationCutdown} from './presentation/PresentationFilm';
 import {OfflineCut} from './presentation/v2/OfflineCut';
 import {FilmV3} from './presentation/v3/FilmV3';
+import {FilmV4} from './presentation/v4/FilmV4';
 import {V3} from './presentation/config';
 
 type Props = {lang: Lang};
@@ -32,6 +33,19 @@ export const RemotionRoot: React.FC = () => {
           </FilmShell>
         )}
         durationInFrames={V3.durationInFrames}
+        fps={fps}
+        width={landscape.width}
+        height={landscape.height}
+        defaultProps={defaultProps}
+      />
+      <Composition
+        id="CiaBrandFilmV4"
+        component={({lang}: Props) => (
+          <FilmShell lang={lang}>
+            <FilmV4 />
+          </FilmShell>
+        )}
+        durationInFrames={2700}
         fps={fps}
         width={landscape.width}
         height={landscape.height}

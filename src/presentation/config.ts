@@ -495,9 +495,9 @@ export type SegV3 =
   | {id: string; sec: number; dur: number; tpl: 'T2'; clips: TimedClip[]; text: string; icons: string[]}
   | {id: string; sec: number; dur: number; tpl: 'T3'; photos: string[]; bg: TimedClip[]; text?: string}
   | {id: string; sec: number; dur: number; tpl: 'T4'; bg: TimedClip[]; text: string}
-  | {id: string; sec: number; dur: number; tpl: 'T5'; clip: Clip; text: string; value: number; from: number; suffix: string; grouping: boolean; onNavy: boolean}
+  | {id: string; sec: number; dur: number; tpl: 'T5'; clip: Clip; text: string; value: number; from: number; suffix: string; grouping: boolean; onNavy: boolean; clips?: TimedClip[]}
   | {id: string; sec: number; dur: number; tpl: 'T6'; photo: string; photoDur: number; clip: Clip; text: string; videoFrom?: number}
-  | {id: string; sec: number; dur: number; tpl: 'T8'; panels: TimedClip[][]; text: string; kicker?: string}
+  | {id: string; sec: number; dur: number; tpl: 'T8'; panels: TimedClip[][]; text: string; kicker?: string; panelStarts?: number[]}
   | {id: string; sec: number; dur: number; tpl: 'line'; media: MediaV3[]; text: string; bug?: boolean}
   | {id: string; sec: number; dur: number; tpl: 'sunset'; clip: Clip}
   | {id: string; sec: number; dur: number; tpl: 'endcard'; image: string};
