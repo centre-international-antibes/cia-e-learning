@@ -626,7 +626,10 @@ export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: num
         }}
       />
       <AbsoluteFill style={{clipPath: inset}}>
-        <PhotoView src={photo} dur={vf} zoom={[1, 1]} />
+        {/* still while the window grows (no shimmer), then a slow steady push once it fills the frame (no frozen frames) */}
+        <AbsoluteFill style={{scale: String(interpolate(f, [photoDur, vf + 12], [1, 1.035], {...clamp, easing: STEADY})), transformOrigin: 'center'}}>
+          <PhotoView src={photo} dur={vf} zoom={[1, 1]} />
+        </AbsoluteFill>
         <Sequence from={vf} layout="absolute-fill">
           <AbsoluteFill style={{opacity: videoIn}}>
             <ClipView clip={clip} dur={dur - vf} />
