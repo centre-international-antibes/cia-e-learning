@@ -67,11 +67,11 @@ const Seg: React.FC<{s: SegV4}> = ({s}) => {
     case 'T6': {
       const t = tx(s.text)!;
       const [first, ...rest] = t.split('|');
-      const kicker = /^\d\d( · .*)?$/.test(first) ? first : undefined;
+      const kicker = rest.length >= 2 && !first.startsWith('*') ? first : undefined; // surtitle, e.g. OUR RESIDENCES
       return <T6 photo={s.photo} photoDur={s.photoDur} videoFrom={s.videoFrom} clip={s.clip} dur={dur} text={kicker ? rest.join('|') : t} kicker={kicker} />;
     }
     case 'T8':
-      return <T8 panels={s.panels} panelStarts={s.panelStarts} dur={dur} text={tx(s.text)!} kicker={s.kicker} />;
+      return <T8 panels={s.panels} panelStarts={s.panelStarts} dur={dur} text={tx(s.text)!} kicker={s.kicker || undefined} />;
     case 'line':
       return <LineSeg media={s.media} dur={dur} text={tx(s.text)!} bug={s.bug} />;
     case 'word':

@@ -240,12 +240,12 @@ export const T1: React.FC<{clip: Clip; dur: number; text: string; clips?: TimedC
       <ScrimBL />
       <div style={{position: 'absolute', left: M.x, bottom: M.bottom, translate: drift}}>
         {kicker ? (
-          // chapter opening: "04" + programme name (title size) + reading line
+          // chapter opening: programme name (title size) + reading line; numbers are not shown
           <>
-            <Reveal delay={0}>
+            {/^\d\d$/.test(kicker) ? null : <Reveal delay={0}>
               <div style={{fontFamily: SANS, fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em', color: COLORS.white, marginBottom: 16}}>{kicker}</div>
-            </Reveal>
-            <TextBlock lines={lines} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.line} delay={4} gap={10} />
+            </Reveal>}
+            <TextBlock lines={lines} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.line} delay={0} gap={10} />
           </>
         ) : (
           <TextBlock lines={lines.map((l) => ({...l, bold: true}))} width={cols(12)} titleMax={V3.type.title} lineMax={V3.type.title} delay={0} />
@@ -324,7 +324,7 @@ export const CitiesSeg: React.FC<{clip: Clip; dur: number; cities: string[]; poi
 /** T2 · Split screen: video 7 cols | programme panel 5 cols. Panel slides in 18 f, drifts, slides out 18 f. */
 export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons: string[]}> = ({clips, dur, text, icons}) => {
   const f = useCurrentFrame();
-  const [num, name, ...facts] = parseText(text);
+  const [, name, ...facts] = parseText(text);
   const split = M.x + cols(7) + 12;
   const pw = 1920 - split;
   const inP = interpolate(f, [0, 18], [0, 1], {...clamp, easing: IO});
@@ -344,10 +344,7 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
         <AbsoluteFill>
           <div style={{position: 'absolute', left: panelLeft, top: 0, width: pw + 240, height: 1080, background: COLORS.navy, opacity: panelOpacity, boxShadow: `inset 8px 0 0 0 ${COLORS.red}`}}>
             <div style={{position: 'absolute', left: 72, right: 56, top: 200, translate: `0 ${drift}px`, color: COLORS.white, fontFamily: SANS}}>
-              <Reveal delay={0}>
-                <div style={{fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em'}}>{num.text}</div>
-              </Reveal>
-              <Bar delay={4} w={64} h={6} style={{marginTop: 14, marginBottom: 26}} />
+              <Bar delay={0} w={64} h={6} style={{marginBottom: 26}} />
               <TextBlock lines={[name]} width={pw - 128} titleMax={V3.type.splitName} lineMax={V3.type.splitName} delay={4} />
               <div style={{marginTop: 54, display: 'flex', flexDirection: 'column', gap: 30}}>
                 {facts.map((fact, i) => (
@@ -368,13 +365,13 @@ export const T2: React.FC<{clips: TimedClip[]; dur: number; text: string; icons:
 const PhotoCard: React.FC<{src: string; x: number; y: number; w: number; h: number; delay: number; dur: number; rotate?: number; drift: [number, number]}> = ({src, x, y, w, h, delay, dur, rotate = 0, drift}) => {
   const f = useCurrentFrame();
   const p = interpolate(f, [delay, delay + 18], [0, 1], {...clamp, easing: IO});
-  const d = interpolate(f, [0, dur], [0, 1], clamp);
+  void drift; // V4.2: cards are perfectly still once landed (no drift → no shimmer)
   return (
     <div
       style={{
         position: 'absolute',
-        left: x + drift[0] * d,
-        top: y + drift[1] * d + (1 - p) * 60,
+        left: Math.round(x),
+        top: Math.round(y + (1 - p) * 60),
         width: w,
         height: h,
         borderRadius: 8,
@@ -386,7 +383,7 @@ const PhotoCard: React.FC<{src: string; x: number; y: number; w: number; h: numb
         background: COLORS.white,
       }}
     >
-      <PhotoView src={src} dur={dur} />
+      <PhotoView src={src} dur={dur} zoom={[1, 1]} />
     </div>
   );
 };
@@ -426,7 +423,7 @@ export const T3: React.FC<{photos: string[]; bg: TimedClip[]; dur: number; text?
 /** T4 · Programme card: 6 columns, full useful height, against the left edge; SHARP footage behind, veil 40 %. */
 export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, dur, text}) => {
   const f = useCurrentFrame();
-  const [num, name, ...facts] = parseText(text);
+  const [, name, ...facts] = parseText(text);
   const open = interpolate(f, [0, 18], [0, 1], {...clamp, easing: IO});
   const close = interpolate(f, [dur - 18 - 6, dur - 6], [0, 1], {...clamp, easing: IO});
   const w = M.x + cols(6);
@@ -453,10 +450,7 @@ export const T4: React.FC<{bg: TimedClip[]; dur: number; text: string}> = ({bg, 
             }}
           >
             <div style={{position: 'absolute', left: M.x + 60, right: 64, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', fontFamily: SANS, color: COLORS.navy}}>
-              <Reveal delay={0}>
-                <div style={{fontWeight: WEIGHTS.medium, fontSize: V3.type.kicker, letterSpacing: '0.25em'}}>{num.text}</div>
-              </Reveal>
-              <div style={{marginTop: 20}}>
+              <div>
                 <ProgrammeName text={name.text} width={w - M.x - 64} delay={4} />
               </div>
               <Bar delay={22} style={{marginTop: 30, marginBottom: 44}} />
@@ -614,7 +608,7 @@ export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: num
   return (
     <AbsoluteFill style={{background: COLORS.navy}}>
       <AbsoluteFill style={{filter: 'blur(4px)', opacity: 0.55}}>
-        <PhotoView src={photo} dur={photoDur} zoom={[1.04, 1.08]} />
+        <PhotoView src={photo} dur={photoDur} zoom={[1.06, 1.06]} />
       </AbsoluteFill>
       <AbsoluteFill style={{background: alpha('navy', 0.5)}} />
       {/* shadow + white frame drawn around the window */}
@@ -632,7 +626,7 @@ export const T6: React.FC<{photo: string; photoDur: number; clip: Clip; dur: num
         }}
       />
       <AbsoluteFill style={{clipPath: inset}}>
-        <PhotoView src={photo} dur={vf} zoom={[1.0, 1.08]} />
+        <PhotoView src={photo} dur={vf} zoom={[1, 1]} />
         <Sequence from={vf} layout="absolute-fill">
           <AbsoluteFill style={{opacity: videoIn}}>
             <ClipView clip={clip} dur={dur - vf} />

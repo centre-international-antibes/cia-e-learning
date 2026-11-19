@@ -44,7 +44,7 @@ export const TEXT_V4 = {
     juniors: '01|*JUNIORS|Premium · 8–17|Prestige · 13–17|Cannes Independence Club · 16–17',
     fcCard: '02|*FRENCH COURSES FOR ADULTS|All levels · All year|Max. 12 per class|Intensive · DELF · Business French',
     seniors: '02|*50+ PROGRAMME|Culture · Markets · Excursions',
-    castel: '04 · OUR RESIDENCES|*CASTEL ARABEL|500 m from the beach',
+    castel: 'OUR RESIDENCES|*CASTEL ARABEL|500 m from the beach',
     excursions: '05|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
     wcCard: '03|*WINE & COOKING|French through gastronomy|Workshops · Tastings · Excursions',
     encounters: 'Encounters.',
@@ -56,7 +56,7 @@ export const TEXT_V4 = {
     juniors: '01|*JUNIORS|Premium · 8–17 ans|Prestige · 13–17 ans|Cannes Independence Club · 16–17 ans',
     fcCard: '02|*COURS DE FRANÇAIS POUR ADULTES|Tous niveaux · Toute l’année|12 élèves max. par classe|Intensif · DELF · Français des affaires',
     seniors: '02|*PROGRAMME 50+|Culture · Marchés · Excursions',
-    castel: '04 · NOS RÉSIDENCES|*CASTEL ARABEL|À 500 m de la plage',
+    castel: 'NOS RÉSIDENCES|*CASTEL ARABEL|À 500 m de la plage',
     excursions: '05|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
     wcCard: '03|*WINE & COOKING|Le français par la gastronomie|Ateliers · Dégustations · Excursions',
     encounters: 'Rencontres.',
@@ -105,7 +105,7 @@ const B: BSeg[] = [
   {id: '5d', sec: 5, beats: 6, tpl: 'T1', text: 'seniors', chain: [bc('sr', 6.42, 1), bc('sr', 7.3, 3), bc('sr', 23.45, 1), bc('sr', 17.65, 1)]},
   {id: '5e', sec: 5, beats: 5, tpl: 'line', text: 'seniorsLine', bug: true, chain: [bc('sr', 22.25, 2), bc('sr', 29.21, 2), bc('sr', 24.05, 1)]},
   // 6 · 03 Wine & Cooking (right after 50+) — beats 104–128: triptych → card → Crémat (drone + cellar) → toast
-  {id: '8a', sec: 6, beats: 7, tpl: 'T8', text: 'wcLine', kicker: '03', panels: [
+  {id: '8a', sec: 6, beats: 7, tpl: 'T8', text: 'wcLine', kicker: '', panels: [
     [bc('wc', 10.62, 2), bc('wc', 24.05, 2), bc('wc', 30.75, 2), bc('wc', 12.65, 1)],
     [bc('wc', 11.92, 1), bc('wc', 13.72, 1), bc('wc', 22.92, 2), bc('wc', 28.05, 2)],
     [bc('wc', 14.6, 1), bc('wc', 29.45, 2), bc('wc', 7.24, 1), bc('wc', 9.22, 1)],
