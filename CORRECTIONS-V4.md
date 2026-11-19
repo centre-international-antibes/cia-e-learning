@@ -28,7 +28,7 @@ Ordre logique du parcours client : juniors → adultes → où l'on vit → ce q
 Mesuré sur le rendu V3.2 : **57 coupes sur 76 tombent hors de la grille** (3 à 7 images d'écart par rapport aux temps de 15 f à 120 BPM). Cause : les « 4–6 images pour laisser l'animation se poser » ont été obtenues en **déplaçant les coupes**.
 
 Règles :
-1. **Toutes les coupes, tous les débuts de transition et tous les débuts de texte tombent sur un temps** (multiple de 15 f depuis 0, tolérance 0 f). Les whip pans sont **centrés** sur un temps (6 f avant, 6 f après).
+1. **Toutes les coupes, tous les débuts de transition et tous les débuts de texte tombent sur un temps de la musique** (grille calculée dans MUSIC-EDIT.md, piste à 117,45 BPM, arrondi à l’image la plus proche, tolérance ±1 f). Les whip pans sont **centrés** sur un temps (6 f avant, 6 f après).
 2. Pour qu'une animation se pose avant une coupe, **démarre-la plus tôt** (ou raccourcis-la), ne bouge jamais la coupe.
 3. Rythme par section : respirations sur 2 ou 4 temps, rafales sur 1 temps (15 f) ; la finale ralentit (4 temps par mot).
 4. **Si une piste est présente dans `assets-src/audio/`**, détecte son tempo et ses temps (librosa), et cale la grille sur cette piste au lieu des 120 BPM.
