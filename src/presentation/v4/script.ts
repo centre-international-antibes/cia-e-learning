@@ -72,7 +72,7 @@ const B: BSeg[] = [
   {id: '1a', sec: 1, beats: 2, tpl: 'video', clip: c('jr', 0.3, JRB), text: 'hello', textKind: 'greeting'},
   {id: '1b', sec: 1, beats: 1, tpl: 'video', clip: c('jr', 2.4, JRB), text: 'hola', textKind: 'greeting'},
   {id: '1c', sec: 1, beats: 1, tpl: 'video', clip: c('wc', 33.6), text: 'ciao', textKind: 'greeting'},
-  {id: '1d', sec: 1, beats: 2, tpl: 'video', clip: c('cours', 19.95), text: 'hallo', textKind: 'greeting'},
+  {id: '1d', sec: 1, beats: 2, tpl: 'video', clip: c('cours', 19.93), text: 'hallo', textKind: 'greeting'},
   {id: '1e', sec: 1, beats: 1, tpl: 'video', clip: c('sr', 9.2), text: 'privet', textKind: 'greeting'},
   {id: '1f', sec: 1, beats: 2, tpl: 'video', clip: c('jr', 3.75, JRB), text: 'konnichiwa', textKind: 'greeting'},
   {id: '1g', sec: 1, beats: 3, tpl: 'bonjour', clip: c('sr', 1.72)},
@@ -84,7 +84,7 @@ const B: BSeg[] = [
     {x: 820, y: 318, lx: 700, ly: 230, anchor: 'end'},
   ]},
   // 3 · Numbers — beats 22–40
-  {id: '3a', sec: 3, beats: 4, tpl: 'T5', clip: c('cours', 11.42), text: 'since', value: 1985, from: 1900, suffix: '', grouping: false, onNavy: true},
+  {id: '3a', sec: 3, beats: 4, tpl: 'T5', clip: c('cours', 11.40), text: 'since', value: 1985, from: 1900, suffix: '', grouping: false, onNavy: true},
   {id: '3b', sec: 3, beats: 5, tpl: 'T5', clip: c('cours', 26.62), chain: [bc('cours', 26.62, 3), bc('sr', 63.85, 2)], text: 'students', value: 10000, from: 0, suffix: '', grouping: true, onNavy: false},
   {id: '3c', sec: 3, beats: 4, tpl: 'T5', clip: c('cours', 22.12), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false, onNavy: false},
   {id: '3d', sec: 3, beats: 5, tpl: 'place', text: 'accredited', chain: [bc('cours', 21.0, 2), bc('cours', 13.75, 3)]},
@@ -109,11 +109,12 @@ const B: BSeg[] = [
   {id: '6b', sec: 6, beats: 6, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], chain: [bc('jr', 25.0, 3), bc('jr', 22.75, 2), bc('jr', 24.0, 1)]},
   // 7 · 04 Excursions — beats 117–132
   {id: '7a', sec: 7, beats: 6, tpl: 'T1', text: 'excursions', chain: [bc('wc', 36.0, 2), bc('sr', 0.1, 3), bc('sr', 57.45, 1)]},
-  {id: '7b', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 16.5)},
-  {id: '7c', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 25.75)},
-  {id: '7d', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 20.55)},
-  {id: '7e', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 28.05)},
-  {id: '7f', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 53.45), bug: true},
+  {id: '7b', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 16.5)},
+  {id: '7c', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 19.47)},
+  {id: '7d', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 25.75)},
+  {id: '7e', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 21.7)},
+  {id: '7f', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 28.05)},
+  {id: '7g', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 53.45), bug: true},
   // 8 · 05 Wine & Cooking — beats 132–156: triptych → card → Crémat (drone + cellar) → toast
   {id: '8a', sec: 8, beats: 7, tpl: 'T8', text: 'wcLine', kicker: '05', panels: [
     [bc('wc', 10.62, 2), bc('wc', 24.05, 2), bc('wc', 30.75, 2), bc('wc', 12.65, 1)],
