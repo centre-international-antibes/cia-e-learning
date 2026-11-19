@@ -41,24 +41,24 @@ type BSeg =
 export const TEXT_V4 = {
   en: {
     ...TEXT_V3.en,
-    juniors: '01|*JUNIORS 8–17|Juan-les-Pins Premium|All-inclusive|Supervised',
-    fcCard: '02|*FRENCH COURSES|All levels · All year|Max. 12 per class|Intensive · DELF · Business French',
+    juniors: '01|*JUNIORS|Premium · 8–17|Prestige · 13–17|Cannes Independence Club · 16–17',
+    fcCard: '02|*FRENCH COURSES FOR ADULTS|All levels · All year|Max. 12 per class|Intensive · DELF · Business French',
     seniors: '02|*50+ PROGRAMME|Culture · Markets · Excursions',
-    castel: '03 · OUR RESIDENCES|*CASTEL ARABEL|500 m from the beach',
-    excursions: '04|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
-    wcCard: '05|*WINE & COOKING|French through gastronomy|Workshops · Tastings · Excursions',
+    castel: '04 · OUR RESIDENCES|*CASTEL ARABEL|500 m from the beach',
+    excursions: '05|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
+    wcCard: '03|*WINE & COOKING|French through gastronomy|Workshops · Tastings · Excursions',
     encounters: 'Encounters.',
     emotions: 'Emotions.',
     memories: 'Memories.',
   },
   fr: {
     ...TEXT_V3.fr,
-    juniors: '01|*JUNIORS 8–17 ANS|Juan-les-Pins Premium|Tout compris|Encadré',
-    fcCard: '02|*COURS DE FRANÇAIS|Tous niveaux · Toute l’année|12 élèves max. par classe|Intensif · DELF · Français des affaires',
+    juniors: '01|*JUNIORS|Premium · 8–17 ans|Prestige · 13–17 ans|Cannes Independence Club · 16–17 ans',
+    fcCard: '02|*COURS DE FRANÇAIS POUR ADULTES|Tous niveaux · Toute l’année|12 élèves max. par classe|Intensif · DELF · Français des affaires',
     seniors: '02|*PROGRAMME 50+|Culture · Marchés · Excursions',
-    castel: '03 · NOS RÉSIDENCES|*CASTEL ARABEL|À 500 m de la plage',
-    excursions: '04|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
-    wcCard: '05|*WINE & COOKING|Le français par la gastronomie|Ateliers · Dégustations · Excursions',
+    castel: '04 · NOS RÉSIDENCES|*CASTEL ARABEL|À 500 m de la plage',
+    excursions: '05|*EXCURSIONS|Nice · Monaco · Cannes · Grasse',
+    wcCard: '03|*WINE & COOKING|Le français par la gastronomie|Ateliers · Dégustations · Excursions',
     encounters: 'Rencontres.',
     emotions: 'Émotions.',
     memories: 'Souvenirs.',
@@ -89,7 +89,7 @@ const B: BSeg[] = [
   {id: '3c', sec: 3, beats: 4, tpl: 'T5', clip: c('cours', 22.12), text: 'nationalities', value: 50, from: 0, suffix: '+', grouping: false, onNavy: false},
   {id: '3d', sec: 3, beats: 5, tpl: 'place', text: 'accredited', chain: [bc('cours', 21.0, 2), bc('cours', 13.75, 3)]},
   // 4 · 01 Juniors — beats 40–69: T2 → Le Château (juniors' school) → class → burst at sea → morning / afternoon
-  {id: '4a', sec: 4, beats: 9, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], chain: [bc('jr', 6.6, 3), bc('jr', 16.82, 2), bc('jr', 12.55, 2), bc('jr', 13.62, 1), bc('jr', 19.52, 1)]},
+  {id: '4a', sec: 4, beats: 9, tpl: 'T2', text: 'juniors', icons: ['MapPin', 'Sun', 'ShieldCheck'], chain: [bc('jr', 6.6, 3), bc('jr', 16.82, 2), bc('jr', 15.72, 2), bc('jr', 13.62, 1), bc('jr', 19.52, 1)]},
   {id: '4b', sec: 4, beats: 6, tpl: 'place', text: 'leChateau', chain: [bc('cours', 7.46, 2), bc('sr', 59.18, 4)]},
   {id: '4c', sec: 4, beats: 2, tpl: 'video', clip: c('jr', 20.3), bug: true},
   {id: '4d', sec: 4, beats: 1, tpl: 'video', clip: c('jr', 5.05, JRB)},
@@ -104,26 +104,26 @@ const B: BSeg[] = [
   {id: '5c', sec: 5, beats: 9, tpl: 'T3', text: 'lePort', photos: ['photos/le-port-balcony-view-port-vauban.jpg', 'photos/le-port-class-adults-a.jpg', 'photos/le-port-class-teacher-student.jpg'], chain: [bc('sr', 30.35, 3), bc('sr', 32.1, 4), bc('cours', 24.6, 2)]},
   {id: '5d', sec: 5, beats: 6, tpl: 'T1', text: 'seniors', chain: [bc('sr', 6.42, 1), bc('sr', 7.3, 3), bc('sr', 23.45, 1), bc('sr', 17.65, 1)]},
   {id: '5e', sec: 5, beats: 5, tpl: 'line', text: 'seniorsLine', bug: true, chain: [bc('sr', 22.25, 2), bc('sr', 29.21, 2), bc('sr', 24.05, 1)]},
-  // 6 · 03 Residences — beats 104–117: Castel Arabel (T6, grows from the first frame) → Astor
-  {id: '6a', sec: 6, beats: 8, tpl: 'T6', text: 'castel', photo: 'photos/castel-arabel-facade-tower.jpg', growFrames: 30, videoAtBeat: 6, clip: c('jr', 29.66)},
-  {id: '6b', sec: 6, beats: 6, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], chain: [bc('jr', 25.0, 3), bc('jr', 22.75, 2), bc('jr', 24.0, 1)]},
-  // 7 · 04 Excursions — beats 117–132
-  {id: '7a', sec: 7, beats: 6, tpl: 'T1', text: 'excursions', chain: [bc('wc', 36.0, 2), bc('sr', 0.1, 3), bc('sr', 57.45, 1)]},
-  {id: '7b', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 16.5)},
-  {id: '7c', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 19.47)},
-  {id: '7d', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 25.75)},
-  {id: '7e', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 21.7)},
-  {id: '7f', sec: 7, beats: 2, tpl: 'video', clip: c('sr', 28.05)},
-  {id: '7g', sec: 7, beats: 1, tpl: 'video', clip: c('sr', 53.45), bug: true},
-  // 8 · 05 Wine & Cooking — beats 132–156: triptych → card → Crémat (drone + cellar) → toast
-  {id: '8a', sec: 8, beats: 7, tpl: 'T8', text: 'wcLine', kicker: '05', panels: [
+  // 6 · 03 Wine & Cooking (right after 50+) — beats 104–128: triptych → card → Crémat (drone + cellar) → toast
+  {id: '8a', sec: 6, beats: 7, tpl: 'T8', text: 'wcLine', kicker: '03', panels: [
     [bc('wc', 10.62, 2), bc('wc', 24.05, 2), bc('wc', 30.75, 2), bc('wc', 12.65, 1)],
     [bc('wc', 11.92, 1), bc('wc', 13.72, 1), bc('wc', 22.92, 2), bc('wc', 28.05, 2)],
     [bc('wc', 14.6, 1), bc('wc', 29.45, 2), bc('wc', 7.24, 1), bc('wc', 9.22, 1)],
   ]},
-  {id: '8b', sec: 8, beats: 9, tpl: 'T4', text: 'wcCard', chain: [bc('wc', 5.45, 2), bc('wc', 20.7, 1), bc('wc', 2.9, 1), bc('wc', 26.75, 2), bc('wc', 22.0, 1), bc('wc', 32.15, 2)]},
-  {id: '8c', sec: 8, beats: 6, tpl: 'place', text: 'cremat', chain: [bc('wc', 74.6, 4), bc('wc', 61.85, 2)]},
-  {id: '8d', sec: 8, beats: 2, tpl: 'video', clip: c('wc', 71.25), bug: true},
+  {id: '8b', sec: 6, beats: 9, tpl: 'T4', text: 'wcCard', chain: [bc('wc', 5.45, 2), bc('wc', 20.7, 1), bc('wc', 2.9, 1), bc('wc', 26.75, 2), bc('wc', 22.0, 1), bc('wc', 32.15, 2)]},
+  {id: '8c', sec: 6, beats: 6, tpl: 'place', text: 'cremat', chain: [bc('wc', 74.6, 4), bc('wc', 61.85, 2)]},
+  {id: '8d', sec: 6, beats: 2, tpl: 'video', clip: c('wc', 71.25), bug: true},
+  // 7 · 04 Residences — beats 128–142: Castel Arabel (T6, grows from the first frame) → Astor
+  {id: '6a', sec: 7, beats: 8, tpl: 'T6', text: 'castel', photo: 'photos/castel-arabel-facade-tower.jpg', growFrames: 30, videoAtBeat: 6, clip: c('jr', 29.66)},
+  {id: '6b', sec: 7, beats: 6, tpl: 'T3', text: 'astor', photos: ['photos/astor-room-balcony.jpg', 'photos/astor-room-c.jpg', 'photos/astor-lounge.jpg'], chain: [bc('jr', 25.0, 3), bc('jr', 22.75, 2), bc('jr', 24.0, 1)]},
+  // 8 · 05 Excursions — beats 142–156
+  {id: '7a', sec: 8, beats: 6, tpl: 'T1', text: 'excursions', chain: [bc('wc', 36.0, 2), bc('sr', 0.1, 3), bc('sr', 57.45, 1)]},
+  {id: '7b', sec: 8, beats: 1, tpl: 'video', clip: c('sr', 16.5)},
+  {id: '7c', sec: 8, beats: 1, tpl: 'video', clip: c('sr', 19.47)},
+  {id: '7d', sec: 8, beats: 2, tpl: 'video', clip: c('sr', 25.75)},
+  {id: '7e', sec: 8, beats: 1, tpl: 'video', clip: c('sr', 21.7)},
+  {id: '7f', sec: 8, beats: 2, tpl: 'video', clip: c('sr', 28.05)},
+  {id: '7g', sec: 8, beats: 1, tpl: 'video', clip: c('sr', 53.45), bug: true},
   // 9 · Finale on the BREAK (beat 156): one word per bar on a held shot
   {id: '9a', sec: 9, beats: 4, tpl: 'word', text: 'encounters', clip: c('cours', 46.0)},
   {id: '9b', sec: 9, beats: 4, tpl: 'word', text: 'emotions', clip: c('jr', 30.8)},
@@ -134,7 +134,7 @@ const B: BSeg[] = [
 ];
 
 /** Chapter boundaries carrying a whip pan centred on the cut (6 f before, 6 f after). */
-export const WHIP_BEATS = [BEAT.chapter01, 69, 104, 118, 132];
+export const WHIP_BEATS = [BEAT.chapter01, 69, 104, 128, 142];
 
 // ------------------------------------------------------------ resolver --
 export type SegV4 = SegV3 | {id: string; sec: number; dur: number; tpl: 'word'; text: string; clip: Clip; bar?: boolean};

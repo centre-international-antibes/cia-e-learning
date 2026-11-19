@@ -41,7 +41,7 @@ MAP = [
     (113.197, None),  # re-drop: "Live it." then end card (runs to 90 s)
 ]
 # whip pans between chapters (film beat indices, see src/presentation/v4/script.ts)
-WHIP_BEATS = [40, 69, 104, 118, 132]
+WHIP_BEATS = [40, 69, 104, 128, 142]
 DROP_BEAT, REDROP_BEAT = 12, 168
 
 
